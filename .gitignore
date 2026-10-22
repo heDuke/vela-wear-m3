@@ -1,0 +1,14 @@
+# 依赖与构建产物
+node_modules/
+build/
+dist/
+out/
+*.rpk
+# src/ 由 tools/gen.js 按设备重新生成（gen.js 会先删除 src/），不要手改、不要提交
+src/
+# 签名：私钥绝不提交；用 bash tools/gen-sign.sh 重新生成
+sign/private.pem
+sign/
+# 杂项
+.DS_Store
+*.log

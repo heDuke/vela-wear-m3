@@ -1,0 +1,20 @@
+{
+  "name": "velam3demo",
+  "version": "1.0.0",
+  "description": "Wear OS Material 3 组件 / 布局 / 动画演示（Xiaomi Vela JS 快应用）",
+  "private": true,
+  "scripts": {
+    "gen:round": "node tools/gen.js round",
+    "gen:pro": "node tools/gen.js pro",
+    "gen:band10": "node tools/gen.js band10",
+    "gen:band9": "node tools/gen.js band9",
+    "build": "aiot build",
+    "release": "aiot release",
+    "build:all": "bash tools/build-all.sh",
+    "assets": "node tools/assets.js && python3 tools/quant.py"
+  },
+  "devDependencies": {
+    "@aiot-toolkit/jsc": "^1.0.3",
+    "aiot-toolkit": "^2.0.5"
+  }
+}

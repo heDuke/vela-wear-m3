@@ -1,0 +1,6 @@
+{
+ "round":  {"name":"Xiaomi Watch S3/S4 (圆屏)","W":466,"H":466,"shape":"circle","k":2.0},
+ "pro":    {"name":"小米手环 8 Pro / 9 Pro (矩形)","W":336,"H":480,"shape":"rect","k":2.0},
+ "band10": {"name":"小米手环 10 (胶囊)","W":212,"H":520,"shape":"pill","k":1.625},
+ "band9":  {"name":"小米手环 9 (胶囊)","W":192,"H":490,"shape":"pill","k":1.625}
+}

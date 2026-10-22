@@ -1,0 +1,5 @@
+$[cfCss()]
+.cf-anim { transform-origin: $[W / 2]px $[H / 2]px; animation-name: cfPop; animation-duration: 450ms; animation-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1); }
+@keyframes cfPop { 0% { transform: scale(0.3) rotate(-30deg); opacity: 0; } 60% { transform: scale(1.06) rotate(4deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+.cf-full { width: $[W]px; height: $[H]px; justify-content: center; align-items: center; }
+.cf-icn { width: $[png('check_primary_52')[0]]px; height: $[png('check_primary_52')[0]]px; }
