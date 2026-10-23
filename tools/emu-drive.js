@@ -41,19 +41,20 @@ async function settle(maxMs = 3000) {
 }
 let rec = null;
 function startRecord(out, W, H, fps) {
-  const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', `${W}x${H}`, '-r', String(fps), '-i', '-',
+  const ff = spawn(process.env.FFMPEG_PATH||'ffmpeg', ['-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', `${W}x${H}`, '-r', String(fps), '-i', '-',
     ...(W % 2 || H % 2 ? ['-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2'] : []),
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
   let last = Buffer.alloc(W * H * 3), frames = 0;
+  const samples=[];let previous=null;const inputEvents=[]
   const st = c.streamScreenshot({ format: 'RGB888', width: W, height: H });
-  st.on('data', img => { if (img.image && img.image.length === W * H * 3) last = Buffer.from(img.image); });
+  st.on('data', img => { if(img.image&&img.image.length===W*H*3){const b=Buffer.from(img.image);let changed=0,total=0;if(previous)for(let i=0;i<b.length;i+=48){total++;if(Math.abs(b[i]-previous[i])+Math.abs(b[i+1]-previous[i+1])+Math.abs(b[i+2]-previous[i+2])>60)changed++}samples.push({time:Date.now(),timestampUs:img.timestampUs,seq:img.seq,changed:total?changed/total:0});previous=b;last=b;} });
   st.on('error', () => {});
   const t0 = Date.now();
   const timer = setInterval(() => {
     const due = Math.floor((Date.now() - t0) * fps / 1000);
     while (frames <= due) { ff.stdin.write(last); frames++; }
   }, 1000 / fps / 2);
-  rec = { stop: () => new Promise(res => { clearInterval(timer); st.cancel(); ff.stdin.end(); ff.on('close', () => res(frames)); }) };
+  rec = { inputEvents,stop: () => new Promise(res => { clearInterval(timer);st.cancel();fs.writeFileSync(out+'.frames.json',JSON.stringify({samples,inputEvents},null,2));ff.stdin.end(); ff.on('close', () => res(frames)); }) };
 }
 (async () => {
   const src = args[1] && args[1] !== '-' ? JSON.parse(fs.readFileSync(args[1], 'utf8')) : [];
@@ -61,7 +62,7 @@ function startRecord(out, W, H, fps) {
   if (out) startRecord(out, +opt('w'), +opt('h'), +opt('fps', 30));
   if (args.includes('--settle')) await settle();
   for (const s of src) {
-    const [op, ...a] = s;
+    const [op,...a]=s;const event={op,start:Date.now()};if(rec)rec.inputEvents.push(event);
     if (op === 'wait') await sleep(a[0]);
     else if (op === 'tap') { if (args.includes('--settle')) await settle(); await mouse(a[0], a[1], 1); await sleep(a[2] || 90); await mouse(a[0], a[1], 0); }
     else if (op === 'swipe') await swipe(...a);
@@ -70,6 +71,7 @@ function startRecord(out, W, H, fps) {
     else if (op === 'evkey') { await call('sendKey', { codeType: 'Evdev', eventType: 'keydown', keyCode: a[0] }); await sleep(80); await call('sendKey', { codeType: 'Evdev', eventType: 'keyup', keyCode: a[0] }); }
     else if (op === 'shot') await shot(a[0]);
     else if (op === 'log') console.log('[drive]', ...a);
+    event.end=Date.now();
   }
   if (rec) console.log('frames', await rec.stop());
   process.exit(0);

@@ -1,0 +1,38 @@
+{
+  "name": "vela-wear-m3",
+  "version": "0.1.0",
+  "description": "Generative Wear Material 3 component library for Xiaomi Vela",
+  "main": "index.js",
+  "bin": {
+    "vela-wear-m3": "bin/vela-wear-m3.js"
+  },
+  "license": "GPL-3.0-or-later",
+  "author": "heDuke",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heDuke/vela-wear-m3.git",
+    "directory": "packages/vela-wear-m3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "index.js",
+    "bin",
+    "tools",
+    "components",
+    "runtime",
+    "assets",
+    "LICENSE",
+    "NOTICE",
+    "licenses",
+    "THIRD_PARTY_NOTICES.md",
+    "DEMO-EXCEPTION.md",
+    "examples",
+    "README.md",
+    "docs"
+  ],
+  "scripts": {
+    "test": "node -e \"require('./index')\""
+  }
+}

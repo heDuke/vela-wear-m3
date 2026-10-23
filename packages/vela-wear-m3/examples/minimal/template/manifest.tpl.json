@@ -1,0 +1,14 @@
+{
+  "package":"com.example.wearm3",
+  "name":"组件示例",
+  "versionName":"0.1.0",
+  "versionCode":1,
+  "minPlatformVersion":1200,
+  "minAPILevel":$[api],
+  "icon":"/common/logo.png",
+  "deviceTypeList":["watch"],
+  "features":[{"name":"system.router"},{"name":"system.vibrator"}],
+  "config":{"designWidth":$[W]},
+  "router":{"entry":"pages/index","pages":{"pages/index":{"component":"index"}}},
+  "display":{"backgroundColor":"#000000"}
+}

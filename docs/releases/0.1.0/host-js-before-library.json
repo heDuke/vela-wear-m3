@@ -1,0 +1,59 @@
+{
+  "scope": "Node VM only; not device or simulator timing",
+  "rows": [
+    {
+      "label": "baseline",
+      "run": 1,
+      "eventP95Ms": 0.38990000000012515,
+      "applyP95Ms": 0.3760000000002037,
+      "applyCalls": 240,
+      "styleWrites": 697,
+      "timersAfterHide": 0
+    },
+    {
+      "label": "baseline",
+      "run": 2,
+      "eventP95Ms": 0.23040000000037253,
+      "applyP95Ms": 0.2213000000001557,
+      "applyCalls": 240,
+      "styleWrites": 697,
+      "timersAfterHide": 0
+    },
+    {
+      "label": "baseline",
+      "run": 3,
+      "eventP95Ms": 0.21640000000024884,
+      "applyP95Ms": 0.20619999999962602,
+      "applyCalls": 240,
+      "styleWrites": 697,
+      "timersAfterHide": 0
+    },
+    {
+      "label": "current",
+      "run": 1,
+      "eventP95Ms": 0.011000000000422006,
+      "applyP95Ms": 0.33439999999973224,
+      "applyCalls": 58,
+      "styleWrites": 199,
+      "timersAfterHide": 0
+    },
+    {
+      "label": "current",
+      "run": 2,
+      "eventP95Ms": 0.006299999999100692,
+      "applyP95Ms": 0.44620000000031723,
+      "applyCalls": 58,
+      "styleWrites": 199,
+      "timersAfterHide": 0
+    },
+    {
+      "label": "current",
+      "run": 3,
+      "eventP95Ms": 0.006299999999100692,
+      "applyP95Ms": 1.1630000000004657,
+      "applyCalls": 58,
+      "styleWrites": 199,
+      "timersAfterHide": 0
+    }
+  ]
+}

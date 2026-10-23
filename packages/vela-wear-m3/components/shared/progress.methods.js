@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 heDuke. Upstream material retains its own terms; see NOTICE.
+progressVisible(){const row=this.rowBounds('progress');return row.bottom>sy&&row.top<sy+DEV.H},
+pageShow(){this.updateLoading(this.progressVisible())},
+revealProgress(){try{const el=this.$element('motionList');if(el)el.scrollTo({index:this.rowBounds('progress').index})}catch(e){}},
+nextKind(){this.stopTimers();this.stopAnimator('spinAnim');this.stopAnimator('arcAnim');++loadingEpoch;this.kindIndex=(this.kindIndex+1)%KINDS.length;this.kind=KINDS[this.kindIndex];this.kindLabel=LABELS[this.kindIndex];this.paintProgress(this.pct);this.updateLoading(this.progressVisible())},
+paintProgress(v){this.pct=Math.round(v);const family=this.kind==='overflow'&&v<=100?PROGRESS.ring:PROGRESS[this.kind];if(family){const value=this.kind==='overflow'&&v>100?v%100:v;const src=progressImage(family,value);if(this.progressSrc!==src)this.progressSrc=src}},
+setProgress(v){this.stopTimers();const target=this.kind==='overflow'?v:Math.min(100,v);if(this.progressVisible())this.animateProgress(target);else{pendingProgress=target;this.revealProgress()}},
+animateProgress(v){if(progressTimer)clearInterval(progressTimer);const from=this.pct,start=Date.now();progressTimer=setInterval(()=>{const t=Math.min(1,(Date.now()-start)/500);this.paintProgress(from+(v-from)*(1-Math.pow(1-t,3)));if(t===1){clearInterval(progressTimer);progressTimer=null}},33)},
+beginAuto(){this.auto=true;if(autoTimer)clearInterval(autoTimer);autoTimer=setInterval(()=>{if(this.progressVisible())this.animateProgress(this.pct>=100?0:this.pct+25);else this.stopTimers()},900)},
+toggleAuto(){if(this.auto||autoPending){this.stopTimers();return}if(this.progressVisible())this.beginAuto();else{autoPending=true;this.revealProgress()}},
+updateLoading(visible){const epoch=++loadingEpoch;this.loadingVisible=visible;this.stopAnimator('spinAnim');this.stopAnimator('arcAnim');if(!visible)return;this.later(()=>{if(epoch!==loadingEpoch||!active)return;const id=this.kind==='indeterminate'?'spinAnim':this.kind==='arcLoading'?'arcAnim':'';try{const el=id&&this.$element(id);if(el)el.start()}catch(e){}},0)},
+onScrolled(){const visible=this.progressVisible();if(visible!==this.loadingVisible)this.updateLoading(visible);if(visible){if(pendingProgress!==null){const value=pendingProgress;pendingProgress=null;this.animateProgress(value)}if(autoPending){autoPending=false;this.beginAuto()}}else if(!autoPending&&pendingProgress===null)this.stopTimers()},
+stopTimers(){if(progressTimer)clearInterval(progressTimer);if(autoTimer)clearInterval(autoTimer);progressTimer=autoTimer=null;pendingProgress=null;autoPending=false;this.auto=false},
+pageHide(){++loadingEpoch;this.loadingVisible=false;this.stopTimers();this.stopAnimator('spinAnim');this.stopAnimator('arcAnim')},pageDestroy(){this.pageHide()},

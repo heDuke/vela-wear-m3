@@ -1,0 +1,1 @@
+<stack class="button-morph-hit" ontouchstart="buttonMorphPress" ontouchend="buttonMorphRelease" ontouchmove="cancelPress"><image class="button-morph-image" src="{{buttonMorphStatic}}"></image><div class="button-morph-label"><text class="t-labelM c-onPri">按住体验</text></div></stack>

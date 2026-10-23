@@ -1,0 +1,1 @@
+<div class="@{variant} {{pressId === '@{id}' ? 'p-in' : relId === '@{id}' ? 'p-out' : ''}}" style="{{feedback['@{id}'] || {opacity:1}}}" ontouchstart="press('@{id}')" ontouchend="release('@{id}')" onclick="vib">@{content}</div>

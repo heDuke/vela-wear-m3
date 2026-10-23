@@ -1,3 +1,5 @@
+> 当前公开仓库入口：[发布记录](OPEN-SOURCE-RELEASE.md)、[授权分区](../LICENSE.md)、[组件库文档](../packages/vela-wear-m3/README.md)。以下交接记录保留历史状态。
+
 # docs/ 索引
 
 | 文件 | 内容 |

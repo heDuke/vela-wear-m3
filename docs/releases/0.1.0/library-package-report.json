@@ -1,0 +1,9 @@
+{
+  "package": "vela-wear-m3",
+  "version": "0.1.0",
+  "bytes": 1320166,
+  "files": 2802,
+  "configurations": 8,
+  "integrity": "sha512-TP3GzsozUPYAH7V7rwjCTadtyOjrtew7FQYMNqnbgRy8fahcysIYbfWcldGjWx93P3B24xRkbfjDFBviCxEQ5g==",
+  "standalone": true
+}

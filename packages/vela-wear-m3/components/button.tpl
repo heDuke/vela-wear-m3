@@ -1,0 +1,1 @@
+<div class="btn {{@{variant}}}" style="{{feedback[@{id}] || {opacity:1}}}" ontouchstart="press(@{id})" ontouchend="release(@{id})" ontouchmove="cancelPress" onclick="@{onClick}"><image class="ic24" src="{{@{icon}}}"></image><text class="t-labelM {{@{ink}}} button-label">{{@{label}}}</text></div>

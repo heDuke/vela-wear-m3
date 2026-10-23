@@ -1,0 +1,3 @@
+# Preserve upstream license texts; their original whitespace is intentional.
+licenses/CC-BY-4.0.txt -whitespace
+packages/vela-wear-m3/licenses/*.txt -whitespace

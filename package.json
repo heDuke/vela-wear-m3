@@ -1,6 +1,6 @@
 {
-  "name": "velam3demo",
-  "version": "1.0.0",
+  "name": "vela-wear-m3-demo",
+  "version": "1.2.0",
   "description": "Wear OS Material 3 组件 / 布局 / 动画演示（Xiaomi Vela JS 快应用）",
   "private": true,
   "scripts": {
@@ -10,11 +10,27 @@
     "gen:band9": "node tools/gen.js band9",
     "build": "aiot build",
     "release": "aiot release",
-    "build:all": "bash tools/build-all.sh",
-    "assets": "node tools/assets.js && python3 tools/quant.py"
+    "build:all": "node tools/build-all.js",
+    "assets": "node tools/assets.js && node tools/assets-ui.js --all",
+    "assets:ui": "node tools/assets-ui.js",
+    "verify": "node tools/verify.js",
+    "preview": "node tools/preview.js",
+    "gen:enhanced": "node tools/gen.js round --animation enhanced",
+    "test:library": "node tools/verify-library.js"
   },
   "devDependencies": {
     "@aiot-toolkit/jsc": "^1.0.3",
-    "aiot-toolkit": "^2.0.5"
+    "aiot-toolkit": "^2.0.5",
+    "playwright-core": "^1.64.1",
+    "vela-wear-m3": "file:packages/vela-wear-m3"
+  },
+  "license": "SEE LICENSE IN LICENSE.md",
+  "author": "heDuke",
+  "workspaces": [
+    "packages/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heDuke/vela-wear-m3.git"
   }
 }

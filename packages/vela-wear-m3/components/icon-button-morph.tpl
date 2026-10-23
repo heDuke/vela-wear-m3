@@ -1,0 +1,1 @@
+<stack class="morph-hit" ontouchstart="morphPress" ontouchend="morphRelease" ontouchmove="cancelPress" onclick="togglePlaying"><image class="morph-image" src="{{morphStatic}}"></image><div class="morph-icon"><image class="ic26" src="{{playSrc}}"></image></div></stack>

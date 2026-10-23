@@ -1,0 +1,124 @@
+/* ===== Wear M3 tokens → Vela classes (generated per device: k = $[k] px/dp) =====
+   Colours: androidx ColorTokens.kt default dark scheme. Type: TypeScaleTokens.kt (weight <550 → normal, ≥550 → bold;
+   Vela has no letter-spacing / font-family / variable weights). Only class selectors; no nesting / pseudo-classes. */
+.page { width: $[W]px; height: $[H]px; background-color: #000000; transform-origin: $[W / 2]px $[H / 2]px; }
+.pg-enter { animation-name: pgEnter; animation-duration: 350ms; animation-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1); }
+.pg-exit { opacity: 0; animation-name: pgExit; animation-duration: 220ms; animation-timing-function: cubic-bezier(0.3, 0, 1, 1); }
+@keyframes pgEnter { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes pgExit { 0% { opacity: 1; transform: translateX(0px); } 100% { opacity: 0; transform: translateX($[Math.round(W * 0.3)]px); } }
+
+/* list scaffold: content padding = ceil(5.2% W) / ceil(10% H) (Padding.kt) */
+.lst { position: absolute; left: 0px; top: 0px; width: $[W]px; height: $[H]px; flex-direction: column; }
+.li { width: $[W]px; flex-direction: column; align-items: center; justify-content: center; }
+.li-padt { width: $[W]px; height: $[VP]px; }
+.li-padb { width: $[W]px; height: $[VP]px; }
+.li-hdr { width: $[W]px; height: $(48); flex-direction: column; align-items: center; justify-content: center; }
+.li-56 { width: $[W]px; height: $[ROW]px; flex-direction: column; align-items: center; justify-content: center; }
+.tlc { width: $[CW]px; flex-direction: column; align-items: center; transform-origin: $[CW / 2]px $[dp(28)]px; }
+.lh { width: $[CW]px; height: $(48); padding-top: $(16); padding-bottom: $(12); padding-left: $(14); padding-right: $(14); justify-content: center; align-items: center; }
+.lh-sub { width: $[CW]px; height: $(40); padding-top: $(12); padding-bottom: $(8); justify-content: center; align-items: center; }
+
+/* typography */
+.t-dispS { font-size: $(24); line-height: $(26); font-weight: bold; }
+.t-titleL { font-size: $(18); line-height: $(20); }
+.t-titleM { font-size: $[pill ? dp(15) : dp(16)]px; line-height: $(18); font-weight: bold; }
+.t-titleS { font-size: $(14); line-height: $(16); font-weight: bold; }
+.t-labelL { font-size: $(20); line-height: $(22); }
+.t-labelM { font-size: $[pill ? dp(13) : dp(15)]px; line-height: $(18); font-weight: bold; }
+.t-labelS { font-size: $[pill ? dp(11) : dp(13)]px; line-height: $(16); }
+.t-bodyL { font-size: $(16); line-height: $(18); }
+.t-bodyM { font-size: $(14); line-height: $(16); }
+.t-bodyS { font-size: $(12); line-height: $(14); }
+.t-numL { font-size: $(50); line-height: $(52); font-weight: bold; }
+.t-numS { font-size: $(30); line-height: $(30); font-weight: bold; }
+.one { lines: 1; text-overflow: ellipsis; }
+.tc { text-align: center; }
+/* colours */
+.c-on { color: #FFFFFF; }
+.c-onS { color: #F6EDFF; }
+.c-onSV { color: #CAC4D0; }
+.c-pri { color: #E9DDFF; }
+.c-onPri { color: #210F48; }
+.c-onPC { color: #F6EDFF; }
+.c-ter { color: #FFDCC2; }
+.c-time { color: #C6C6C6; }
+.c-dis { color: #F6EDFF; opacity: 0.38; }
+
+/* Buttons (FilledButtonTokens / FilledTonal / Outlined / TextButton): 52dp, CornerLarge 26 (= stadium), padding 14/6 */
+.btn { width: $[CW]px; height: $(52); flex-direction: row; align-items: center; padding-left: $[pill ? dp(10) : dp(14)]px; padding-right: $[pill ? dp(10) : dp(14)]px; border-width: 1px; border-radius: $(26); transform-origin: $[CW / 2]px $(26); }
+.btn-ic { padding-left: $[BPL]px; padding-right: $[BPR]px; }
+.bf { background-color: #E9DDFF; border-color: #E9DDFF; }
+.bt { background-color: #332E3C; border-color: #332E3C; }
+.bo { background-color: #000000; border-color: #948F9A; }
+.bc { background-color: #000000; border-color: #000000; }
+.bd { background-color: #2C2A2E; border-color: #2C2A2E; }
+.bpc { background-color: #4D3D76; border-color: #4D3D76; }
+.bcol { flex-direction: column; margin-left: $(6); }
+.lab { width: $[LABW]px; lines: 1; text-overflow: ellipsis; }
+.lab2 { width: $[LABW2]px; lines: 1; text-overflow: ellipsis; }
+.labc { lines: 1; text-overflow: ellipsis; text-align: center; }
+/* coloured circular icon container (v3: 32dp on round, 24dp on rect/pill) */
+.icc { width: $[ICS]px; height: $[ICS]px; border-width: 1px; border-radius: $[ICS / 2]px; justify-content: center; align-items: center; }
+.bg-pd { background-color: #D0BCFF; border-color: #D0BCFF; }
+.bg-sd { background-color: #BAC3FF; border-color: #BAC3FF; }
+.bg-td { background-color: #FFB77A; border-color: #FFB77A; }
+.ic-sec { width: $[png('sec_buttons')[0]]px; height: $[png('sec_buttons')[0]]px; }
+.ic24 { width: $[png('star_primary_24')[0]]px; height: $[png('star_primary_24')[0]]px; }
+
+/* NB: Vela's default transform-origin is the top-left corner, so every scaled/rotated class sets it explicitly */
+/* press feedback: scale 1 → 0.95 (Short4 100ms) and back (Medium2 300ms, standard easing) */
+.p-in { transform: scale(1); opacity: 0.92; animation-name: pIn; animation-duration: 100ms; animation-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+.p-out { transform: scale(1); opacity: 1; animation-name: pOut; animation-duration: 300ms; animation-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+@keyframes pIn { 0% { opacity: 1; } 100% { opacity: 0.92; } }
+@keyframes pOut { 0% { opacity: 0.92; } 100% { opacity: 1; } }
+
+/* TimeText + ScrollIndicator (geometry from v3 / androidx) */
+$[ttCss()]
+$[siCss()]
+
+/* CompactButton (CompactButtonTokens): 32dp visual inside a 48dp tap slot, stadium corner, padding 12/8 */
+.cslot { height: $(48); flex-direction: row; justify-content: center; align-items: center; }
+.cbtn { height: $(32); flex-direction: row; align-items: center; padding-left: $(12); padding-right: $(12); border-width: 1px; border-radius: $(16); transform-origin: 50% 50%; }
+.cbtn-ic { width: $(20); height: $(20); margin-right: $(6); }
+.li-48 { width: $[W]px; height: $(48); flex-direction: row; justify-content: center; align-items: center; }
+
+/* SwitchButton's switch (SwitchButtonTokens: track 32x20dp, thumb 14dp checked / 12dp... simplified to 14dp) */
+.sw { width: $(32); height: $(20); flex-direction: row; align-items: center; padding-left: $(3); padding-right: $(3); border-width: $(2); border-radius: $(10); transition-property: background-color; transition-duration: 250ms; }
+.sw-on { justify-content: flex-end; background-color: #E9DDFF; border-color: #E9DDFF; }
+.sw-off { justify-content: flex-start; background-color: #332E3C; border-color: #948F9A; }
+.sw-th { width: $(12); height: $(12); border-width: 1px; border-radius: $(6); }
+.th-on { background-color: #210F48; border-color: #210F48; }
+.th-off { background-color: #948F9A; border-color: #948F9A; }
+.grow { flex: 1; }
+
+$[navCss()]
+.nav-in{animation-name:navPress;animation-duration:100ms;transform:scale(0.95);}
+.nav-out{transform:scale(1);}
+@keyframes navPress{0%{transform:scale(1);}100%{transform:scale(0.95);}}
+.note{width:$[CW]px;color:$[C.onSurfaceVariant];font-size:$(11);line-height:$(15);text-align:center;lines:3;}
+.li-note{width:$[W]px;height:$(48);align-items:center;justify-content:center;}
+.arc-panel{width:$[W]px;height:$(64);position:relative;}
+.arc-g{position:absolute;}
+.arc-char{font-size:$(15);line-height:$(20);color:$[C.timeText];font-weight:bold;text-align:center;}
+.demo-page{position:absolute;left:0px;top:0px;width:$[W]px;height:$[H]px;background-color:$[C.background];flex-direction:column;align-items:center;padding-top:$[VP]px;}
+.demo-nav{padding-left:$[round?dp(20):0]px;width:$[CW]px;height:$[DEMONAVH]px;flex-direction:row;align-items:center;}
+.demo-title{font-size:$(14);color:$[C.onSurface];font-weight:bold;margin-left:$(8);}
+.demo-value{font-size:$(30);line-height:$(34);color:$[C.onSurface];font-weight:bold;text-align:center;}
+.demo-label{width:$[CW-dp(28)]px;font-size:$(12);line-height:$(16);lines:2;color:$[C.onSurfaceVariant];text-align:center;}
+.demo-controls{width:$[CW]px;height:$(56);flex-direction:row;align-items:center;justify-content:center;}
+.demo-small{width:$(48);height:$(48);border-width:1px;border-color:$[C.surfaceContainer];border-radius:$(24);background-color:$[C.surfaceContainer];align-items:center;justify-content:center;}
+.demo-gap{margin-left:$(8);}
+
+.nav-title{font-size:$(16);line-height:$(20);color:$[C.onSurface];font-weight:bold;margin-left:$(8);width:$[CW-dp(80)]px;lines:2;}
+.li-page-title{width:$[W]px;height:$(32);align-items:center;justify-content:center;}
+
+/* Circular screens have a centered title, without a navigation control or slot. */
+/* #if round */
+.nav-title{width:$[CW]px;margin-left:0px;text-align:center;}
+/* #endif */
+
+/* #if pill */
+.demo-nav{flex-direction:column;justify-content:center;}
+.demo-title{margin-left:0px;margin-top:$(4);text-align:center;}
+.lab{lines:2;}.bcol{margin-left:$(6);}.li-hdr{height:$(48);}.note{lines:3;}.btn{height:$(56);}
+/* #endif */

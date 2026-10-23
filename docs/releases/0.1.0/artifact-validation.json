@@ -1,0 +1,130 @@
+[
+  {
+    "device": "round",
+    "api": 1,
+    "mode": "debug",
+    "bytes": 517785,
+    "sha256": "d3a72f6344b42bfdc5db43bec269410e16a2fed9e764ec3fe0028caadcce9e34",
+    "archiveValid": true
+  },
+  {
+    "device": "round",
+    "api": 1,
+    "mode": "release",
+    "bytes": 475242,
+    "sha256": "a3f5b802f346ed0ba072b3d372ea41c20d394a034d3db3838650d442bb39c629",
+    "archiveValid": true
+  },
+  {
+    "device": "round",
+    "api": 2,
+    "mode": "debug",
+    "bytes": 647020,
+    "sha256": "03b26b46c2bd89885433a5140e349f07c6547894d582b29be045c149f5d6d14c",
+    "archiveValid": true
+  },
+  {
+    "device": "round",
+    "api": 2,
+    "mode": "release",
+    "bytes": 604216,
+    "sha256": "63c0f30489ccbebffe6a1bea57a8d5a31d8d228bc6f38eca8edce0e059c890cf",
+    "archiveValid": true
+  },
+  {
+    "device": "band10",
+    "api": 1,
+    "mode": "debug",
+    "bytes": 418436,
+    "sha256": "7d044b0bab18ccfc614874c41628baea86da11b7e527a3e706ae32fb95c90cf8",
+    "archiveValid": true
+  },
+  {
+    "device": "band10",
+    "api": 1,
+    "mode": "release",
+    "bytes": 375225,
+    "sha256": "e909b1adaf4f139cc9b801e53ec9b9dddc4569e27f24d509035b8ade015666c9",
+    "archiveValid": true
+  },
+  {
+    "device": "band10",
+    "api": 2,
+    "mode": "debug",
+    "bytes": 524526,
+    "sha256": "ba69e9d39dc3997cfd5eaa527fb1ad072d43b8af0b298bc93e577f189eeb1b20",
+    "archiveValid": true
+  },
+  {
+    "device": "band10",
+    "api": 2,
+    "mode": "release",
+    "bytes": 481077,
+    "sha256": "dd9ac56ba800d8ef797b87a92e35eb78f465d3efc8c8d5d6a52ab2e042956849",
+    "archiveValid": true
+  },
+  {
+    "device": "pro",
+    "api": 1,
+    "mode": "debug",
+    "bytes": 456911,
+    "sha256": "38df8f5b58201190ab5fde5d5cdfed73fab8f2755de753d084d6aea5ab09d735",
+    "archiveValid": true
+  },
+  {
+    "device": "pro",
+    "api": 1,
+    "mode": "release",
+    "bytes": 414484,
+    "sha256": "0d54641ea52868cdf0c6c8c9af948f6a80902d763a95ea429387d7b2e363aa0c",
+    "archiveValid": true
+  },
+  {
+    "device": "pro",
+    "api": 2,
+    "mode": "debug",
+    "bytes": 586623,
+    "sha256": "7a4592f0d99bab03270cf9bf772ace6888b2ae55f7951b5d092719d45d93b2eb",
+    "archiveValid": true
+  },
+  {
+    "device": "pro",
+    "api": 2,
+    "mode": "release",
+    "bytes": 543952,
+    "sha256": "f37017a27742113091368817c200b380e5fd3a24b2929464a837f6c70b082077",
+    "archiveValid": true
+  },
+  {
+    "device": "band9",
+    "api": 1,
+    "mode": "debug",
+    "bytes": 418555,
+    "sha256": "da6768082b04370ef6d6edfed071b04abf0b73c93c35488ae8bb42a5c9e3ac54",
+    "archiveValid": true
+  },
+  {
+    "device": "band9",
+    "api": 1,
+    "mode": "release",
+    "bytes": 375342,
+    "sha256": "f5c4e1fc4c53b7de692813766f774dc55d0dbe2807b883083d32e84c966f999d",
+    "archiveValid": true
+  },
+  {
+    "device": "band9",
+    "api": 2,
+    "mode": "debug",
+    "bytes": 523102,
+    "sha256": "29b602aeaec74768246263513210075bb6b08fb92758cca3fbe4c2bb91e34072",
+    "archiveValid": true
+  },
+  {
+    "device": "band9",
+    "api": 2,
+    "mode": "release",
+    "bytes": 479651,
+    "sha256": "9c22a296a07f6f5b04c6cde675fc5b078a19c7c618abc39478d6688893d568b1",
+    "archiveValid": true
+  }
+]

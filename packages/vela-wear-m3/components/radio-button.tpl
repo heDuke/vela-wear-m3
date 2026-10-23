@@ -1,0 +1,1 @@
+<div class="btn {{sel === @{index} ? 'bpc' : 'bt'}}" onclick="pick(@{index})"><text class="t-labelM c-onS grow">{{@{item}.label}}</text><div class="radio"><div class="radio-dot" style="{{@{item}.st}}"></div></div></div>

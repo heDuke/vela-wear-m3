@@ -1,0 +1,3 @@
+$[cfCss()]
+.cf-check-in{animation-name:checkIn;animation-duration:250ms;animation-delay:0ms;}
+@keyframes checkIn{0%{opacity:0;}100%{opacity:1;}}

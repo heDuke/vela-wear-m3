@@ -1,6 +1,10 @@
-      <!-- CompactButton "返回": the emulator has no back gesture; on a real device swipe-right also calls onBackPress -->
-      <list-item type="back" class="li-48">
-        <div class="cbtn bt {{pressId === 'back' ? 'p-in' : relId === 'back' ? 'p-out' : ''}}" ontouchstart="press('back')" ontouchend="release('back')" onclick="goBack">
-          <text class="t-labelM c-onS">返回</text>
+      <list-item type="back" class="li-nav" onswipe="onPageSwipe">
+<!-- #if !round -->
+        <div class="nav-back {{pressId === 'back' ? 'nav-in' : 'nav-out'}}" ontouchstart="press('back')" ontouchend="release('back')" onclick="goBack">
+          <image class="nav-arrow" src="/common/img/back_onSurface_24.png"></image>
         </div>
+<!-- #endif -->
+<!-- #if !pill -->
+        <text class="nav-title">{{pageTitle}}</text>
+<!-- #endif -->
       </list-item>

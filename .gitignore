@@ -12,3 +12,14 @@ sign/
 # 杂项
 .DS_Store
 *.log
+
+# Optional downloaded tool/font caches and local secrets
+.cache/
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.tgz

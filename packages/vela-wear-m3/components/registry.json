@@ -1,0 +1,151 @@
+{
+  "button": {
+    "template": "button.tpl",
+    "defaults": {
+      "id": "$item.id",
+      "label": "$item.label",
+      "variant": "$item.cls",
+      "ink": "$item.ink",
+      "icon": "$item.icon",
+      "onClick": "onButtonClick"
+    },
+    "styles": [
+      "buttons.css"
+    ]
+  },
+  "icon-button": {
+    "template": "icon-button.tpl",
+    "defaults": {
+      "id": "$item.id",
+      "variant": "$item.cls",
+      "icon": "$item.icon",
+      "label": "$item.name",
+      "onClick": "onButtonClick"
+    },
+    "styles": [
+      "buttons.css"
+    ]
+  },
+  "icon-button-morph": {
+    "template": "icon-button-morph.tpl",
+    "defaults": {},
+    "styles": [
+      "buttons.css"
+    ]
+  },
+  "button-morph": {
+    "template": "button-morph.tpl",
+    "defaults": {},
+    "styles": [
+      "buttons.css"
+    ]
+  },
+  "compact-button": {
+    "template": "compact-button.tpl",
+    "defaults": {},
+    "styles": [
+      "buttons.css"
+    ]
+  },
+  "switch-button": {
+    "template": "switch-button.tpl",
+    "defaults": {
+      "item": "$item",
+      "index": "$idx"
+    },
+    "styles": [
+      "toggles.css"
+    ]
+  },
+  "checkbox-button": {
+    "template": "checkbox-button.tpl",
+    "defaults": {},
+    "styles": [
+      "toggles.css"
+    ]
+  },
+  "radio-button": {
+    "template": "radio-button.tpl",
+    "defaults": {
+      "item": "$item",
+      "index": "$idx"
+    },
+    "styles": [
+      "toggles.css"
+    ]
+  },
+  "inline-slider": {
+    "template": "inline-slider.tpl",
+    "defaults": {},
+    "styles": [
+      "toggles.css"
+    ]
+  },
+  "progress-indicator": {
+    "template": "progress-indicator.tpl",
+    "defaults": {},
+    "styles": [
+      "motion.css"
+    ]
+  },
+  "card": {
+    "template": "card.tpl",
+    "defaults": {},
+    "styles": [
+      "cards.css"
+    ]
+  },
+  "stepper": {
+    "template": "shared/range.tpl",
+    "defaults": {},
+    "styles": []
+  },
+  "page-indicator": {
+    "template": "shared/pager.tpl",
+    "defaults": {},
+    "styles": []
+  },
+  "time-text": {
+    "template": "shared/timetext.tpl",
+    "defaults": {},
+    "styles": []
+  },
+  "scroll-indicator": {
+    "template": "shared/scrollind.tpl",
+    "defaults": {},
+    "styles": []
+  },
+  "confirmation": {
+    "template": "shared/confirm.tpl",
+    "defaults": {},
+    "styles": []
+  },
+  "alert-dialog": {
+    "template": "shared/dialog.tpl",
+    "defaults": {},
+    "styles": []
+  },
+  "transforming-list-item": {
+    "template": "transforming-list-item.tpl",
+    "defaults": {
+      "style": "$item.st"
+    },
+    "styles": [
+      "m3.css"
+    ]
+  },
+  "level-indicator": {
+    "template": "level-indicator.tpl",
+    "defaults": {},
+    "styles": [
+      "range.css"
+    ]
+  },
+  "edge-button": {
+    "template": "edge-button.tpl",
+    "defaults": {},
+    "styles": [
+      "edge.css"
+    ]
+  }
+}

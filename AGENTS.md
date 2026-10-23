@@ -142,3 +142,26 @@ box 上的环境（Linux x86_64；不随包提供，SDK ≈ 3.4 GB + AVD ≈ 1 G
 - ❌ 使用不支持的 API / CSS（canvas 动画、伪类、后代选择器、rpx、% 定位、block/grid、手环上的网络接口、prompt 对话框、vibrator.start…）。
 - ❌ 引入三方运行时库；❌ 为了"像 M3"使用 Vela 不支持的效果（阴影、模糊、CSS 渐变、可变字重）——用 PNG 或接受差异并记录。
 - ❌ 编造令牌数值；❌ 只在一种屏幕上验证就宣称完成；❌ 改 gallery 包名 `com.velam3.demo`。
+
+## 12. 2026-10-23 UI 工作更新
+
+- 当前用户范围是全页面 UI 与动效还原，组件库重构暂缓。
+- 当前返回按钮在列表顶部并随内容滚动；右滑完成后由显式 swipe 处理返回。旧 §8.7 的底部按钮是改前基线。
+- 默认 Button 反馈采用透明度；可选 Button / IconButton 形变采用独立演示。旧 §8.4 的统一 0.95 缩放不再代表全部组件。
+- 全量构建改用 npm run build:all，输出四设备 × API1/API2 × debug/release 共 16 包。
+- 新界面尚未完成本机模拟器与真机验收，Chrome 设计预览不能标注为模拟器实测。兼容近似与未达标项见 docs/UI-IMPLEMENTATION.md。
+
+## 13. 2026-10-24 用户确认的 UI 范围
+
+- 圆屏移除所有返回按钮和占位；普通页面居中标题，Stepper 独立全屏。非圆屏保留顶部返回，右滑与返回事件按覆盖层、演示、路由处理。
+- CompactButton 额外形变和图标状态过渡明确标注适配；band 九页均重排。
+- 列表高度从展开后的 UX + CSS 生成，禁止恢复手工高度表；截图脚本使用同一描述。
+- 保持固定参考提交与 basic/enhanced 入口；完整构建为 16 包，版本读取 manifest。
+- 所有预览必须标注来源；原生驱动限制、包体及性能未达标项见 docs/UI-REWORK-2026-10-24.md。
+
+## 14. 2026-10-24 发布与库拆分
+
+- 独立生成式库源码、组件模板、运行片段、令牌与资源位于 `packages/vela-wear-m3/`；`template/` 是非商业 Demo 的消费模板，`tools/gen.js` 通过包依赖调用库。不要复制库实现回 Demo。
+- 授权分区见 `LICENSE.md`：库 GPL-3.0-or-later（含指定 Demo 集成许可），Demo PolyForm Noncommercial；第三方声明必须随独立包和生成物保留。
+- 字形资源采用 OFL Noto Sans SC；不得上传 SDK 字体、私钥、下载缓存或凭据。
+- 生成与构建命令兼容，另运行 `npm run test:library` 验证 tarball 的独立消费。

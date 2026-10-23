@@ -1,0 +1,12 @@
+{
+  "library": "packed tarball",
+  "device": "band9",
+  "api": 1,
+  "modes": [
+    "debug",
+    "release"
+  ],
+  "usesLocalBaseline": false,
+  "usesOriginalSigningKey": false,
+  "passed": true
+}

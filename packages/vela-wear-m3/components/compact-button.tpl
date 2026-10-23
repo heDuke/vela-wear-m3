@@ -1,0 +1,1 @@
+<stack class="compact-hit" ontouchstart="press('compact')" ontouchend="release('compact')" ontouchmove="cancelPress" onclick="tap('添加')"><image class="compact-image" src="{{compactSrc}}"></image><div class="compact-label"><text class="t-labelM c-onPri">添加</text></div></stack>

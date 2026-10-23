@@ -1,0 +1,8 @@
+.clock-row{width:$[W]px;height:$[dp(pill?220:164)]px;align-items:center;justify-content:center;}
+.clock-col{width:$[CW]px;flex-direction:column;align-items:center;}
+.date-label{width:$[CW]px;font-size:$(12);line-height:$(16);color:$[C.onSurfaceVariant];text-align:center;}
+.clock-digit{width:$[CW]px;font-size:$[dp(pill?44:52)]px;line-height:$[dp(pill?50:58)]px;color:$[C.onSurface];font-weight:bold;text-align:center;}
+.seconds-label{width:$[CW]px;font-size:$(12);line-height:$(18);color:$[C.onSurfaceVariant];text-align:center;}
+.seconds-bar{width:$[dp(pill?100:160)]px;height:$(12);margin-top:$(8);}
+.clock-action{height:$(48);width:$[CW]px;justify-content:center;align-items:center;}
+.arc-row{width:$[W]px;height:$(64);justify-content:center;align-items:center;}

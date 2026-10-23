@@ -1,0 +1,1 @@
+<div class="ib {{@{variant}}}" style="{{feedback[@{id}] || {opacity:1}}}" ontouchstart="press(@{id})" ontouchend="release(@{id})" ontouchmove="cancelPress" onclick="@{onClick}"><image class="ic26" src="{{@{icon}}}"></image></div>
