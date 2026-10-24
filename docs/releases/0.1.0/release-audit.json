@@ -1,5 +1,32 @@
 {
-  "files": 3497,
-  "bytes": 21866151,
-  "findings": []
+  "head": "a8c3af9f52e5f405af7ca5877aa6c5d767c45b2f",
+  "trackedFiles": 3523,
+  "publicInputFiles": 3523,
+  "publicInputBytes": 24098097,
+  "reachableCommits": 2,
+  "reachableBlobs": 2047,
+  "historyTextScanLimitBytes": 4194304,
+  "maximumHistoricalBlob": {
+    "sha": "665d8ff47bd154f9fc6e1949c073eab53fedf519",
+    "file": "docs/design/v3/v3_overview_all_screens_all_devices@2x.png",
+    "bytes": 1898872
+  },
+  "ignoredRepresentativePaths": [
+    "out/example.rpk",
+    "node_modules/example/index.js",
+    "sign/private.pem",
+    ".cache/fonts/example.ttf",
+    ".env.local",
+    "src/manifest.json",
+    "build/app.js",
+    "dist/example.rpk"
+  ],
+  "npmPackage": {
+    "file": "out/library-consumer/vela-wear-m3-0.1.0.tgz",
+    "entries": 2804,
+    "bytes": 1330511
+  },
+  "largeFiles": [],
+  "findings": [],
+  "limits": "Scans local refs only and high-confidence credential formats, not proof that every possible secret is absent. Binary and >4MiB content is excluded from credential text matching; paths and sizes are checked."
 }

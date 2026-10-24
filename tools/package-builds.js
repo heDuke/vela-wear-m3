@@ -13,13 +13,16 @@ for(const row of rows){
 }
 if(expected.size)throw new Error('构建矩阵未完整：'+[...expected].join(', '));
 const readme=[
- 'Wear M3 Vela Demo '+version+' / com.velam3.demo',
+ 'Wear Material 3 Expressive Vela Demo '+version+' / com.velam3.demo',
  '四设备 × API 1 基础版、API 2 增强版 × debug/release，共 16 个 RPK。',
  'round 466×466；pro 336×480；band10 212×520；band9 192×490。',
- '一般侧载使用与设备、系统 API 等级匹配的 release 包。debug 包用于开发调试。',
+ 'API 等级与 debug/release 构建模式分别选择；安装取决于固件和安装工具，本次不作通用侧载推荐。',
+ 'release 是构建模式，不代表稳定性认证；API 2 为实验性配置。',
  'API 1：原生基础动画；对勾描画和连续圆角变形存在降级。',
  'API 2：image-animator 补足局部图形帧动画。',
  '本轮新 UI 尚未完成 Vela 模拟器及真机验收；设计预览不能代表设备实测。',
+ '组件库与 API：https://github.com/heDuke/vela-wear-m3/blob/v0.1.0/packages/vela-wear-m3/docs/API.md',
+ '对应源码、许可及构建提交见 GitHub 预发布的 RELEASE-PROVENANCE.json。',
  '所有 release 包均超过交接时 81 KB 的体积预算，具体值见 size-report.json。',
  'SHA256SUMS.txt 可核对安装包完整性。源码参考固定 androidx 提交 2f557dc1f1ec71edae73e2c16b0e446523c644b7。',
  '',

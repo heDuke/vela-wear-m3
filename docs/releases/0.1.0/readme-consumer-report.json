@@ -1,0 +1,28 @@
+{
+  "node": "v24.21.0",
+  "platform": "win32",
+  "toolkit": "2.0.5",
+  "jsc": "1.0.10",
+  "installation": "npm install in a new directory; final tarball reinstalled offline",
+  "installedFinalPackageFilesCompared": 2804,
+  "normalization": "npm normalizes executable shebang line endings; all other packaged bytes match exactly",
+  "usesParentNodeModules": false,
+  "configurations": [
+    {
+      "device": "round",
+      "api": 1,
+      "mode": "debug",
+      "bytes": 88242,
+      "sha256": "3be3986e8bbb8a10fe8bd40019fb4c0d301b9b1c273b326edcf31c69d8ab0a54",
+      "passed": true
+    },
+    {
+      "device": "band10",
+      "api": 2,
+      "mode": "debug",
+      "bytes": 56754,
+      "sha256": "fe4606488ff2c5bd201dba1f5443a2bdd928ea36e8a8fd1968af817fba4825d1",
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "renderer": "GitHub GFM API; local approximation of GitHub CSS",
+  "cases": [
+    {
+      "width": 1280,
+      "documentWidth": 1280,
+      "brokenImages": [],
+      "cover": "http://127.0.0.1:57963/docs/promotion/bandbbs/cover-light.png",
+      "colorScheme": "light"
+    },
+    {
+      "width": 1280,
+      "documentWidth": 1280,
+      "brokenImages": [],
+      "cover": "http://127.0.0.1:57963/docs/promotion/bandbbs/cover-dark.png",
+      "colorScheme": "dark"
+    },
+    {
+      "width": 390,
+      "documentWidth": 390,
+      "brokenImages": [],
+      "cover": "http://127.0.0.1:57963/docs/promotion/bandbbs/cover-light.png",
+      "colorScheme": "light"
+    },
+    {
+      "width": 390,
+      "documentWidth": 390,
+      "brokenImages": [],
+      "cover": "http://127.0.0.1:57963/docs/promotion/bandbbs/cover-dark.png",
+      "colorScheme": "dark"
+    }
+  ],
+  "passed": true
+}

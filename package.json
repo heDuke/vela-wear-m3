@@ -1,7 +1,7 @@
 {
   "name": "vela-wear-m3-demo",
   "version": "1.2.0",
-  "description": "Wear OS Material 3 组件 / 布局 / 动画演示（Xiaomi Vela JS 快应用）",
+  "description": "Wear Material 3 Expressive 组件、布局与动效演示（Xiaomi Vela JS 快应用）",
   "private": true,
   "scripts": {
     "gen:round": "node tools/gen.js round",

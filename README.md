@@ -1,63 +1,85 @@
 # vela-wear-m3
 
-面向小米 Vela JS 快应用的 Wear Material 3 **生成式组件库**，以及使用该库的非商业 Demo。
+**面向小米 Vela 的 Wear Material 3 Expressive 组件库。**
 
-![四设备设计预览，非模拟器实拍](docs/screenshots/ui-2026-10-24/comparison/all-devices-nine-pages.png)
+为圆屏、矩形屏和手环提供组件、布局与交互动效；随附一个使用该库的九页 Demo。
 
-支持 round（466×466）、Pro（336×480）、band10（212×520）、band9（192×490）；API 1 基础动画和 API 2 增强动画。组件库在构建时生成普通 UX、JavaScript 与局部图形资源，避免为每个控件增加自定义组件 ViewModel。
+[下载体验](https://github.com/heDuke/vela-wear-m3/releases/tag/v0.1.0) · [开始接入](packages/vela-wear-m3/docs/GETTING-STARTED.md) · [API 文档](packages/vela-wear-m3/docs/API.md) · [组件指南](packages/vela-wear-m3/docs/COMPONENTS.md)
 
-## 组件库与 Demo
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/promotion/bandbbs/cover-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/promotion/bandbbs/cover-light.png">
+  <img alt="vela-wear-m3：圆屏、Pro、band10 与 band9 的实际设计预览，非设备实拍" src="docs/promotion/bandbbs/cover-light.png" width="1280">
+</picture>
 
-| 内容 | 位置 | 授权 |
+## 让小屏幕更有表现力
+
+圆润的按钮、随按压变化的形状、沿屏幕边缘排布的时间与指示器，让操作和反馈保持联系。实现参考固定版本的 AndroidX Wear Compose Material3，并针对 Vela 的渲染能力和窄屏空间做适配。
+
+![按钮、图标与开关的设计预览](docs/promotion/bandbbs/components-controls.png)
+
+![Stepper、分页、Arc TimeText 与进度的设计预览](docs/promotion/bandbbs/components-display.png)
+
+| 圆屏局部动效 | 手环局部动效 |
+|---|---|
+| ![局部资源动效演示：圆屏](docs/promotion/bandbbs/round-motion.gif) | ![局部资源动效演示：手环](docs/promotion/bandbbs/band10-motion.gif) |
+
+以上为 **Chrome 设计预览与局部资源动效演示，不是模拟器或真机录屏**。GIF 的采样速度也不代表设备帧率。[查看四布局九页画廊与关键帧](docs/screenshots/ui-2026-10-24/README.md)。
+
+组件包括 Button、IconButton、CompactButton、Card、Switch、Checkbox、Radio、InlineSlider、Stepper、LevelIndicator、分页、TimeText、ScrollIndicator、列表变换、EdgeButton、进度、对话框与确认层。官方参考样式、可选变体和项目适配分别说明；CompactButton 额外形变等属于项目适配，不统称为官方默认效果。
+
+## 按屏幕组织，而不是整页缩小
+
+| 布局配置 | 画布 | 排布方式 |
 |---|---|---|
-| 可独立安装的库、组件模板、令牌、状态逻辑和资源生成工具 | [packages/vela-wear-m3](packages/vela-wear-m3) | GPL-3.0-or-later，含指定 Demo 集成许可 |
-| 九页 Gallery、演示数据、页面导航与展示素材 | `template/`、`docs/screenshots/` | PolyForm Noncommercial 1.0.0；具体第三方素材除外 |
-| 无非商业限制的最小接入示例 | [库内 examples/minimal](packages/vela-wear-m3/examples/minimal) | GPL-3.0-or-later |
+| `round` | 466 × 466 | 圆屏阅读区域、Arc 时间、贴边组件；无页面返回按钮 |
+| `pro` | 336 × 480 | 利用横向空间，顶部默认直排时间 |
+| `band10` | 212 × 520 | 单列内容、顶部居中返回、独立一行的滑块轨道 |
+| `band9` | 192 × 490 | 更窄的纵向排布；时间演示的小时与分钟上下排列 |
 
-库覆盖 Button / IconButton / CompactButton、Card、Switch / Checkbox / Radio、InlineSlider、Stepper / LevelIndicator、分页、TimeText / Arc、ScrollIndicator / TLC、EdgeButton、Confirmation / AlertDialog、圆环 / 弧形 / 分段 / 线性进度。官方默认、可选变体和项目适配变体分别标注。接口说明与接入契约见[组件库文档](packages/vela-wear-m3/README.md)。
+这些是**提供的布局配置，不是已验证兼容的机型清单**。当前四配置均完成生成与构建检查，最终原生运行与性能验收尚未完成。
 
-**组件库允许遵守 GPL 的免费或收费商用；Demo 不允许许可范围之外的商用。**GPL 用户无需强制向作者付费。需要闭源分发的，可洽谈作者有权授予的单独商业授权，见 [COMMERCIAL.md](COMMERCIAL.md)。Demo 属于源码可见的非商业软件，不将整个仓库统称为开源项目。
+| 动画配置 | 最低 API | 能力与边界 |
+|---|---|---|
+| `basic` | API 1 | 基础动画；连续形变、对勾描画和部分弧段变化降级 |
+| `enhanced` | API 2 | 用局部帧资源补充形变与图标变化；设备运行待验证 |
 
-原创部分 Copyright © 2026 heDuke。AndroidX、Material Symbols、字体和参考图保留各自许可，详见 [LICENSE.md](LICENSE.md)、[第三方声明](THIRD_PARTY_NOTICES.md)与[官方 Demo 集成许可](packages/vela-wear-m3/DEMO-EXCEPTION.md)。本项目不隶属 Google 或小米，不授予其商标或设计的独占权。
+## 下载或接入
 
-## 本地运行 Demo
+**想体验 Demo**：到 [v0.1.0 实验性预发布](https://github.com/heDuke/vela-wear-m3/releases/tag/v0.1.0)选择对应布局 ZIP。每份包含 API 1／API 2 的 debug／release 包及说明；API 等级和构建模式分别选择，安装仍取决于固件和安装工具。`release` 表示构建模式，不代表稳定性认证。
 
-Node.js 18+，建议 Node.js 20。首次构建需要安装开发依赖：
+**想开发自己的应用**：安装预发布中的独立库 tarball，从库内 GPL 最小示例开始。组件在构建时展开为普通 UX／JavaScript 和所需图片，不需要将 Gallery 页面复制进你的项目。尚未发布 npm registry。
+
+- [从空目录到首个 debug 包](packages/vela-wear-m3/docs/GETTING-STARTED.md)
+- [生成器与 CLI API](packages/vela-wear-m3/docs/API.md)
+- [组件绑定、状态与生命周期](packages/vela-wear-m3/docs/COMPONENTS.md)
+
+本地运行九页 Demo（Node.js 20 推荐，最低 18）：
 
 ```sh
+git clone https://github.com/heDuke/vela-wear-m3.git
+cd vela-wear-m3
 npm ci
-node tools/gen.js band10 --animation enhanced
-npm run build:all
-node tools/package-builds.js
+node tools/gen.js band10 --animation basic
+npm run build
 ```
 
-`npm run build:all` 生成四设备 × 两种 API × debug/release 共 16 包。也可传设备名缩小构建范围：`npm run build:all -- band10 band9`。manifest 是 Demo 版本的真值；包名保留 `com.velam3.demo`。`src/`、`out/` 是生成物，不能手工维护。
+全矩阵构建用 `npm run build:all`，打包用 `node tools/package-builds.js`。`src/`、`out/` 为生成物；日常构建使用随库提供的图片，不需要重新生成资源或下载字体。
 
-日常生成使用随库提供的 PNG，不需要下载字体或运行图形生成工具。仅重新生成资源需要 Python + Pillow、Chrome 与可选字体输入；独立字形改用 OFL Noto Sans SC。SDK、模拟器和字体二进制不随仓库分发。
+## 当前状态
 
-## 在自己的项目中使用库
+独立库已验证四布局 × 两种 API 的生成、tarball 消费、资源和许可完整性；源码检查覆盖关键交互与计时器清理。具体记录见[发布说明](docs/OPEN-SOURCE-RELEASE.md)。
 
-```sh
-npm pack ./packages/vela-wear-m3
-# 在其他项目中安装得到的 vela-wear-m3-0.1.0.tgz
-npm install -D ./vela-wear-m3-0.1.0.tgz
-npx vela-wear-m3 gen --input template --out src --device round --animation basic
-```
+**原生性能、API 2 动画和真机兼容性仍待验证，完整 Demo 包体仍超预算**。这次发布用于交流与测试，不以设计预览推断设备流畅度。原生环境问题及差异见 [UI 验收记录](docs/UI-ACCEPTANCE-2026-10-24.md)。
 
-初次接入可复制库内 GPL 最小示例的 template，避免复制受非商业限制的 Gallery 页面。生成代码含库模板和逻辑，分发时仍需履行 GPL 或适用商业许可义务。库包不依赖本仓库 Demo 的路径、演示数据或构建环境。
+## 许可与参与
 
-## 验证与限制
+| 内容 | 许可 |
+|---|---|
+| 独立组件库、生成器、库内最小示例 | GPL-3.0-or-later |
+| 九页 Demo 及其原创展示素材 | PolyForm Noncommercial 1.0.0 |
+| 第三方代码、图标、字体与参考资料 | 各自原许可 |
 
-```sh
-npm run test:library
-npm run verify
-npm run preview
-```
+**组件库允许遵守 GPL 的免费或收费商用；Demo 限于其许可允许的非商业用途**。需要闭源分发时可洽谈单独商业授权，GPL 用户无需强制向作者付费。详见[授权范围](LICENSE.md)、[商业授权说明](COMMERCIAL.md)与[第三方声明](THIRD_PARTY_NOTICES.md)。
 
-独立包测试覆盖 tarball 外部消费、四设备/两种 API、资源/许可完整性和输出目录保护。页面检查覆盖取消、反向切换、长按边界、分页、确认层竞态与计时器清理。CI 在 Linux 上运行源码和生成器检查；不宣称完成设备性能验证。
-
-**当前完整 Demo 包体仍超预算，原生 30fps 与 API 2 动画验收尚未完成。**模拟器存在振动驱动重启、资源读取和镜像挂载问题。Chrome 预览、局部资源演示与原生诊断分开标记；Pro/band9 只有设计预览及构建检查。详情见 [UI 验收记录](docs/UI-ACCEPTANCE-2026-10-24.md)与[发布记录](docs/OPEN-SOURCE-RELEASE.md)。
-
-没有将库重构视为性能目标已达成；没有不兼容机型的真机结论。原有交接与设计对照保存在 docs/，历史记录不是当前验收状态。
-
-欢迎按 [CONTRIBUTING.md](CONTRIBUTING.md)提交贡献；授权问题请联系[仓库维护者](https://github.com/heDuke/vela-wear-m3/issues)。
+原创部分 © 2026 heDuke。本项目不隶属 Google 或小米。欢迎通过 [Issues](https://github.com/heDuke/vela-wear-m3/issues)交流，贡献前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。

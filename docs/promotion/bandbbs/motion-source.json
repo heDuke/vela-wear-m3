@@ -1,0 +1,22 @@
+[
+  {
+    "device": "round",
+    "source": "round-asset-motion.mp4",
+    "duration": 5,
+    "samplingFps": 8,
+    "frames": 40,
+    "file": "round-motion.gif",
+    "bytes": 854381,
+    "kind": "resource motion, not device recording"
+  },
+  {
+    "device": "band10",
+    "source": "band10-asset-motion.mp4",
+    "duration": 5,
+    "samplingFps": 8,
+    "frames": 40,
+    "file": "band10-motion.gif",
+    "bytes": 822077,
+    "kind": "resource motion, not device recording"
+  }
+]

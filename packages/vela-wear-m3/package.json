@@ -1,7 +1,7 @@
 {
   "name": "vela-wear-m3",
   "version": "0.1.0",
-  "description": "Generative Wear Material 3 component library for Xiaomi Vela",
+  "description": "Wear Material 3 Expressive component library for Xiaomi Vela",
   "main": "index.js",
   "bin": {
     "vela-wear-m3": "bin/vela-wear-m3.js"

@@ -25,6 +25,14 @@ Demo 是源码可见、限制商业用途的软件，不能将本仓库整体宣
 - 当前设计预览在 docs/screenshots/ui-2026-10-24，明确标为 Chrome 设计预览，不用它证明 Vela 性能。
 - 发布前检查待提交文件与现有历史的敏感路径；缓存、依赖、SDK、私钥、字体本体与构建产物排除在 Git 之外。
 
-发布验证与包体记录已保存到 [releases/0.1.0](releases/0.1.0)，包括库包完整性、16 包校验、包体及改前基线数据。忽略的本地产物不视为 GitHub 仓库附件；从源码可重建，安装包与库 tarball在本地交付。
+发布验证与包体记录已保存到 [releases/0.1.0](releases/0.1.0)，包括库包完整性、16 包校验、包体及改前基线数据。初次源码发布时产物仅在本地交付；本轮社区测试发布增加 [v0.1.0 预发布下载](https://github.com/heDuke/vela-wear-m3/releases/tag/v0.1.0)，包含库 tarball、四设备 ZIP、完整 ZIP、对应源码与校验附件。
 
 原生性能验收、API 2 镜像运行和包体预算仍存在未达标项，详见 [UI 验收记录](UI-ACCEPTANCE-2026-10-24.md)。不将拆分或开源发布解释为这些目标已达成。
+
+## README、API 与社区发布更新
+
+项目定位统一为面向 Vela 的 Wear Material 3 Expressive 组件库。新增[从零接入](../packages/vela-wear-m3/docs/GETTING-STARTED.md)、[API 参考](../packages/vela-wear-m3/docs/API.md)、20 个模板的[组件用例](../packages/vela-wear-m3/docs/COMPONENTS.md)，并准备[米坛发布素材](promotion/bandbbs/README.md)。没有修改组件行为、公共接口、版本或许可政策。
+
+安装包复用原提交 a8c3af9 的构建，8 个生成源码摘要与 16 个安装包哈希均重新匹配。库 tarball 随文档更新重新打包，当前大小和完整性见 releases/0.1.0/library-package-report.json。最终公开附件以 Release 的 SHA256SUMS 与 RELEASE-PROVENANCE 为准；源码目录原有 SHA256SUMS 保留 16 个 RPK 的校验记录。
+
+文档渲染、独立安装构建与 Git 审计范围见[本轮验收](releases/0.1.0/DOCUMENTATION-VALIDATION.md)。该记录明确区分构建成功、设计预览与设备运行验证。

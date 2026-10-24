@@ -1,0 +1,32 @@
+[
+  {
+    "file": "vela-wear-m3-0.1.0.tgz",
+    "bytes": 1330511,
+    "sha256": "f54d1299ec57301aa4a2361ca28fdf22f19b24b4a07852a1392a06a4529a6da2"
+  },
+  {
+    "file": "velam3demo-1.2.0-round.zip",
+    "bytes": 1982669,
+    "sha256": "12f57d85f31086bc93cb652d332b47e09bcf248890afab40eeb7b4c14e1bf967"
+  },
+  {
+    "file": "velam3demo-1.2.0-pro.zip",
+    "bytes": 1773962,
+    "sha256": "b0499c91cbf676b34b2ea74d2f8133e2cc3ba5e276566e92cdce4f1e3ae0c2ef"
+  },
+  {
+    "file": "velam3demo-1.2.0-band10.zip",
+    "bytes": 1574492,
+    "sha256": "be747112a343dcb47198b3f19c9d4d1b190fd5ee8ece3bd23ae6ad0ef81603f3"
+  },
+  {
+    "file": "velam3demo-1.2.0-band9.zip",
+    "bytes": 1572130,
+    "sha256": "23c530b1fcf752c9f569c0403311ebf054ac5d398a6c46346c0f573ee59298e2"
+  },
+  {
+    "file": "velam3demo-1.2.0-all-devices.zip",
+    "bytes": 6897856,
+    "sha256": "4c5b185ef3a3c43b623262578834871cdb8e6c7cb515e6c351854938744aa1c4"
+  }
+]
