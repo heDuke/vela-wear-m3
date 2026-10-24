@@ -45,11 +45,13 @@ function context() {
   // ---- TimeText: curved = one <text> per glyph rotated about the screen/arc centre (v3 §8.3.2 item 5) ----
   ctx.ttCss = () => {
     const fs_ = dp(15), L = dp(18), col = C.timeText;
-    if (rect) return `.tt-rect{position:absolute;left:0px;top:${dp(2)}px;width:${W}px;height:${L}px;justify-content:center;}
+    // Wear M3: content fades out as it scrolls under TimeText — top fade PNG (tools/top-scrim.py), above list, below glyphs.
+    const [sw, sh] = png('top_scrim'), scrim = `.tt-scrim{position:absolute;left:0px;top:0px;width:${sw}px;height:${sh}px;}\n`;
+    if (rect) return scrim + `.tt-rect{position:absolute;left:0px;top:${dp(2)}px;width:${W}px;height:${L}px;justify-content:center;}
 .tt-str{font-size:${fs_}px;line-height:${L}px;height:${L}px;color:${col};font-weight:bold;text-align:center;padding-left:${dp(6)}px;padding-right:${dp(6)}px;}`;
     const cx = W / 2, cy = round ? H / 2 : W / 2, rTop = W / 2 - dp(2) - dp(2), rMid = rTop - L / 2;
     const adv = [0.62, 0.62, 0.32, 0.62, 0.62].map(a => Math.round(a * fs_)); const tot = adv.reduce((a, b) => a + b, 0);
-    let acc = -tot / 2, out = '';
+    let acc = -tot / 2, out = scrim;
     adv.forEach((a, i) => { const mid = acc + a / 2; acc += a; const deg = (mid / rMid * 180 / Math.PI).toFixed(2);
       out += `.tt${i}{position:absolute;left:${Math.round(cx - a / 2)}px;top:${Math.round(cy - rTop)}px;width:${a}px;height:${L}px;transform:rotate(${deg}deg);transform-origin:${a / 2}px ${rTop}px;}\n`; });
     return out + `.ttc{width:${Math.max(...adv)}px;height:${L}px;font-size:${fs_}px;line-height:${L}px;color:${col};font-weight:bold;text-align:center;}\n`;

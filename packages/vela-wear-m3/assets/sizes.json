@@ -45,10 +45,11 @@
   "spin_track.png": 858,
   "star_primary_24.png": 506,
   "sun_primary_24.png": 525,
+  "top_scrim.png": 509,
   "water_primary_18.png": 440,
   "wifi_onPrimaryC_24.png": 496,
   "wifi_onSurface_24.png": 496,
-  "_total_bytes": 24417
+  "_total_bytes": 24360
  },
  "pro": {
   "add_onPrimary_20.png": 242,
@@ -91,10 +92,11 @@
   "spin_track.png": 858,
   "star_primary_24.png": 506,
   "sun_primary_24.png": 525,
+  "top_scrim.png": 486,
   "water_primary_18.png": 440,
   "wifi_onPrimaryC_24.png": 496,
   "wifi_onSurface_24.png": 496,
-  "_total_bytes": 20167
+  "_total_bytes": 20653
  },
  "band10": {
   "add_onPrimary_20.png": 229,
@@ -137,10 +139,11 @@
   "spin_track.png": 748,
   "star_primary_24.png": 443,
   "sun_primary_24.png": 426,
+  "top_scrim.png": 456,
   "water_primary_18.png": 394,
   "wifi_onPrimaryC_24.png": 392,
   "wifi_onSurface_24.png": 392,
-  "_total_bytes": 18389
+  "_total_bytes": 18385
  },
  "band9": {
   "add_onPrimary_20.png": 229,
@@ -183,9 +186,10 @@
   "spin_track.png": 748,
   "star_primary_24.png": 443,
   "sun_primary_24.png": 426,
+  "top_scrim.png": 454,
   "water_primary_18.png": 394,
   "wifi_onPrimaryC_24.png": 392,
   "wifi_onSurface_24.png": 392,
-  "_total_bytes": 18355
+  "_total_bytes": 18362
  }
 }

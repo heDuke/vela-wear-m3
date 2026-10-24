@@ -5,6 +5,9 @@ for(const device of Object.keys(devices))for(const mode of ['basic','enhanced'])
  for(const name of ['index','buttons','cards','list','edge','time','toggles','dialogs','motion']){
   const m=load(name),s=m.source;ok(!/\$\[|\$\(\d/.test(s),name+' expanded');
   for(const hit of s.matchAll(/\/common\/img\/([\w]+)\.png/g))ok(fs.existsSync('src/common/img/'+hit[1]+'.png'),hit[1]);
+  {const tpl=s.match(/<template>([\s\S]*?)<\/template>/)[1],sc=tpl.indexOf('class="tt-scrim"'),time=Math.max(tpl.indexOf('class="tt-rect"'),tpl.indexOf('class="arc-g"',tpl.lastIndexOf('</list>')));
+   ok(sc>tpl.lastIndexOf('</list>')&&sc<time,name+' top fade above list, below TimeText');
+   const b=fs.readFileSync('src/common/img/top_scrim.png'),w=b.readUInt32BE(16),h=b.readUInt32BE(20);ok(w===devices[device].W&&h>0&&h<devices[device].H/6,name+' top fade spans width, top strip only');}
   if(mode==='basic')ok(!s.includes('<image-animator'),name+' API level');
   if(device==='round')ok(!/<div class="nav-back/.test(s),name+' circular navigation');
   m.state.onShow();m.advance(500);m.state.onHide();m.advance(5000);ok(m.timers.size===0,name+' lifecycle');

@@ -4,6 +4,6 @@ const candidates=[process.env.PYTHON,process.platform==='win32'?path.join(os.hom
 let python;
 for(const candidate of candidates){const p=spawnSync(candidate,['-c','import PIL'],{stdio:'ignore'});if(p.status===0){python=candidate;break}}
 if(!python)throw new Error('请安装含 Pillow 的 Python，或设置 PYTHON 为其可执行文件路径。');
-for(const script of process.argv.includes('--all')?['tools/quant.py','tools/ui-assets.py']:['tools/ui-assets.py']){
+for(const script of process.argv.includes('--all')?['tools/quant.py','tools/ui-assets.py','tools/top-scrim.py']:['tools/ui-assets.py','tools/top-scrim.py']){
  const r=spawnSync(python,[script],{stdio:'inherit'});if(r.status!==0)process.exit(r.status||1)
 }
