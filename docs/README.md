@@ -11,6 +11,6 @@
 | `design/v3/v3_overview_all_screens_all_devices@2x.png` | v3 设计：全部屏幕 × 全部设备总览 |
 | `design/v3/ref/` | androidx 截图测试 golden（`*_emulator.png`）、`SOURCES.md`（来源与许可）、`golden_names.txt` |
 | `ref/androidx-m3-src/*.kt` | androidx Wear Compose Material3 源码 / tokens 快照（Apache-2.0），令牌真值 |
-| `screenshots/` | 当前 demo 在 vela-watch-5.0 模拟器里的实拍截图（回归基线） |
+| `screenshots/` | 2026-10-23 Demo 的 vela-watch-5.0 模拟器截图（10-24 UI 重做前的基线）；当前界面的设计预览见 `screenshots/ui-2026-10-24/` |
 
 说明：SPEC / mapping 文中 `/workspace/xiaomi-vela-docs/...` 指上游 docs 仓库；`/workspace/vela-notes/preview/...` 指原 box 上的预览管线（只带了必要的图，见 `design/` 与 `tools/v3/`）。

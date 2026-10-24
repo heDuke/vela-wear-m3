@@ -1,6 +1,6 @@
 # 从空目录到第一个 Vela 包
 
-本教程使用组件库内的 **GPL 最小示例**，不复制非商业 Gallery。Node.js 最低 18，推荐 20；以下命令在 PowerShell、bash 中均可逐行执行。
+本教程使用组件库内的 **GPL 最小示例**，不复制非商业的九页 Demo。Node.js 最低 18，推荐 20；以下命令在 PowerShell、bash 中均可逐行执行。
 
 ## 1. 创建消费项目
 

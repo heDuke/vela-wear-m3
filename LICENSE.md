@@ -18,6 +18,6 @@ Demo 限于 PolyForm 允许的非商业用途。它是**源码可见的非商业
 
 组件库生成的代码包含库模板与运行逻辑，不能因为是生成物而忽略 GPL。官方 Demo 的组合分发依照 [DEMO 集成许可](packages/vela-wear-m3/DEMO-EXCEPTION.md)处理，接收者对组件库本身的 GPL 权利仍然保留。第三方条款不会因商业合同或 Demo 集成许可而消失。
 
-GPL 完整文本：[packages/vela-wear-m3/LICENSE](packages/vela-wear-m3/LICENSE)。许可证不授予 Google、Android、Wear OS、小米或其他权利人的商标使用权。本项目不隶属于这些组织，也不代表官方认证。
+GPL 完整文本：[packages/vela-wear-m3/LICENSE](packages/vela-wear-m3/LICENSE)。Material、Material 3、Wear OS、Android 与 Google 是 Google LLC 的商标，小米与 Vela 为其权利人的商标。许可证不授予这些或其他权利人的商标使用权；本项目与 Google、小米无隶属、赞助或认证关系。
 
 软件按原样提供，不提供保证；适用的免责声明以各许可证原文为准。

@@ -35,7 +35,11 @@ console.log(result.device, result.images)
 
 AndroidX 参考固定在提交 `2f557dc1f1ec71edae73e2c16b0e446523c644b7`。官方参考样式、可选变体和项目适配变体见组件指南。本库不代表 Google 或小米官方实现，也不承诺完整复现所有 Wear OS 能力。
 
-API 1 存在形变、对勾和弧段动画降级；API 2 使用 `image-animator`。四布局生成与构建已检查，最终原生性能与 API 2 动画验收仍未完成；完整 Gallery 包体仍超预算。文档展示不作为设备性能证明。
+API 1 存在形变、对勾和弧段动画降级；API 2 使用 `image-animator`。四布局生成与构建已检查，最终原生性能与 API 2 动画验收仍未完成；完整九页 Demo 包体仍超预算。文档展示不作为设备性能证明。
+
+## AI 开发工具使用声明
+
+本库在开发中大量使用 AI 开发工具：AI 助手 Grok Bot（代码、资源管线、文档与对照 AndroidX 源码的设计比对）和 coding agent Codex cloud（按仓库工作约定执行开发与构建任务）。维护者 heDuke 确定方向并在每项改动推送前审阅批准，项目内容的责任由维护者承担。视觉与动效参考来自开源 AndroidX 代码（Apache-2.0）；文档预览默认为 Chrome 设计渲染，除文档明确记录的模拟器检查外不声明真机测试结果。详见[项目说明](https://github.com/heDuke/vela-wear-m3#ai-开发工具使用声明)。
 
 ## 资源与许可
 
@@ -43,4 +47,6 @@ API 1 存在形变、对勾和弧段动画降级；API 2 使用 `image-animator`
 
 原创部分 © 2026 heDuke，采用 **GPL-3.0-or-later**，包括库内最小示例。生成代码包含库实现，分发时仍须履行适用许可义务。遵守 GPL 可免费或收费商用；闭源商业授权需另行协商。
 
-九页 Gallery 采用单独的非商业许可，不属于这个独立包。指定组合的额外权限见[本项目 Demo 集成许可](DEMO-EXCEPTION.md)；第三方权利和许可不变，详见 [LICENSE](LICENSE) 与[第三方声明](THIRD_PARTY_NOTICES.md)。
+九页 Demo 采用单独的非商业许可，不属于这个独立包。指定组合的额外权限见[本项目 Demo 集成许可](DEMO-EXCEPTION.md)；第三方权利和许可不变，详见 [LICENSE](LICENSE) 与[第三方声明](THIRD_PARTY_NOTICES.md)。
+
+Material、Material 3、Wear OS、Android 与 Google 是 Google LLC 的商标，小米与 Vela 为其权利人的商标；本库与 Google、小米无隶属、赞助或认证关系。

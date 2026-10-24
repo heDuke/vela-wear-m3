@@ -16,4 +16,4 @@ Apache 与字体许可副本在 `packages/vela-wear-m3/licenses/`，CC-BY-4.0 �
 
 开发依赖由 npm 安装，其许可证依各自包声明；`node_modules/`、模拟器、SDK、下载字体缓存与 ffmpeg 二进制不在本仓库发行范围。它们不作为组件库运行时依赖捆绑。
 
-Material 3、Wear OS、Android、Google、MiSans、小米等名称用于说明兼容性和参考来源，不表示官方关联、赞助或认证；未授予商标权。
+Material、Material 3、Wear OS、Android 与 Google 是 Google LLC 的商标，小米与 Vela 为其权利人的商标；MiSans 等其他名称归各自权利人所有。这些名称仅用于说明兼容性和参考来源，本项目与 Google、小米无隶属、赞助或认证关系；未授予商标权。

@@ -6,7 +6,7 @@
     "samplingFps": 8,
     "frames": 40,
     "file": "round-motion.gif",
-    "bytes": 854381,
+    "bytes": 807787,
     "kind": "resource motion, not device recording"
   },
   {
@@ -16,7 +16,7 @@
     "samplingFps": 8,
     "frames": 40,
     "file": "band10-motion.gif",
-    "bytes": 822077,
+    "bytes": 790872,
     "kind": "resource motion, not device recording"
   }
 ]
