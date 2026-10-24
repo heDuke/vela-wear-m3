@@ -17,7 +17,11 @@ function request(url,{method='GET',body,auth=true,accept='application/vnd.github
 }
 const api=s=>'/repos/'+repo+s;
 function files(){const manifest=require('./project-manifest')();return [path.join('out/library-consumer','vela-wear-m3-'+version+'.tgz'),...['round','pro','band10','band9','all-devices'].map(d=>'out/velam3demo-'+manifest.versionName+'-'+d+'.zip'),'out/community-release/SHA256SUMS.txt','out/community-release/RELEASE-PROVENANCE.json','out/community-release/release-audit.json','out/community-release/artifact-validation.json']}
-async function release(){const r=await request(api('/releases/tags/'+tag));return r&&r.json()}
+async function release(){
+ const r=await request(api('/releases/tags/'+tag));if(r)return r.json();
+ // GitHub's tag endpoint can omit drafts; owners can retrieve them from the list.
+ const list=await request(api('/releases?per_page=100'));return list?.json().find(x=>x.tag_name===tag)||null;
+}
 async function main(){const command=process.argv[2];
  if(command==='inspect'){const [r,l,t]=await Promise.all([request(api('')),request(api('/releases')),request(api('/git/ref/tags/'+tag))]);console.log(JSON.stringify({repository:r?.json().full_name,private:r?.json().private,releases:l?.json().map(x=>({tag:x.tag_name,draft:x.draft,prerelease:x.prerelease,url:x.html_url})),tag:t?.json().object}));return}
  if(command==='markdown'){const r=await request('/markdown',{method:'POST',body:{text:fs.readFileSync('README.md','utf8'),mode:'gfm',context:repo}});fs.writeFileSync('out/readme-rendered.html',r.data);console.log('GitHub GFM renderer saved README HTML');return}
