@@ -5,4 +5,4 @@
 .seconds-label{width:$[CW]px;font-size:$(12);line-height:$(18);color:$[C.onSurfaceVariant];text-align:center;}
 .seconds-bar{width:$[dp(pill?100:160)]px;height:$(12);margin-top:$(8);}
 .clock-action{height:$(48);width:$[CW]px;justify-content:center;align-items:center;}
-.arc-row{width:$[W]px;height:$(64);justify-content:center;align-items:center;}
+.arc-row{width:$[W]px;height:$[ARC_H]px;justify-content:center;align-items:center;}

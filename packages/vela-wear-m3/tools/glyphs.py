@@ -14,6 +14,11 @@ def generate(folder,px):
  meta={'size':px(15),'ascent':asc,'descent':desc,'adv':{ch:ft.getlength(ch) for ch in chars},'glyphs':{},'family':'Noto Sans SC','sourceLicense':'OFL-1.1'}
  for index,ch in enumerate(chars):
   fw=math.ceil(ft.getlength(ch))+4;fh=asc+desc;im=Image.new('RGBA',(fw,fh));ImageDraw.Draw(im).text((2,asc),ch,font=ft,fill='#C6C6C6',anchor='ls')
+  # Noto SC middot advance is near-fullwidth; Wear M3 separator needs a narrow · (ink + small pad).
+  if ch=='·':
+   alpha=im.split()[-1];bb=alpha.getbbox()
+   if bb:
+    pad=2;left=max(0,bb[0]-pad);right=min(fw,bb[2]+pad);im=im.crop((left,0,right,fh));meta['adv'][ch]=max(1,im.size[0]-4)
   im.quantize(colors=16,method=Image.Quantize.FASTOCTREE).save(str(pathlib.Path(folder)/('font_'+str(index)+'.png')),optimize=True);meta['glyphs'][ch]='/common/img/font_'+str(index)+'.png'
  return meta
 if __name__=='__main__':

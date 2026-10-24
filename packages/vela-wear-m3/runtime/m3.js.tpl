@@ -90,14 +90,17 @@ export function progressImage(images, value) {
 }
 
 const FONT=$[fontJs()]
+// Wear M3 TimeText: MaxSweepAngle 70°, edgePadding 2dp; round cy=H/2, pill top cy=W/2 (origin uses width/2).
+// Separator · uses ArcPaddingValues(angular=4dp) each side (=8dp total). Noto SC · advance is near-fullwidth — clamp to digit scale.
 export function timeGlyphs(time,status=false,width=DEV.W){
  const base=width/2-$[dp(2)],radius=base-FONT.ascent,limit=radius*70*Math.PI/180
- const measure=text=>Array.from(text).reduce((n,ch)=>n+FONT.adv[ch]+$[dp(.6)],0)
+ const advOf=ch=>ch==='·'?Math.min(FONT.adv[ch],Math.max(FONT.adv['0']*0.45,FONT.size*0.35)):FONT.adv[ch]
+ const measure=text=>Array.from(text).reduce((n,ch)=>n+advOf(ch)+$[dp(.6)],0)
  let label=status?'同步':''
  while(label&&measure(label)+measure('·')+$[dp(8)]+measure(time)>limit)label=label.slice(0,-1)
  const prefix=label?label+'·':''
- const chars=Array.from(prefix+time),adv=chars.map(ch=>FONT.adv[ch]+$[dp(.6)])
+ const chars=Array.from(prefix+time),adv=chars.map(ch=>advOf(ch)+$[dp(.6)])
  if(label){const dot=prefix.indexOf('·');adv[dot]+=$[dp(8)]}
  let x=-adv.reduce((a,b)=>a+b,0)/2
- return chars.map((ch,i)=>{const a=adv[i],angle=(x+a/2)/Math.max(1,radius)*180/Math.PI;x+=a;const w=Math.ceil(FONT.adv[ch])+4;return {id:i,src:FONT.glyphs[ch],st:{left:Math.round(width/2-w/2)+'px',top:'$[dp(2)]px',width:w+'px',height:(FONT.ascent+FONT.descent)+'px',transform:JSON.stringify({rotate:angle+'deg'}),transformOrigin:w/2+'px '+base+'px'}}})
+ return chars.map((ch,i)=>{const a=adv[i],angle=(x+a/2)/Math.max(1,radius)*180/Math.PI;x+=a;const w=Math.ceil(advOf(ch))+4;return {id:i,src:FONT.glyphs[ch],st:{left:Math.round(width/2-w/2)+'px',top:'$[dp(2)]px',width:w+'px',height:(FONT.ascent+FONT.descent)+'px',transform:JSON.stringify({rotate:angle+'deg'}),transformOrigin:w/2+'px '+base+'px'}}})
 }
