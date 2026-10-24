@@ -34,7 +34,7 @@ Stepper / LevelIndicator 可以独立使用 range.head.js、range.data.js、rang
 
 分页引入 pager.head.js、pager.data.js、pager.methods.js、pager.css，使用 page-indicator 模板。pageIndex 从 0 起，pageCount 至少 1；横纵模式由 demoMode 的 hpager / vpager 指定，调用 updatePages 刷新。修改 pageCount 后需夹紧索引并重置 pageWindow。页面隐藏清理 pagerTimer；分页触摸区自行消费返回方向手势，拖动超过 25% 才提交，首末页夹紧。
 
-TimeText 使用公共时间状态，默认分钟边界更新；用 onTick 扩展秒级展示时需用 clockSecondsVisible 限制可见范围。Pro 默认直排，round / band 使用 Arc。独立 Arc 可调用生成上下文的 arcTemplate(false/true)，绑定 clockGlyphs / statusGlyphs。字形度量来自随包资产记录，不可替换 PNG 却保留旧度量。
+TimeText 使用公共时间状态，默认分钟边界更新；用 onTick 扩展秒级展示时需用 clockSecondsVisible 限制可见范围。Pro 默认直排，round / band 使用 Arc。独立 Arc 可调用生成上下文的 arcTemplate(false/true)，绑定 clockGlyphs / statusGlyphs。字形度量来自随包资产记录，不可替换 PNG 却保留旧度量。Arc 遵守 Wear M3 MaxSweepAngle 70° 与 edgePadding 2dp；状态+分隔符+时间放不下时整段丢弃状态（保留时间），不做逐字截断。Gallery 中 `.arc-row` / `.arc-panel` 为短行内高度（字形行高+边距），弧字绝对定位且 transformOrigin 仍指向表盘圆心；全页顶栏 TimeText 叠层不受影响。
 
 ScrollIndicator 使用 siVisible / siSt / siSrc，由 setLayout 和共享滚动调度器更新；不可滚动时隐藏。TLC 列表消费项 items 需有 id / st，tlcBase 在派生布局中自动定位 items 的重复行，tlcOn 控制启停。每项外壳使用 transforming-list-item，参数 style 为当前项样式表达式，content 为可信 Vela 子树。
 

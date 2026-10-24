@@ -96,8 +96,12 @@ export function timeGlyphs(time,status=false,width=DEV.W){
  const base=width/2-$[dp(2)],radius=base-FONT.ascent,limit=radius*70*Math.PI/180
  const advOf=ch=>ch==='·'?Math.min(FONT.adv[ch],Math.max(FONT.adv['0']*0.45,FONT.size*0.35)):FONT.adv[ch]
  const measure=text=>Array.from(text).reduce((n,ch)=>n+advOf(ch)+$[dp(.6)],0)
- let label=status?'同步':''
- while(label&&measure(label)+measure('·')+$[dp(8)]+measure(time)>limit)label=label.slice(0,-1)
+ // Under MaxSweepAngle 70°: keep time; if status+separator+time does not fit, drop status (and ·) entirely — no partial/garbled status.
+ let label=''
+ if(status){
+  const withStatus=measure('同步')+measure('·')+$[dp(8)]+measure(time)
+  label=withStatus<=limit?'同步':''
+ }
  const prefix=label?label+'·':''
  const chars=Array.from(prefix+time),adv=chars.map(ch=>advOf(ch)+$[dp(.6)])
  if(label){const dot=prefix.indexOf('·');adv[dot]+=$[dp(8)]}
