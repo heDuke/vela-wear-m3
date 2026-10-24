@@ -8,6 +8,6 @@
 <!-- #if round -->
       <image class="cf-txt" if="{{cfTextOn}}" src="/common/img/curved_saved.png"></image>
 <!-- #else -->
-      <div class="cf-txt"><text class="t-titleM c-onS">已保存</text></div>
+      <div class="cf-txt" if="{{cfTextOn}}"><text class="t-titleM c-onS">已保存</text></div>
 <!-- #endif -->
     </div>

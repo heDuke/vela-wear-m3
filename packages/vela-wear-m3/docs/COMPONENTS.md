@@ -44,7 +44,7 @@ ScrollIndicator 使用 siVisible / siSt / siSrc，由 setLayout 和共享滚动�
 
 alert-dialog 默认消费 dlgOn / dlgOut / pressId，并调用 dlgCancel / dlgOk；消费端负责打开和关闭逻辑。模板初始文案是示例文字，使用方可通过 componentSource 的结果组合或提供自己的标题/正文模板；其结构、几何和触控区来自库。
 
-confirmation 使用 cfOn / cfOut / cfBlobOn / cfIconOn / cfTextOn，模块变量 cfTimer / confirmEpoch；增强版还需 checkFrames。引入 confirm.js、confirm.css、overlay.css，调用 showConfirm / hideConfirm / clearConfirm。默认 4 秒结束；关闭、重入和隐藏必须通过这些入口，不能另建不带代次检查的延迟回调。
+confirmation 使用 cfOn / cfOut / cfBlobOn / cfIconOn / cfTextOn，模块变量 cfTimer / confirmEpoch；增强版还需 checkFrames。引入 confirm.js、confirm.css、overlay.css，调用 showConfirm / hideConfirm / clearConfirm。默认 4 秒结束；时序对齐 Wear M3：弹层 200ms 进入 opacity 0→1、scale 1.25→1，200ms 退出 opacity 1→0、scale 1→1.25（androidx 弹簧采样为线性关键帧，`ui-context.js` ovCss，与 AlertDialog 共用）；100ms 同时挂载拉伸容器（400ms、20ms 采样弹簧）、对勾与文字（200ms 淡入、无 CSS 延迟，不依赖 fill-mode）；退出时对勾保留末帧随弹层淡出。关闭、重入和隐藏必须通过这些入口，不能另建不带代次检查的延迟回调。
 
 edge-button 使用 ebSt、通用按压方法与 showConfirm 回调。应用不需要确认层时可绑定自己的事件处理；保持边缘几何与底部列表留白规则。任何同页组合须在消费方合并重名扩展钩子，0.1 不提供自动 mixin 冲突合并。
 

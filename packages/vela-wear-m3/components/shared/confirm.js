@@ -8,8 +8,7 @@
     this.cfIconOn = false
     this.cfOn = true
     this.cfBlobOn=false;this.cfTextOn=false
-    this.later(() => { if(epoch!==confirmEpoch||!this.cfOn||this.cfOut)return;this.cfBlobOn=true;this.cfIconOn=true;this.later(()=>{if(epoch!==confirmEpoch)return;try{const el=this.$element('checkAnim');if(el)el.start()}catch(e){}},0) }, 100)
-    this.later(()=>{if(epoch===confirmEpoch&&this.cfOn&&!this.cfOut)this.cfTextOn=true},150)
+    this.later(() => { if(epoch!==confirmEpoch||!this.cfOn||this.cfOut)return;this.cfBlobOn=true;this.cfIconOn=true;this.cfTextOn=true;this.later(()=>{if(epoch!==confirmEpoch)return;try{const el=this.$element('checkAnim');if(el)el.start()}catch(e){}},0) }, 100)
     if (cfTimer) clearTimeout(cfTimer)
     cfTimer = setTimeout(() => { cfTimer = null; this.hideConfirm() }, 4000)
   },
@@ -18,9 +17,8 @@
     if (cfTimer) clearTimeout(cfTimer)
     cfTimer = null
     const epoch=++confirmEpoch
-    this.cfIconOn=false
+    // Icon keeps its last frame and fades/scales out with the overlay (Wear M3 Dialog hide).
     this.cfOut = true
-    this.stopAnimator('checkAnim')
     this.later(() => { if(epoch!==confirmEpoch)return;this.cfOn = false; this.cfOut = false; this.cfIconOn = false }, 200)
   },
   clearConfirm() {

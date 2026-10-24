@@ -84,9 +84,9 @@ async function main(){
  if(d.shape==='circle')main.style.borderRadius='50%';else if(d.shape==='pill')main.style.borderRadius=d.W/2+'px';else main.style.borderRadius='24px';
  main.append(node(document.getElementById('ux').content.firstElementChild));
  for(const el of document.querySelectorAll('*')){
- if(el.classList.contains('cf-blob')){for(const anim of el.getAnimations()){anim.currentTime=Math.max(0,elapsed-100);anim.pause()}}
- else if(el.classList.contains('cf-txt')){for(const anim of el.getAnimations()){anim.currentTime=Math.max(0,elapsed-150);anim.pause()}}
- else if(el.classList.contains('ovl-out')){for(const anim of el.getAnimations()){anim.currentTime=Math.max(0,elapsed-4000);anim.pause()}}
+ // Seek each CSS animation to its mount time on the real controller timeline (overlay enters at 0, blob/icon/text at 100ms, exit at 4000ms).
+ const mount=el.classList.contains('ovl-in')?0:el.classList.contains('ovl-out')?4000:el.classList.contains('cf-blob')||el.classList.contains('cf-txt')||el.classList.contains('cf-check-in')?100:null;
+ if(mount!==null){for(const anim of el.getAnimations()){anim.pause();anim.currentTime=Math.max(0,elapsed-mount)}}
  else for(const p of ['animation','transition'])el.style[p]='none';
  }
  if(targetSelector){const hit=targetSelector.startsWith('switch-state:')?document.querySelectorAll('.switch-row')[+targetSelector.split(':')[1]]:document.querySelector(targetSelector);if(hit){const list=document.querySelector('list');list.scrollTop=hit.getBoundingClientRect().top-list.getBoundingClientRect().top+list.scrollTop-(d.H-hit.offsetHeight)/2;}}
