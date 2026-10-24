@@ -140,6 +140,20 @@ npx vela-wear-m3 gen --input template --out src --device band10 --animation enha
 
 完整基础结构见库内 `examples/minimal/template/`。生成器自动从实际列表结构提取布局，业务页调用 `setLayout([])`；不要另建高度表。
 
-基础控制器提供 `press(id)`、`release(id)`、`cancelPress()`、`animateControl(id,target,initial,stiffness)`、`hold(id,callback)`、`later(fn,ms)`、返回处理及时钟／滚动调度。它们依赖 `base_head.js`、`base_data.js`、`base.js`，不是可脱离页面任意实例化的服务。
+基础控制器提供 `press(id)`、`release(id)`、`cancelPress()`、`animateControl(id,target,initial,stiffness)`、`hold(id,callback,every=120)`、`later(fn,ms)`、返回处理及时钟／滚动调度。可选扩展点 `pressSpring(id)`（返回 `[kIn,kOut]` 时该 id 用临界阻尼精确解）与 `pressStyle(id,p)`（返回按压进度 p∈[0,1] 对应的样式，代替默认透明度反馈）。它们依赖 `base_head.js`、`base_data.js`、`base.js`，不是可脱离页面任意实例化的服务。
 
-`pageShow`、`pageHide`、`pageDestroy`、`onMotionFrame` 等名称是组合扩展点。多个控制器同时使用时须人工合并调用，不要让后一个同名方法覆盖前一个。基础 `onHide`／`onDestroy` 必须保留清理路径；具体组合、状态字段和组件用例见[组件指南](COMPONENTS.md)。
+`pageShow`、`pageHide`、`pageDestroy`、`onMotionFrame`、`stopLevel` 等名称是组合扩展点（`stopLevel` 由 range 组合提供，基础 `cleanup()` 会调用它）。多个控制器同时使用时须人工合并调用，不要让后一个同名方法覆盖前一个。基础 `onHide`／`onDestroy` 必须保留清理路径；具体组合、状态字段和组件用例见[组件指南](COMPONENTS.md)。
+
+## Stepper / LevelIndicator（range 组合）
+
+| 名称 | 说明 |
+|---|---|
+| `updateRange(snap)` | 让层级指示器跟随 `stepValue`（0–10）与 `stepEnabled`。`snap` 为真或首次显示时直接到位；目标未变只重绘；否则 tween 500 ms、CubicBezier(0,0,0,1)，从当前动画位置重新开始（不继承速度），33 ms 定时器。 |
+| `stopLevel()` | 停止层级动画定时器；`cleanup()` 自动调用。 |
+| `rangePress(id)` / `rangeRelease(id)` / `stepClick(id)` | `id` 为 `'plus'` / `'minus'`。按下后 500 ms 开始每 60 ms 重复；发生重复后抬手的 click 不再步进。 |
+| `stepUp()` / `stepDown()` / `toggleStepEnabled()` | 单步（越界忽略）与禁用切换。 |
+| `levelFill` | 当前绘制的填充比例 0–1（只读，供调试 / 测试）。 |
+| `lvIndSrc` / `lvTrkSrc` / `lvInd` / `lvTrk` / `lvDotInd` / `lvDotTrk` | `level-indicator` 片段绑定的图片与样式；由 `paintLevel(f)` 写入，业务不要直接改。 |
+
+几何（`animations.json` → `<device>.level`）：`cx`/`cy` 屏幕中心，`r` 弧半径 px，`o` 描边半宽 px，`start`/`sweep`/`gap` 为角度（ScrollIndicator.kt：sweep = 2·asin(h/2/Ru) + gap，gap = 2·asin(4.5 dp/Ru)，Ru = W/2−2 dp），`ind`/`trk`/`indDis`/`trkDis`/`maskLow`/`maskHigh` 为 `{src,x,y,w,h}`。
+

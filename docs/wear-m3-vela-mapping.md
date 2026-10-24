@@ -107,7 +107,7 @@
 | ConfirmationDialog | 默认停留 **4000ms**；图标 52（小号 36）；线性图标容器 80；成功图标初始角度 −45° | `SRC/ConfirmationDialog.kt` |
 | Dialog 进出场 | 背景缩放 0.85↔1；使用 motionScheme 的 effects spring | `SRC/Dialog.kt` |
 | Picker | 渐变占比 GradientRatio 0.33（上下边缘渐隐） | `SRC/Picker.kt` |
-| Stepper | 按钮 60×48；按钮权重 0.35，内容权重 0.3；垂直间距 8；图标 24 | `SRC/Stepper.kt` |
+| Stepper | fillMaxSize；按钮 60×48，按下形状 CornerFull→shapes.small（8）；按钮权重 0.35，内容权重 0.3；垂直间距 8；按钮区内边距 屏高×5.2%；图标 24；按下形状 `fastSpatialSpec().faster(200f)`（刚度 1400×9=12600，ζ=1），抬起 slowSpatial 260；按下底色 primaryContainer + 10% primary 涟漪层；长按 `repeatableClickable` 500ms 后每 60ms；触感 SegmentFrequentTick / 端点 GestureEnd；StepperLevelIndicator 用 ScrollIndicator 的弧：半径 W/2−2−3、高 2·sin36°·r、间隙 3、tween(500, cubic-bezier(0,0,0,1)) | `SRC/Stepper.kt`、`SRC/StepperDefaults`、`SRC/ScrollIndicator.kt` |
 | Slider | 高 52；控制按钮 48；进度条 12（未选部分 4）；分段间隔 4；容器 surfaceContainer，圆角 large；已选部分 primary | `SRC/Slider.kt`、`SRC/tokens/SliderTokens.kt` |
 | SwitchButton | 最小高度 52；内边距 14 / 8；开关控件 32×24（内高 22），轨道描边 2；滑块半径：关 6、开 9；开时容器 primaryContainer，关时 surfaceContainer；开时轨道 primary，关时轨道 surfaceContainer、描边 outline；滑块 outline→primaryContainer，对勾 primary（两段 2dp 圆头，按 1−(1−p)³ 缩放）；位置 fastEffectsSpec，颜色 slowEffectsSpec | `SRC/SwitchButton.kt`（第 2037–2047 行）、`SRC/tokens/SwitchButtonTokens.kt` |
 
@@ -180,7 +180,7 @@
 | AlertDialog | ✅ / 🟡 | 用 stack 全屏遮罩加圆形按钮（63×54 / 60）；**prompt 只有 showToast，没有原生对话框**，只能自己画；背景从 1 缩到 0.85 用 keyframes 的 scale 实现 |
 | ConfirmationDialog | 🟡 | 用自己画的覆盖层加 setTimeout 自动关闭；成功图标从 −45° 旋入用 keyframes rotate；M3 的弧形文字做不到，改用直排文字 |
 | Picker（时间 / 数字） | 🟡 | 原生 `picker type=time / text` 可以改 selected-color、font-size，但没有渐隐遮罩，也没有 numeral 字体；自绘版用 `scroll` 加 scroll-snap（3+），渐隐同样只能用 PNG |
-| Stepper | ✅ | 两个 60×48 按钮夹一个数字 |
+| Stepper | ✅ / 🟡 | 全屏、无返回头部（右滑返回），0.35/0.3/0.35 三段，两个 60×48 按钮夹数字和标签；按下底色 #4D3D76→#5D4D84 与形状 24→8dp 用临界阻尼精确解（12600 / 260）按 33ms 定时器采样，首帧在按下时；长按 500ms 后每 60ms；禁用时按钮、数值、标签都为 #5D5A61 系。层级指示器：两张整弧 PNG 绕屏幕中心 `rotate` + 两张静态黑色遮罩 + 两个圆点 div（扫角 ≤ 间隙时 0→3dp、alpha 0→1），所有设备都在屏宽圆上；tween 500ms 每次变化从当前位置重启。**无法消除的差异**：33ms 定时器而非 60Hz（vela-watch-5.0 模拟器实测 avg 66–77ms／tick，旋转比换图快：换图对照组 91–100ms）；没有涟漪扩散，只有颜色淡入；触感用 `vibrator` short 近似，没有 SegmentFrequentTick / GestureEnd 区分；遮罩假设黑底；模拟器上长按重复实测约 70–78ms（定时器被渲染拖慢）【真机未验证】 |
 | Slider（M3 分段条） | ✅（自绘） / 🟡（原生） | 自绘：52dp 高的 div 容器，两侧放 −/+ 按钮，中间用 div 画分段条；原生 slider 只能改颜色，属于近似 |
 | SwitchButton | ✅（自绘） | 52dp 胶囊按钮，右侧 32×24 开关为按方向/时间索引的 PNG 序列（滑块 fastEffects 1400、颜色 slowEffects 260、滑块内官方对勾）；容器背景 CSS transition 420ms；文字颜色瞬时（Vela 不能过渡 color）；手环纵向堆叠、开关右对齐 |
 | 触感反馈 | ✅ | `vibrator.vibrate({mode:'short'})`，外面包 try/catch |

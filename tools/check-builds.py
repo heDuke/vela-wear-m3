@@ -4,6 +4,7 @@ from PIL import Image
 root=pathlib.Path(__file__).resolve().parent.parent
 rows=json.loads((root/'out/size-report.json').read_text(encoding='utf-8'))
 devices=json.loads((root/'packages/vela-wear-m3/tools/devices.json').read_text(encoding='utf-8'))
+anim=json.loads((root/'packages/vela-wear-m3/assets/animations.json').read_text(encoding='utf-8'))
 expected={(d,api,mode) for d in devices for api in (1,2) for mode in ('debug','release')}
 results=[]
 for row in rows:
@@ -24,16 +25,17 @@ for row in rows:
             assert legal in z.namelist(), ('missing license material',key,legal)
         images=[n for n in z.namelist() if n.startswith('common/img/') and n.endswith('.png')]
         assert len(images)==row['assetFiles'], ('asset count mismatch',key,len(images))
-        if row['device']=='round':
-            im=Image.open(io.BytesIO(z.read('common/img/level_5.png'))).convert('RGBA')
-            top=bottom=0
-            for y in range(im.height):
-                for x in range(im.width):
-                    r,g,b,a=im.getpixel((x,y))
-                    if a>128 and b>r+15 and b>g+15:
-                        if y<im.height/2:top+=1
-                        else:bottom+=1
-            assert bottom>top*2, ('LevelIndicator must fill from bottom',key,top,bottom)
+        # StepperLevelIndicator: rotated fill/track arcs + static masks, no per-value frames; the fill arc sits below the
+        # screen centre (fills from the bottom, ScrollIndicator.kt start = 180 - sweep/2).
+        assert not any(n.startswith('common/img/level_') for n in images), ('stale level frames',key)
+        for f in ('lv_ind','lv_trk','lv_ind_dis','lv_trk_dis','lv_mask_low','lv_mask_high'):
+            assert 'common/img/'+f+'.png' in images, ('missing level asset',key,f)
+        lv=anim[row['device']]['level'];ind=lv['ind']
+        assert ind['y']+ind['h']/2>lv['cy'] and lv['trk']['y']+lv['trk']['h']/2<lv['cy'], ('LevelIndicator must fill from bottom',key)
+        im=Image.open(io.BytesIO(z.read('common/img/lv_ind.png'))).convert('RGBA')
+        assert im.size==(ind['w'],ind['h']), ('level asset size',key,im.size)
+        blue=sum(1 for y in range(im.height) for x in range(im.width) if (lambda p:p[3]>128 and p[2]>p[0]+15 and p[2]>p[1]+15)(im.getpixel((x,y))))
+        assert blue>im.width*2, ('LevelIndicator fill colour',key,blue)
     results.append(dict(device=row['device'],api=row['api'],mode=row['mode'],bytes=row['bytes'],sha256=hashlib.sha256(p.read_bytes()).hexdigest(),archiveValid=True))
 assert not expected, ('missing configurations',expected)
 (root/'out/artifact-validation.json').write_text(json.dumps(results,indent=2)+'\n',encoding='utf-8')

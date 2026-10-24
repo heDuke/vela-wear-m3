@@ -8,7 +8,7 @@ for id in D:
     dd=f'{ROOT}/assets/{id}/'; rep[id]={}
     for f in sorted(os.listdir(dd)):
         if not f.endswith('.png'): continue
-        if f=='top_scrim.png' or f.startswith('sw_'): rep[id][f]=os.path.getsize(dd+f); continue  # exact PNG8 (top-scrim.py / ui-assets.py switch sprites)
+        if f=='top_scrim.png' or f.startswith(('sw_','lv_')): rep[id][f]=os.path.getsize(dd+f); continue  # exact PNG8 (top-scrim.py / ui-assets.py switch + level sprites)
         im=Image.open(dd+f).convert('RGBA')
         n=64 if f in ('logo.png','scrim.png') else 32 if any(s in f for s in ('scroll','si_','edge','curved','spin')) else 16
         im.quantize(colors=n,method=Image.FASTOCTREE).save(dd+f,optimize=True); rep[id][f]=os.path.getsize(dd+f)

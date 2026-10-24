@@ -37,6 +37,7 @@
     if (this.clearConfirm) this.clearConfirm()
     this.stopAnimator('spinAnim')
     this.stopAnimator('morphAnim')
+    if(this.stopLevel)this.stopLevel()
     this.stopAnimator('buttonMorphAnim')
     this.stopAnimator('checkAnim')
   },
@@ -95,28 +96,35 @@
     if(this.onPressCancel)this.onPressCancel(id)
   },
   stopHold(id){if(holds[id])clearTimeout(holds[id]);delete holds[id]},
-  hold(id,fn){this.stopHold(id);const repeat=()=>{if(this.pressId!==id||!active)return;fn();holds[id]=setTimeout(repeat,120)};holds[id]=setTimeout(repeat,500)},
+  // every=120 for list/demo holds; Stepper passes androidx repeatableClickable's 60ms (initialDelay 500).
+  hold(id,fn,every=120){this.stopHold(id);const repeat=()=>{if(this.pressId!==id||!active)return;fn();holds[id]=setTimeout(repeat,every)};holds[id]=setTimeout(repeat,500)},
   animateControl(id,target,initial=0,stiffness=0) {
     // stiffness>0 = one critically damped spring both ways (e.g. androidx fastEffects 1400); 0 keeps press feedback
-    // (fast 1400 in, slow 260 out).
-    const m=motions[id]||(motions[id]={x:initial,v:0,target:initial});m.target=target;m.k=stiffness
+    // (fast 1400 in, slow 260 out). Ids listed by pressSpring(id) -> [kIn,kOut] use the exact critically damped
+    // solution on the wall clock instead (stiff springs such as 12600 are not stable in the 120Hz Euler loop).
+    const m=motions[id]||(motions[id]={x:initial,v:0,target:initial});const pair=!stiffness&&this.pressSpring&&this.pressSpring(id)
+    if(pair){const now=Date.now();if(m.ex){const c=springAt(m,now);m.x=c.x;m.v=c.v}m.x0=m.x;m.v0=m.v;m.t0=now;m.ex=pair[target?0:1]}else m.ex=0
+    m.target=target;m.k=stiffness
     const step=only=>{
       let moving=false
       ;(only?[only]:Object.keys(motions)).forEach(key=>{
-        const q=motions[key],dt=1/120,stiff=q.k||(q.target?1400:260)
+        const q=motions[key]
+        if(q.ex){const c=springAt(q,Date.now(),1);q.x=c.x;q.v=c.v;if(c.done){q.x=q.target;q.v=0}else moving=true}
+        else{
+        const dt=1/120,stiff=q.k||(q.target?1400:260)
         for(let n=0;n<4;n++){q.v+=(stiff*(q.target-q.x)-2*Math.sqrt(stiff)*q.v)*dt;q.x+=q.v*dt}
         if(Math.abs(q.x-q.target)<.002&&Math.abs(q.v)<.02){q.x=q.target;q.v=0}else moving=true
-        const value=Math.max(0,Math.min(1,q.x)),st={opacity:Math.round((1-.08*value)*100)/100}
-        if((key==='plus'||key==='minus')&&$[enhanced])st.borderRadius=Math.round($[dp(24)]-$[dp(16)]*value)+'px'
-        const previous=this.feedback[key]||{}
-        if(previous.opacity!==st.opacity||previous.borderRadius!==st.borderRadius)this.feedback[key]=st
+        }
+        const value=Math.max(0,Math.min(1,q.x)),st=this.pressStyle?this.pressStyle(key,value):null
+        const previous=this.feedback[key]||{},next=st||{opacity:Math.round((1-.08*value)*100)/100}
+        if(Object.keys(next).some(name=>previous[name]!==next[name]))this.feedback[key]=next
         if(this.onMotionFrame)this.onMotionFrame(key,value)
       })
       if(!only&&!moving&&motionTimer){clearInterval(motionTimer);motionTimer=null}
       return moving
     }
-    // Explicit-stiffness motions render their first step now instead of one tick late.
-    if(stiffness>0&&!step(id))return
+    // Explicit-stiffness and exact motions render their first frame now instead of one tick late.
+    if((stiffness>0||pair)&&!step(id))return
     if(!motionTimer)motionTimer=setInterval(()=>step(),33)
   },
   setLayout(h) {

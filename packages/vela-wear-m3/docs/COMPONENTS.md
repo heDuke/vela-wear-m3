@@ -12,7 +12,7 @@
 
 `base_data.js` 放在 private 对象内；`base.js` 放在页面方法对象内。private 至少再提供 `tlcBase:-1`，业务页在 onInit 调用 `setLayout([])`。`pageShow` / `pageHide` / `pageDestroy` 为扩展钩子，`onMotionFrame(id,position)` 接收动作更新；多个控制器共用一个页面时必须合并同名钩子。不要让业务方法覆盖 `cleanup` 或遗失基础 onHide/onDestroy。
 
-`press(id)` / `release(id)` / `cancelPress()`、`animateControl(id,target,initial,stiffness)` 和 `hold(id,callback)` 共享动作调度器（stiffness 省略时为按压反馈：按下 1400、抬起 260；给定时为双向同一临界阻尼弹簧，且首帧立即计算）。业务 disabled 状态需在触发前拒绝，Switch 和 Stepper 控制器已处理；取消后抬手不会重新触发。使用者声明所有会在模板读取的反馈键，或在 `setLayout` 后通过赋予完整 feedback 对象增加键。
+`press(id)` / `release(id)` / `cancelPress()`、`animateControl(id,target,initial,stiffness)` 和 `hold(id,callback,every=120)` 共享动作调度器（stiffness 省略时为按压反馈：按下 1400、抬起 260；给定时为双向同一临界阻尼弹簧，且首帧立即计算）。页面若定义 `pressSpring(id)` 返回 `[kIn,kOut]`，该 id 改用临界阻尼精确解（按墙钟计算，适合 12600 这类显式 Euler 不稳定的刚度，首帧在按下时绘制）；`pressStyle(id,p)` 可返回自定义样式代替默认透明度反馈（Stepper 用它做底色与形状）。hold 在 500 ms 后按 every 重复，Stepper 传 60 ms。业务 disabled 状态需在触发前拒绝，Switch 和 Stepper 控制器已处理；取消后抬手不会重新触发。使用者声明所有会在模板读取的反馈键，或在 `setLayout` 后通过赋予完整 feedback 对象增加键。
 
 ## 按钮与卡片
 
@@ -28,7 +28,7 @@ Switch / Checkbox / Radio / InlineSlider 页引入 selection.head.js（已包含
 
 Checkbox：bt、checkSrc，方法 tBt；Radio：sel、radios（id / label / st），方法 pick(index)。InlineSlider：lvl 0–5、sliderMode 0/1/2 对应连续/分段/变色、sliderStyle、separators，调用 updateSlider / dec / inc。首版控制器使用这些既定范围；扩展范围需同步控制器与资源映射，不能只改展示数字。
 
-Stepper / LevelIndicator 可以独立使用 range.head.js、range.data.js、range.js 和 range.css。stepValue 为整数 0–10；stepEnabled 控制禁用。层级值由 updateRange 映射到 LEVELS / DISABLED_LEVELS，与列表滚动无关。使用 openStepper / openLevel 进入演示；长按来自 rangePress / rangeRelease / stepClick；最小最大值不可越界。range.tpl 是全屏结构，level-indicator 则可作为单独图形组件使用。
+Stepper / LevelIndicator 可以独立使用 range.head.js、range.data.js、range.js 和 range.css。stepValue 为整数 0–10；stepEnabled 控制禁用。层级值由 updateRange 驱动 StepperLevelIndicator：数值变化时按 tween(500 ms, CubicBezier(0,0,0,1)) 从当前动画位置重新开始（不继承速度，33 ms 定时器），进入页面时直接到位；与列表滚动无关。使用 openStepper / openLevel 进入演示；长按来自 rangePress / rangeRelease / stepClick；最小最大值不可越界。range.tpl 是全屏结构，level-indicator 则可作为单独图形组件使用。
 
 ## 分页、时间与进度
 
@@ -206,7 +206,7 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 <!-- #component stepper {} -->
 ```
 
-无占位参数。独立 range 组合，demoMode 初始空串；`openStepper()` 设为 stepper，`openLevel()` 设为 level，两者当前复用同一全屏结构。stepValue 为 0–10 整数，stepEnabled 为 boolean；调用 `stepClick('plus'/'minus')` 或长按入口。`toggleStepEnabled()` 切换禁用；手势与基础返回处理退出 demoMode。圆屏无导航头部，其余布局含返回。两种 API 均可用。
+无占位参数。独立 range 组合，demoMode 初始空串；`openStepper()` 设为 stepper，`openLevel()` 设为 level，两者当前复用同一全屏结构（对应 androidx `Stepper`：fillMaxSize，0.35 / 0.3 / 0.35 三段、8 dp 间距，按钮区 5.2% 屏高内边距，60×48 dp 按钮）。所有设备都没有返回头部，靠右滑返回；数值与标签放在中段内容里。stepValue 为 0–10 整数，stepEnabled 为 boolean；调用 `stepClick('plus'/'minus')` 或长按入口（500 ms 后每 60 ms 重复，抬手不再额外步进）。按下时按钮底色 PrimaryContainer #4D3D76 → 叠加 10% Primary 的 #5D4D84，增强版形状 CornerFull → 8 dp（按下刚度 12600，抬起 260）。`toggleStepEnabled()` 切换禁用，禁用时按钮、数值和标签都变为 #5D5A61 系。手势与基础返回处理退出 demoMode。两种 API 均可用。
 
 ### level-indicator
 
@@ -214,7 +214,7 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 <!-- #component level-indicator {} -->
 ```
 
-无占位参数。range 组合提供 levelSrc，调用 `updateRange()` 将 stepValue 与禁用态映射成图片。可以不使用全屏 stepper，只在你自己的数值布局中插入图形；外层仍须提供布局空间。圆屏弧形，其他配置直条；不是滚动条，两种 API 均可用。
+无占位参数。对应 androidx `StepperLevelIndicator`（ScrollIndicator.kt `drawCurvedIndicator`）：所有设备都画在屏幕宽度圆上的左侧弧（半径 W/2−2−3 dp，6 dp 圆头描边，3 dp 间隙随数值移动；当某段扫角 ≤ 间隙时画成半径 0→3 dp、透明度 0→1 的圆点）。实现为两张整弧图片绕屏幕中心旋转 + 两张静态黑色遮罩 + 两个圆点 div；数据来自 range 组合（`lvIndSrc`/`lvTrkSrc`/`lvInd`/`lvTrk`/`lvDotInd`/`lvDotTrk`），几何在 `animations.json` 的 `level`。调用 `updateRange()` 让它跟随 stepValue 与禁用态，`updateRange(true)` 直接到位。片段使用绝对定位，必须放在页面内容之前，且假设黑色背景（遮罩是黑色）；离开页面时 `cleanup()` 调用 `stopLevel()`。不是滚动条，两种 API 均可用。
 
 ### page-indicator
 

@@ -194,29 +194,39 @@ for ident,d in DEV.items():
    im,dr=canvas(W,H);length=L*f/100;half=math.degrees(max(0,length-stroke)/(2*ra));arc(dr,R,R,ra+stroke/2,-half-math.degrees((gap+stroke)/ra),2*half+2*math.degrees((gap+stroke)/ra),'#000000',stroke+2);arc(dr,R,R,ra+stroke/2,-half,2*half,'#C6C6C6',stroke)
    im=im.crop((round((W-tw)*S),round((R-hh/2)*S),W*S,round((R+hh/2)*S)));frames.append(save(im,'scroll_'+str(f),tw,hh))
   m['scroll']=frames;m['scrollBox']={'w':tw,'h':hh,'L':L,'Ra':ra,'sw':stroke}
- frames=[];rad=W/2-px(5);stroke=px(6);half=math.radians(36);w=math.ceil(rad*(1-math.cos(half))+stroke+2);h=math.ceil(2*rad*math.sin(half)+stroke+2)
- for v in range(11):
-  if d['shape']=='circle':
-   im,dr=canvas(w,h);cx=rad+stroke/2+1;cy=h/2;arc(dr,cx,cy,rad+stroke/2,144,72,SUR,stroke)
-   if v:arc(dr,cx,cy,rad+stroke/2,144,v*7.2,'#BAC3FF',stroke)
-  else:
-   w,h=px(8),px(90);im,dr=canvas(w,h);line(dr,[(w/2,px(4)),(w/2,h-px(4))],SUR,px(6))
-   if v:line(dr,[(w/2,h-px(4)-(h-px(8))*v/10),(w/2,h-px(4))],'#BAC3FF',px(6))
-  frames.append(save(im,'level_'+str(v)))
- m['level']=frames
- disabled=[]
- for index,uri in enumerate(frames):
-  im=Image.open(folder+'/'+uri.split('/')[-1]).convert('RGBA');pixels=im.load()
-  for yy in range(im.height):
-   for xx in range(im.width):
-    rr,gg,bb,aa=pixels[xx,yy]
-    if aa:
-     # Palette colors include antialias shades; classify by secondaryDim's blue component.
-     active=bb>rr+15 and bb>gg+15;target=(93,90,97) if active else (30,28,31)
-     pixels[xx,yy]=target+(aa,)
-  im.quantize(colors=8,method=Image.Quantize.FASTOCTREE).save(folder+'/level_disabled_'+str(index)+'.png',optimize=True);disabled.append('/common/img/level_disabled_'+str(index)+'.png')
- m['levelDisabled']=disabled
- m['levelBox']={'w':w,'h':h};m['pager']={}
+ # StepperLevelIndicator (androidx LevelIndicator.kt + ScrollIndicator.kt IndicatorImpl/drawCurvedIndicator), every
+ # device: arc on the screen-width circle, edgePadding 2dp, stroke 6dp, SweepAngle 72 -> indicatorHeight, total sweep =
+ # height sweep + gapSweep(stroke+3dp); fill from the bottom, track above, each piece inset gapSweep/2 with round caps.
+ # Runtime draws it from layers: the full-length fill / track arcs (cap-centre span L = sweep - gap) are rotated about
+ # the screen centre so their moving ends sit at the fill boundary +-gap/2; static black masks beyond the two fixed ends
+ # (with a cap-radius cut-out) hide the overshoot; short pieces (sweep*f <= gap) become a dot (radius/alpha lerp) drawn
+ # as a div above the masks.
+ kf=k;Wd=W/kf;lsw=6;Ru=Wd/2-2;lar=Ru-lsw/2;lh=2*math.sin(math.radians(36))*lar
+ lgap=math.degrees(2*math.asin((lsw+3)/2/Ru));lsweep=math.degrees(2*math.asin(lh/2/Ru))+lgap;lst=180-lsweep/2;LL=lsweep-lgap
+ lcx,lcy,lR,lo=W/2,H/2,lar*kf,lsw/2*kf
+ def lv_img(name,color,draw):
+  im=Image.new('L',(W*S,H*S),0);dr=ImageDraw.Draw(im);draw(dr);im=im.resize((W,H),Image.Resampling.LANCZOS);bb=im.getbbox()
+  im=im.crop(bb);out=Image.new('RGBA',im.size,ImageColor.getrgb(color)+(0,));out.putalpha(im)
+  pal=pal8(out);pal.save(folder+'/'+name+'.png',optimize=True,transparency=pal.info['transparency'])
+  return {'src':'/common/img/'+name+'.png','x':bb[0],'y':bb[1],'w':bb[2]-bb[0],'h':bb[3]-bb[1]}
+ def lv_arc(a0,a1,r=None,o=None):
+  r=lR if r is None else r;o=lo if o is None else o
+  def f(dr):
+   dr.arc(tuple(round(v*S) for v in (lcx-r-o,lcy-r-o,lcx+r+o,lcy+r+o)),a0,a1,fill=255,width=round(2*o*S))
+   for a in (a0,a1):x=lcx+r*math.cos(math.radians(a));y=lcy+r*math.sin(math.radians(a));dr.ellipse(tuple(round(v*S) for v in (x-o,y-o,x+o,y+o)),fill=255)
+  return f
+ def lv_mask(a0,a1,cut):
+  def f(dr):
+   ro=lo+2
+   dr.arc(tuple(round(v*S) for v in (lcx-lR-ro,lcy-lR-ro,lcx+lR+ro,lcy+lR+ro)),a0,a1,fill=255,width=round(2*ro*S))
+   x=lcx+lR*math.cos(math.radians(cut));y=lcy+lR*math.sin(math.radians(cut));dr.ellipse(tuple(round(v*S) for v in (x-lo,y-lo,x+lo,y+lo)),fill=0)
+  return f
+ s1=lst+lgap/2;eTop=lst+lsweep-lgap/2
+ m['level']={'cx':lcx,'cy':lcy,'r':round(lR,3),'o':round(lo,3),'sweep':round(lsweep,4),'gap':round(lgap,4),'start':round(lst,4),'span':round(LL,4),
+  'ind':lv_img('lv_ind','#BAC3FF',lv_arc(180-LL,180)),'trk':lv_img('lv_trk',SUR,lv_arc(180,180+LL)),
+  'indDis':lv_img('lv_ind_dis','#5D5A61',lv_arc(180-LL,180)),'trkDis':lv_img('lv_trk_dis','#1E1C1F',lv_arc(180,180+LL)),
+  'maskLow':lv_img('lv_mask_low','#000000',lv_mask(s1-LL-2,s1,s1)),'maskHigh':lv_img('lv_mask_high','#000000',lv_mask(eTop,eTop+LL+2,eTop))}
+ m['pager']={}
  for vertical in (False,True):
   for n in (3,6):
    radius=W/2-px(8);cx=W/2 if not vertical or d['shape']=='circle' else W-radius-px(8);cy=H/2 if vertical or d['shape']=='circle' else H-radius-px(8)

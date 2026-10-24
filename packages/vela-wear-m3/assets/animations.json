@@ -861,35 +861,57 @@
    "Ra": 223.0,
    "sw": 12
   },
-  "level": [
-   "/common/img/level_0.png",
-   "/common/img/level_1.png",
-   "/common/img/level_2.png",
-   "/common/img/level_3.png",
-   "/common/img/level_4.png",
-   "/common/img/level_5.png",
-   "/common/img/level_6.png",
-   "/common/img/level_7.png",
-   "/common/img/level_8.png",
-   "/common/img/level_9.png",
-   "/common/img/level_10.png"
-  ],
-  "levelDisabled": [
-   "/common/img/level_disabled_0.png",
-   "/common/img/level_disabled_1.png",
-   "/common/img/level_disabled_2.png",
-   "/common/img/level_disabled_3.png",
-   "/common/img/level_disabled_4.png",
-   "/common/img/level_disabled_5.png",
-   "/common/img/level_disabled_6.png",
-   "/common/img/level_disabled_7.png",
-   "/common/img/level_disabled_8.png",
-   "/common/img/level_disabled_9.png",
-   "/common/img/level_disabled_10.png"
-  ],
-  "levelBox": {
-   "w": 57,
-   "h": 277
+  "level": {
+   "cx": 233.0,
+   "cy": 233.0,
+   "r": 223.0,
+   "o": 6.0,
+   "sweep": 74.3381,
+   "gap": 4.5048,
+   "start": 142.8309,
+   "span": 69.8334,
+   "ind": {
+    "src": "/common/img/lv_ind.png",
+    "x": 1,
+    "y": 224,
+    "w": 164,
+    "h": 227
+   },
+   "trk": {
+    "src": "/common/img/lv_trk.png",
+    "x": 1,
+    "y": 15,
+    "w": 164,
+    "h": 227
+   },
+   "indDis": {
+    "src": "/common/img/lv_ind_dis.png",
+    "x": 1,
+    "y": 224,
+    "w": 164,
+    "h": 227
+   },
+   "trkDis": {
+    "src": "/common/img/lv_trk_dis.png",
+    "x": 1,
+    "y": 15,
+    "w": 164,
+    "h": 227
+   },
+   "maskLow": {
+    "src": "/common/img/lv_mask_low.png",
+    "x": 41,
+    "y": 354,
+    "w": 261,
+    "h": 112
+   },
+   "maskHigh": {
+    "src": "/common/img/lv_mask_high.png",
+    "x": 41,
+    "y": 0,
+    "w": 261,
+    "h": 112
+   }
   },
   "pager": {
    "h3": {
@@ -1746,35 +1768,57 @@
    "/common/img/check_draw_7.png",
    "/common/img/check_draw_8.png"
   ],
-  "level": [
-   "/common/img/level_0.png",
-   "/common/img/level_1.png",
-   "/common/img/level_2.png",
-   "/common/img/level_3.png",
-   "/common/img/level_4.png",
-   "/common/img/level_5.png",
-   "/common/img/level_6.png",
-   "/common/img/level_7.png",
-   "/common/img/level_8.png",
-   "/common/img/level_9.png",
-   "/common/img/level_10.png"
-  ],
-  "levelDisabled": [
-   "/common/img/level_disabled_0.png",
-   "/common/img/level_disabled_1.png",
-   "/common/img/level_disabled_2.png",
-   "/common/img/level_disabled_3.png",
-   "/common/img/level_disabled_4.png",
-   "/common/img/level_disabled_5.png",
-   "/common/img/level_disabled_6.png",
-   "/common/img/level_disabled_7.png",
-   "/common/img/level_disabled_8.png",
-   "/common/img/level_disabled_9.png",
-   "/common/img/level_disabled_10.png"
-  ],
-  "levelBox": {
-   "w": 16,
-   "h": 180
+  "level": {
+   "cx": 168.0,
+   "cy": 240.0,
+   "r": 158.0,
+   "o": 6.0,
+   "sweep": 75.2743,
+   "gap": 6.2917,
+   "start": 142.3629,
+   "span": 68.9826,
+   "ind": {
+    "src": "/common/img/lv_ind.png",
+    "x": 1,
+    "y": 231,
+    "w": 119,
+    "h": 165
+   },
+   "trk": {
+    "src": "/common/img/lv_trk.png",
+    "x": 1,
+    "y": 84,
+    "w": 119,
+    "h": 165
+   },
+   "indDis": {
+    "src": "/common/img/lv_ind_dis.png",
+    "x": 1,
+    "y": 231,
+    "w": 119,
+    "h": 165
+   },
+   "trkDis": {
+    "src": "/common/img/lv_trk_dis.png",
+    "x": 1,
+    "y": 84,
+    "w": 119,
+    "h": 165
+   },
+   "maskLow": {
+    "src": "/common/img/lv_mask_low.png",
+    "x": 29,
+    "y": 323,
+    "w": 186,
+    "h": 86
+   },
+   "maskHigh": {
+    "src": "/common/img/lv_mask_high.png",
+    "x": 29,
+    "y": 71,
+    "w": 186,
+    "h": 87
+   }
   },
   "pager": {
    "h3": {
@@ -2631,35 +2675,57 @@
    "/common/img/check_draw_7.png",
    "/common/img/check_draw_8.png"
   ],
-  "level": [
-   "/common/img/level_0.png",
-   "/common/img/level_1.png",
-   "/common/img/level_2.png",
-   "/common/img/level_3.png",
-   "/common/img/level_4.png",
-   "/common/img/level_5.png",
-   "/common/img/level_6.png",
-   "/common/img/level_7.png",
-   "/common/img/level_8.png",
-   "/common/img/level_9.png",
-   "/common/img/level_10.png"
-  ],
-  "levelDisabled": [
-   "/common/img/level_disabled_0.png",
-   "/common/img/level_disabled_1.png",
-   "/common/img/level_disabled_2.png",
-   "/common/img/level_disabled_3.png",
-   "/common/img/level_disabled_4.png",
-   "/common/img/level_disabled_5.png",
-   "/common/img/level_disabled_6.png",
-   "/common/img/level_disabled_7.png",
-   "/common/img/level_disabled_8.png",
-   "/common/img/level_disabled_9.png",
-   "/common/img/level_disabled_10.png"
-  ],
-  "levelBox": {
-   "w": 13,
-   "h": 146
+  "level": {
+   "cx": 106.0,
+   "cy": 260.0,
+   "r": 97.875,
+   "o": 4.875,
+   "sweep": 76.2596,
+   "gap": 8.1621,
+   "start": 141.8702,
+   "span": 68.0974,
+   "ind": {
+    "src": "/common/img/lv_ind.png",
+    "x": 1,
+    "y": 252,
+    "w": 76,
+    "h": 107
+   },
+   "trk": {
+    "src": "/common/img/lv_trk.png",
+    "x": 1,
+    "y": 162,
+    "w": 76,
+    "h": 106
+   },
+   "indDis": {
+    "src": "/common/img/lv_ind_dis.png",
+    "x": 1,
+    "y": 252,
+    "w": 76,
+    "h": 107
+   },
+   "trkDis": {
+    "src": "/common/img/lv_trk_dis.png",
+    "x": 1,
+    "y": 162,
+    "w": 76,
+    "h": 106
+   },
+   "maskLow": {
+    "src": "/common/img/lv_mask_low.png",
+    "x": 17,
+    "y": 309,
+    "w": 117,
+    "h": 59
+   },
+   "maskHigh": {
+    "src": "/common/img/lv_mask_high.png",
+    "x": 17,
+    "y": 153,
+    "w": 117,
+    "h": 59
+   }
   },
   "pager": {
    "h3": {
@@ -3516,35 +3582,57 @@
    "/common/img/check_draw_7.png",
    "/common/img/check_draw_8.png"
   ],
-  "level": [
-   "/common/img/level_0.png",
-   "/common/img/level_1.png",
-   "/common/img/level_2.png",
-   "/common/img/level_3.png",
-   "/common/img/level_4.png",
-   "/common/img/level_5.png",
-   "/common/img/level_6.png",
-   "/common/img/level_7.png",
-   "/common/img/level_8.png",
-   "/common/img/level_9.png",
-   "/common/img/level_10.png"
-  ],
-  "levelDisabled": [
-   "/common/img/level_disabled_0.png",
-   "/common/img/level_disabled_1.png",
-   "/common/img/level_disabled_2.png",
-   "/common/img/level_disabled_3.png",
-   "/common/img/level_disabled_4.png",
-   "/common/img/level_disabled_5.png",
-   "/common/img/level_disabled_6.png",
-   "/common/img/level_disabled_7.png",
-   "/common/img/level_disabled_8.png",
-   "/common/img/level_disabled_9.png",
-   "/common/img/level_disabled_10.png"
-  ],
-  "levelBox": {
-   "w": 13,
-   "h": 146
+  "level": {
+   "cx": 96.0,
+   "cy": 245.0,
+   "r": 87.875,
+   "o": 4.875,
+   "sweep": 76.726,
+   "gap": 9.0439,
+   "start": 141.637,
+   "span": 67.6821,
+   "ind": {
+    "src": "/common/img/lv_ind.png",
+    "x": 1,
+    "y": 237,
+    "w": 70,
+    "h": 97
+   },
+   "trk": {
+    "src": "/common/img/lv_trk.png",
+    "x": 1,
+    "y": 156,
+    "w": 70,
+    "h": 97
+   },
+   "indDis": {
+    "src": "/common/img/lv_ind_dis.png",
+    "x": 1,
+    "y": 237,
+    "w": 70,
+    "h": 97
+   },
+   "trkDis": {
+    "src": "/common/img/lv_trk_dis.png",
+    "x": 1,
+    "y": 156,
+    "w": 70,
+    "h": 97
+   },
+   "maskLow": {
+    "src": "/common/img/lv_mask_low.png",
+    "x": 15,
+    "y": 288,
+    "w": 106,
+    "h": 55
+   },
+   "maskHigh": {
+    "src": "/common/img/lv_mask_high.png",
+    "x": 15,
+    "y": 148,
+    "w": 106,
+    "h": 54
+   }
   },
   "pager": {
    "h3": {

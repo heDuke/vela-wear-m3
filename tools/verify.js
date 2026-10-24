@@ -54,7 +54,45 @@ for(const device of Object.keys(devices))for(const mode of ['basic','enhanced'])
   const css=src.match(/<style>([\s\S]*?)<\/style>/)[1].replace(/\s/g,''),dp=v=>Math.round(v*k),pill=dv.shape==='pill';
   ok(css.includes('.switch-label{font-size:'+dp(pill?13:15)+'px;line-height:'+dp(18)+'px;font-weight:bold;')&&css.includes('lines:3;')&&css.includes('.switch-sub{font-size:'+dp(pill?11:13)+'px;line-height:'+dp(16)+'px;margin-top:'+dp(1)+'px;')&&/\.switch-secondary-on\{[^}]*opacity:0\.9/.test(css),'switch typography');
   ok(pill?/\.switch-ctl\{[^}]*justify-content:flex-end/.test(css)&&/\.switch-card\{[^}]*flex-direction:column/.test(css):/\.switch-card\{[^}]*flex-direction:row/.test(css),'band: stacked, switch at end');}
- c.state.openStepper();c.state.stepValue=10;c.state.stepUp();ok(c.state.stepValue===10,'upper bound');c.state.stepValue=0;c.state.stepDown();ok(c.state.stepValue===0,'lower bound');c.state.rangePress('plus');c.advance(900);ok(c.state.stepValue>=3,'hold repeat');c.state.cancelPress();const held=c.state.stepValue;c.advance(500);c.state.rangeRelease('plus');c.state.stepClick('plus');ok(c.state.stepValue===held,'cancelled hold click');c.state.pick(0);c.advance(70);ok(c.state.radios[1].st.opacity>0&&c.state.radios[1].st.opacity<1,'radio starts from actual selected size');c.state.onHide();ok(c.timers.size===0,'control cleanup');
+ {// Stepper = androidx Stepper.kt + StepperLevelIndicator (ScrollIndicator.kt): full-screen layout, official arc, tween 500ms.
+  const L=JSON.parse(fs.readFileSync('packages/vela-wear-m3/assets/animations.json','utf8'))[device].level,dv=devices[device],k=dv.k,S=c.state,src=c.source;
+  const W=dv.W,H=dv.H,Wd=W/k,Ru=Wd/2-2,ar=Ru-3,deg=r=>r*180/Math.PI,ih=2*Math.sin(36*Math.PI/180)*ar,gap=deg(2*Math.asin(4.5/Ru)),sweep=deg(2*Math.asin(ih/2/Ru))+gap;
+  ok(L.cx===W/2&&L.cy===H/2&&Math.abs(L.r-ar*k)<.01&&Math.abs(L.o-3*k)<.01,'level arc on the screen-width circle, 6dp stroke');
+  ok(Math.abs(L.gap-gap)<1e-3&&Math.abs(L.sweep-sweep)<1e-3&&Math.abs(L.start-(180-sweep/2))<1e-3,'level sweep/gap/start = ScrollIndicator.kt ('+L.sweep.toFixed(2)+'/'+L.gap.toFixed(2)+')');
+  ok(!fs.readdirSync('packages/vela-wear-m3/assets/'+device).some(f=>/^level_/.test(f))&&!('levelDisabled' in JSON.parse(fs.readFileSync('packages/vela-wear-m3/assets/animations.json','utf8'))[device]),'old level frames removed');
+  const css=src.match(/<style>([\s\S]*?)<\/style>/)[1].replace(/\s/g,''),dp=v=>Math.round(v*k),tpl=src.match(/<template>([\s\S]*?)<\/template>/)[1];
+  const stepTpl=tpl.slice(tpl.indexOf('step-screen'),tpl.indexOf('step-screen')+4000);
+  ok(stepTpl.indexOf('class="lv-ind"')>0&&stepTpl.indexOf('class="lv-ind"')<stepTpl.indexOf('step-body')&&stepTpl.indexOf('lv-mask-high')<stepTpl.indexOf('lv-dot')&&!/demo-nav|nav-back/.test(stepTpl.slice(0,stepTpl.indexOf('step-body'))),'stepper: no header, indicator first, dots above masks');
+  ok(css.includes('.step-body{width:'+W+'px;height:'+H+'px;')&&css.includes('height:'+Math.round((H-dp(16))*.35)+'px;')&&css.includes('.step-top{justify-content:flex-start;padding-top:'+Math.round(H*.052)+'px;}')&&new RegExp('\\.step-key\\{width:'+dp(60)+'px;height:'+dp(48)+'px;').test(css),'stepper full-screen 0.35/0.3/0.35 with 8dp gaps, 5.2% padding, 60x48dp keys');
+  ok(new RegExp('\\.lv-ind\\{position:absolute;left:'+L.ind.x+'px;top:'+L.ind.y+'px;width:'+L.ind.w+'px;height:'+L.ind.h+'px;transform-origin:'+(L.cx-L.ind.x)+'px'+(L.cy-L.ind.y)+'px;').test(css),'fill arc rotates about the screen centre');
+  ok(/class="demo-label\{\{stepEnabled\?'':'step-content-disabled'\}\}"/.test(stepTpl.replace(/\s/g,''))&&css.includes('.step-content-disabled{color:#5D5A61;}'),'disabled label greys too');
+  const ease=x=>{if(x<=0)return 0;if(x>=1)return 1;let lo=0,hi=1;for(let i=0;i<60;i++){const m=(lo+hi)/2;if(m*m*m<x)lo=m;else hi=m}const m=(lo+hi)/2;return 3*(1-m)*m*m+m*m*m};// CubicBezier(0,0,0,1): x=m^3, y=3(1-m)m^2+m^3, solved by bisection
+  const near=(a,b,t=1e-6)=>Math.abs(a-b)<=t,F=1000/60;
+  S.openStepper();ok(S.stepValue===5&&S.levelFill===.5&&S.lvInd.opacity===1,'level snaps on first show');
+  const rot=a=>JSON.stringify({rotate:(a-180).toFixed(2)+'deg'});ok(S.lvInd.transform===rot(L.start+L.sweep*.5-L.gap/2)&&S.lvTrk.transform===rot(L.start+L.sweep*.5+L.gap/2),'fill/track ends inset gap/2');
+  S.stepUp();ok(near(S.levelFill,.5+.1*ease(F/500)),'first frame painted at the tap');c.advance(33);ok(near(S.levelFill,.5+.1*ease(33/500)),'33ms tick follows tween(500, CubicBezier(0,0,0,1))');
+  c.advance(117);const f150=.5+.1*ease(150/500);S.stepDown();ok(near(S.levelFill,f150+(.5-f150)*ease(F/500)),'reversal restarts from the current fraction, no velocity');c.advance(499);ok(S.levelFill<.5+1e-3&&S.levelFill>.5);c.advance(40);ok(S.levelFill===.5,'reversal settles at 500ms');
+  const busy=c.timers.size;c.advance(100);ok(c.timers.size<=busy,'level timer stops');
+  S.stepValue=5;S.updateRange();ok(S.levelFill===.5,'equal target ignored');
+  for(const v of [0,1,9,10]){S.stepValue=v;S.updateRange(true);const fill=L.sweep*v/10,rest=L.sweep-fill,dI=S.lvDotInd,dT=S.lvDotTrk;
+   const want=(sw)=>sw>L.gap||L.o*sw/L.gap<.25?0:Math.round(sw/L.gap*100)/100;
+   ok(dI.opacity===want(fill)&&dT.opacity===want(rest)&&S.lvInd.opacity===(fill>L.gap?1:0)&&S.lvTrk.opacity===(rest>L.gap?1:0),'value '+v+': dot iff segment <= gap, alpha = sweep/gap');
+   if(dI.opacity)ok(dI.width===Math.max(1,Math.round(2*L.o*fill/L.gap))+'px','dot radius lerp(0,3dp)');}
+  if(device==='band10'||device==='band9'){S.stepValue=1;S.updateRange(true);ok(S.lvDotInd.opacity>0,device+' value 1 is a dot')}
+  S.stepValue=5;S.updateRange(true);
+  // press: PrimaryContainer -> +10% Primary (#5D4D84), shape spring 12600 in / 260 out, exact critically damped
+  const hex=p=>'#'+[[77,93],[61,77],[118,132]].map(([a,b])=>('0'+Math.round(a+(b-a)*p).toString(16)).slice(-2)).join('').toUpperCase(),crit=(st,ms)=>{const w=Math.sqrt(st)*ms/1000;return 1-(1+w)*Math.exp(-w)};
+  S.rangePress('minus');ok(S.feedback.minus.backgroundColor===hex(crit(12600,F)),'press colour first frame at touch');c.advance(33);ok(S.feedback.minus.backgroundColor===hex(crit(12600,33)),'press in = stiffness 12600');c.advance(200);ok(S.feedback.minus.backgroundColor==='#5D4D84'&&(mode==='basic'||S.feedback.minus.borderRadius===dp(24)-dp(16)+'px'),'pressed = #5D4D84'+(mode==='basic'?'':', small 8dp shape'));
+  S.rangeRelease('minus');S.stepClick('minus');ok(S.stepValue===4,'click on release');c.advance(33);ok(S.feedback.minus.backgroundColor===hex(1-crit(260,33)),'release = stiffness 260');c.advance(1500);ok(S.feedback.minus.backgroundColor==='#4D3D76','release settles');
+  ok(!/opacity/.test(JSON.stringify(S.feedback.minus)),'no opacity fade on stepper keys');
+  // long press: repeatableClickable 500ms then every 60ms; the release click is swallowed
+  S.stepValue=2;S.updateRange(true);S.rangePress('plus');c.advance(499);ok(S.stepValue===2,'no repeat before 500ms');c.advance(1);ok(S.stepValue===3,'first repeat at 500ms');c.advance(60);ok(S.stepValue===4,'repeat every 60ms');c.advance(180);ok(S.stepValue===7,'60ms chain');
+  S.rangeRelease('plus');S.stepClick('plus');ok(S.stepValue===7,'release after repeat does not step');
+  S.rangePress('plus');c.advance(900);ok(S.stepValue===10,'repeat clamps at max');S.rangeRelease('plus');S.stepClick('plus');c.advance(600);
+  S.stepValue=10;S.stepUp();ok(S.stepValue===10,'upper bound');S.stepValue=0;S.stepDown();ok(S.stepValue===0,'lower bound');S.stepValue=0;S.updateRange(true);
+  S.rangePress('plus');c.advance(900);ok(S.stepValue>=3,'hold repeat');S.cancelPress();const held=S.stepValue;c.advance(500);S.rangeRelease('plus');S.stepClick('plus');ok(S.stepValue===held,'cancelled hold click');
+  S.toggleStepEnabled();ok(!S.stepEnabled&&S.lvIndSrc===L.indDis.src&&S.lvTrkSrc===L.trkDis.src,'disabled arcs');S.toggleStepEnabled();c.advance(600);}
+c.state.pick(0);c.advance(70);ok(c.state.radios[1].st.opacity>0&&c.state.radios[1].st.opacity<1,'radio starts from actual selected size');c.state.onHide();ok(c.timers.size===0,'control cleanup');
  const d=load('dialogs');d.state.onShow();d.state.showConfirm();d.advance(20);d.state.hideConfirm();d.advance(110);ok(!d.state.cfIconOn,'close before delayed icon');d.state.showConfirm();d.advance(100);ok(d.state.cfIconOn,'reentry icon');d.advance(4200);ok(!d.state.cfOn,'default 4s timeout');d.state.showConfirm();d.state.onHide();d.advance(5000);ok(!d.state.cfIconOn&&d.timers.size===0,'hidden confirmation');
  {const src=load('dialogs').source,css=src.match(/<style>([\s\S]*?)<\/style>/)[1];
   const frames=n=>{const k=css.match(new RegExp('@keyframes\\s+'+n+'\\s*\\{([\\s\\S]*?\\})\\s*\\}'));ok(k,n+' keyframes');return [...k[1].matchAll(/([\d.]+)%\{([^}]*)\}/g)].map(x=>({p:+x[1],v:x[2]}))};

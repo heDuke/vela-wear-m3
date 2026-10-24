@@ -5,11 +5,11 @@ const A=JSON.parse(fs.readFileSync(path.join(__dirname,'../assets/animations.jso
 const {spring}=require('./ui-geometry');
 module.exports=function(c,enhanced){
  const {id,W,H,C,dp,round,pill,CW,HP}=c,a=A[id];
- c.spinCss=()=> '@keyframes indSpin{'+a.spinRotation.map((r,i)=>(i*100/150).toFixed(4)+'%{transform:rotate('+r.toFixed(3)+'deg);}').join('')+'100%{transform:rotate(2160deg);}}';c.pagerJs=()=>JSON.stringify(a.pager);c.fontJs=()=>JSON.stringify(a.font);c.tlcEaseLut=()=>JSON.stringify(Array.from({length:257},(_,i)=>+require('./ui-geometry').bezier(.3,0,.7,1,i/256).toFixed(7)));c.disabledLevels=()=>JSON.stringify(a.levelDisabled);c.arcLoadingBox=a.arcLoadingBox;c.levelBox=a.levelBox;c.enhanced=enhanced;c.api=enhanced?2:1;c.NAVH=dp(round?32:56);c.DEMONAVH=dp(pill?80:56);c.ROW=dp(pill?68:56);
+ c.spinCss=()=> '@keyframes indSpin{'+a.spinRotation.map((r,i)=>(i*100/150).toFixed(4)+'%{transform:rotate('+r.toFixed(3)+'deg);}').join('')+'100%{transform:rotate(2160deg);}}';c.pagerJs=()=>JSON.stringify(a.pager);c.fontJs=()=>JSON.stringify(a.font);c.tlcEaseLut=()=>JSON.stringify(Array.from({length:257},(_,i)=>+require('./ui-geometry').bezier(.3,0,.7,1,i/256).toFixed(7)));c.levelJs=()=>JSON.stringify(a.level);c.arcLoadingBox=a.arcLoadingBox;c.levelGeo=a.level;c.enhanced=enhanced;c.api=enhanced?2:1;c.NAVH=dp(round?32:56);c.DEMONAVH=dp(pill?80:56);c.ROW=dp(pill?68:56);
  c.iconsH=dp(round?64:pill?192:128);c.compactH=dp(pill?96:48);
  c.frames=n=>JSON.stringify(a[n].map(src=>({src})));c.images=n=>JSON.stringify(!enhanced&&['morph','buttonMorph','compactMorph'].includes(n)?a[n].map((src,i)=>a[n][i===18?18:0]):a[n]);
  c.switchJs=()=>JSON.stringify({on:a.switchOn,off:a.switchOff,dis:a.switchDisabled,p:a.switchThumb,ms:a.switchFrameMs});
- c.progressAssets=()=>JSON.stringify(Object.fromEntries(["ring","ringThin","ringLarge","seg","segBinary","arc","linear","linearThick","overflow","level"].map(n=>[n,a[n]])));
+ c.progressAssets=()=>JSON.stringify(Object.fromEntries(["ring","ringThin","ringLarge","seg","segBinary","arc","linear","linearThick","overflow"].map(n=>[n,a[n]])));
  c.siJs=()=>JSON.stringify(round?{round:true,...a.scrollBox,images:a.scroll}:{round:false,L:dp(50),y0:Math.round(H/2-dp(25))});
  c.siCss=()=>{
   if(round){const b=a.scrollBox,[tw,th]=c.png('scroll_track_arc');return '.si-track{position:absolute;left:'+(W-tw)+'px;top:'+Math.round((H-th)/2)+'px;width:'+tw+'px;height:'+th+'px;}\n.si-thumb{position:absolute;left:'+(W-b.w)+'px;top:'+Math.round((H-b.h)/2)+'px;width:'+b.w+'px;height:'+b.h+'px;transform:rotate(0deg);transform-origin:'+(b.w-W/2)+'px '+b.h/2+'px;}';}
