@@ -1,6 +1,6 @@
 # tools/v3 —— 从 v3 预览管线搬来的 PNG（供 tools/assets.js 复用）
 
-`tools/assets.js` 会把这里的 `assets/<设备>/*.png` 原样拷进 `assets/<设备>/`（EdgeButton 轮廓、弯曲 TimeText 背景、
+`tools/assets.js` 会把这里的 `assets/<设备>/*.png` 原样拷进 `assets/<设备>/`（EdgeButton 轮廓、
 弯曲"已保存"、对勾/关闭/删除图标、圆屏 ScrollIndicator 轨道）。这些图由 v3 预览管线按 androidx 源码几何绘制
 （原始位置：box 上 `/workspace/vela-notes/preview/v3/`，未随包提供）。
 

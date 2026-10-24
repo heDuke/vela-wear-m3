@@ -4,14 +4,14 @@
 // vela-notes/preview/v3/src/assets3.js: Material Symbols Rounded (Apache-2.0) rendered in fixed M3 colours
 // (Vela <image> cannot tint), EdgeButton shape from androidx EdgeButtonShape math, round ScrollIndicator arcs,
 // curved TimeText background, curved "已保存", spinner arc. PNG8-quantised afterwards by quant.py.
-// v3 PNGs that already exist are copied 1:1 (edge_button, timetext_bg, curved_saved, check/close/delete icons).
+// v3 PNGs that already exist are copied 1:1 (edge_button, curved_saved, check/close/delete icons).
 const { chromium } = require('playwright-core');
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..'), V3 = process.env.V3_DIR || path.join(__dirname, 'v3');
 const D = JSON.parse(fs.readFileSync(path.join(__dirname, 'devices.json')));
 const { C } = require('./tokens.js'); const G = require('./geom.js');
 const FONT = `@font-face{font-family:GSF;src:url(file://${V3}/fonts/GoogleSansFlex.ttf);} `;
-const REUSE = ['edge_button', 'timetext_bg', 'curved_saved', 'check_onPrimary_32', 'check_onPrimary_28', 'close_primary_28', 'delete_onBackground_24', 'check_primary_52', 'scroll_track_arc'];
+const REUSE = ['edge_button', 'curved_saved', 'check_onPrimary_32', 'check_onPrimary_28', 'close_primary_28', 'delete_onBackground_24', 'check_primary_52', 'scroll_track_arc'];
 // [file, svg, colorRole, dp(round/rect), dp(pill)]  (section icons: 20dp in 32dp circle on round, 16 in 24 elsewhere — v3 rule)
 const SEC = [['sec_buttons', 'smart_button', 'onPrimary'], ['sec_cards', 'view_agenda', 'onSecondary'], ['sec_list', 'list', 'onTertiary'],
   ['sec_edge', 'vertical_align_bottom', 'onPrimary'], ['sec_time', 'schedule', 'onSecondary'], ['sec_toggles', 'toggle_on', 'onTertiary'],

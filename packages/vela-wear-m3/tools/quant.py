@@ -9,7 +9,7 @@ for id in D:
     for f in sorted(os.listdir(dd)):
         if not f.endswith('.png'): continue
         im=Image.open(dd+f).convert('RGBA')
-        n=64 if f in ('logo.png','scrim.png') else 32 if any(s in f for s in ('scroll','si_','edge','curved','timetext','spin')) else 16
+        n=64 if f in ('logo.png','scrim.png') else 32 if any(s in f for s in ('scroll','si_','edge','curved','spin')) else 16
         im.quantize(colors=n,method=Image.FASTOCTREE).save(dd+f,optimize=True); rep[id][f]=os.path.getsize(dd+f)
     rep[id]['_total_bytes']=sum(rep[id].values())
 json.dump(rep,open(ROOT+'/assets/sizes.json','w'),indent=1)

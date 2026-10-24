@@ -51,7 +51,7 @@
 | `M3TransformingList` | `partials/base.js` `onScroll/applyScroll` + `common/m3.js tlc()` | TransformingLazyColumn（ResponsiveTransformationSpec） | list `scroll.scrollY` 绝对偏移 |
 | `M3ScrollIndicator` | `partials/scrollind.tpl` + `siCss()` + `siStyle()` | ScrollIndicator（圆屏弧形 / 其它直条） | 圆屏弧 PNG、thumb 长度 3/5/7 档 |
 | `M3EdgeButton` | edge 页 + `ebCss()` | EdgeButton（Small 56dp，距底 3dp）+ scrim | edge_button.png、scrim.png |
-| `M3TimeText` | `partials/timetext.tpl` + `ttCss()` + `base.js tick()` | TimeText（圆/胶囊弯曲、矩形直排） | timetext_bg.png、定时器 |
+| `M3TimeText` | `partials/timetext.tpl` + `ttCss()` + `base.js tick()` | TimeText（圆/胶囊弯曲、矩形直排） | 定时器（无背景底板） |
 | `M3SwitchButton` / `M3CheckboxButton` / `M3RadioButton` | toggles 页 `.sw*` 等 | SwitchButton / CheckboxButton / RadioButton | check 图标 |
 | `M3Slider` / `M3Stepper` | toggles 页 InlineSlider | InlineSlider / Stepper（后者未做） | ± 图标 |
 | `M3AlertDialog` | `partials/dialog.tpl` + `dlgCss()` + overlay.css | AlertDialog（icon/title/text；dismiss 60dp r18 + confirm 63×54 旋转 −45°） | 全屏 overlay |
