@@ -96,13 +96,14 @@
   },
   stopHold(id){if(holds[id])clearTimeout(holds[id]);delete holds[id]},
   hold(id,fn){this.stopHold(id);const repeat=()=>{if(this.pressId!==id||!active)return;fn();holds[id]=setTimeout(repeat,120)};holds[id]=setTimeout(repeat,500)},
-  animateControl(id,target,initial=0) {
-    const m=motions[id]||(motions[id]={x:initial,v:0,target:initial});m.target=target
-    if(motionTimer)return
-    motionTimer=setInterval(()=>{
+  animateControl(id,target,initial=0,stiffness=0) {
+    // stiffness>0 = one critically damped spring both ways (e.g. androidx fastEffects 1400); 0 keeps press feedback
+    // (fast 1400 in, slow 260 out).
+    const m=motions[id]||(motions[id]={x:initial,v:0,target:initial});m.target=target;m.k=stiffness
+    const step=only=>{
       let moving=false
-      Object.keys(motions).forEach(key=>{
-        const q=motions[key],dt=1/120,stiff=q.target?1400:260
+      ;(only?[only]:Object.keys(motions)).forEach(key=>{
+        const q=motions[key],dt=1/120,stiff=q.k||(q.target?1400:260)
         for(let n=0;n<4;n++){q.v+=(stiff*(q.target-q.x)-2*Math.sqrt(stiff)*q.v)*dt;q.x+=q.v*dt}
         if(Math.abs(q.x-q.target)<.002&&Math.abs(q.v)<.02){q.x=q.target;q.v=0}else moving=true
         const value=Math.max(0,Math.min(1,q.x)),st={opacity:Math.round((1-.08*value)*100)/100}
@@ -111,12 +112,16 @@
         if(previous.opacity!==st.opacity||previous.borderRadius!==st.borderRadius)this.feedback[key]=st
         if(this.onMotionFrame)this.onMotionFrame(key,value)
       })
-      if(!moving){clearInterval(motionTimer);motionTimer=null}
-    },33)
+      if(!only&&!moving&&motionTimer){clearInterval(motionTimer);motionTimer=null}
+      return moving
+    }
+    // Explicit-stiffness motions render their first step now instead of one tick late.
+    if(stiffness>0&&!step(id))return
+    if(!motionTimer)motionTimer=setInterval(()=>step(),33)
   },
   setLayout(h) {
     const feedback={};['back','plus','minus','morph','buttonMorph','compact','compactStatic','secondary','a','b','c','tg','eb','dec','inc'].forEach(id=>{feedback[id]={opacity:1}})
-    ;['items','variants','iconVariants','radios'].forEach(name=>{(this[name]||[]).forEach(it=>{feedback[it.id]={opacity:1}})})
+    ;['items','variants','iconVariants','radios','switches'].forEach(name=>{(this[name]||[]).forEach(it=>{feedback[it.id]={opacity:1}})})
     this.feedback=feedback
     if(PAGE_LAYOUT.length){h=[];PAGE_LAYOUT.forEach(row=>{const n=row.repeat?(this[row.repeat]||[]).length:1;if(row.repeat==='items')this.tlcBase=h.length;for(let i=0;i<n;i++)h.push(row.height)})}
     tops = []; hts = h;lastVisible=[]

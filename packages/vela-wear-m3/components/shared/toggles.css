@@ -1,7 +1,18 @@
-.switch-row{width:$[W]px;height:$[dp(pill?104:60)]px;align-items:center;justify-content:center;}
-.switch-card{width:$[CW]px;height:$[dp(pill?96:52)]px;padding-left:$(14);padding-right:$(14);border-width:1px;border-radius:$(26);flex-direction:$[pill?'column':'row'];align-items:center;justify-content:center;}
-.switch-heading{width:$[CW-dp(pill?28:66)]px;flex-direction:row;align-items:center;}.switch-leading{width:$(24);height:$(24);margin-right:$(6);}.switch-labels{flex:1;flex-direction:column;}.switch-label{font-size:$(15);line-height:$(18);color:$[C.onSurface];lines:1;}.switch-sub{font-size:$(12);line-height:$(16);color:$[C.onSurfaceVariant];lines:1;}.switch-secondary-on{color:$[C.onPrimaryContainer];opacity:0.9;}
-.switch-art{width:$(32);height:$(24);margin-top:$[dp(pill?8:0)]px;}.switch-disabled{background-color:#1E1C1F;border-color:#1E1C1F;}.disabled-label{color:$[C.onSurface];opacity:0.38;}
+/* Row = card + 8dp list gap. Vela list layout needs a fixed row height: one-line label + one-line caption gives the
+   official 52dp minimum (8+18+1+16+8 -> 52); band stacks to 8+35+6+24+8 = 81dp. Raise .switch-row for 2-3 line labels
+   (the card grows from min-height). */
+.switch-row{width:$[W]px;height:$[dp(pill?89:60)]px;flex-direction:column;align-items:center;justify-content:center;}
+/* SwitchButton: androidx MIN_HEIGHT 52, ContentPadding 14/8, CornerLarge 26. Container colour = slowEffectsSpec (~420ms,
+   cubic-bezier fit of the stiffness-260 critically damped spring); text colours cannot transition in Vela (instant). */
+.switch-press{width:$[CW]px;flex-direction:column;}
+.switch-card{width:$[CW]px;min-height:$(52);padding-left:$(14);padding-right:$(14);padding-top:$(8);padding-bottom:$(8);border-width:1px;border-radius:$(26);flex-direction:$[pill?'column':'row'];align-items:$[pill?'flex-start':'center'];justify-content:center;transition-duration:420ms;transition-timing-function:cubic-bezier(0.2,0.1,0.2,1);}
+.switch-heading{width:$[CW-dp(pill?28:66)]px;flex-direction:row;align-items:center;}.switch-leading{width:$[dp(pill?20:24)]px;height:$[dp(pill?20:24)]px;margin-right:$(6);}.switch-labels{flex:1;flex-direction:column;}
+.switch-label{font-size:$[dp(pill?13:15)]px;line-height:$(18);font-weight:bold;color:$[C.onSurface];lines:3;text-overflow:ellipsis;}
+.switch-sub{font-size:$[dp(pill?11:13)]px;line-height:$(16);margin-top:$(1);color:$[C.onSurfaceVariant];lines:2;text-overflow:ellipsis;}.switch-secondary-on{color:$[C.onPrimaryContainer];opacity:0.9;}
+/* Band adaptation: the official side-by-side row leaves <52dp for text on a 117dp card, so labels stack and the switch
+   stays at the END (right) under them, 6dp (TOGGLE_CONTROL_SPACING) below. */
+.switch-ctl{width:$[pill?CW-dp(28):dp(32)]px;margin-left:$[pill?0:dp(6)]px;margin-top:$[pill?dp(6):0]px;flex-direction:row;justify-content:flex-end;}
+.switch-art{width:$(32);height:$(24);}.switch-disabled{background-color:#1E1C1F;border-color:#1E1C1F;}.disabled-label{color:$[C.onSurface];opacity:0.38;}
 .selection-box{width:$(24);height:$(24);border-width:$(2);border-color:$[C.primary];border-radius:$(4);}.selection-image{width:$(20);height:$(20);}.radio{width:$(24);height:$(24);border-width:$(2);border-color:$[C.primary];border-radius:$(12);align-items:center;justify-content:center;}.radio-dot{width:$(12);height:$(12);border-width:1px;border-color:$[C.primary];border-radius:$(6);background-color:$[C.primary];transform-origin:$(6) $(6);}
 .slider-row{width:$[W]px;height:$[dp(pill?112:64)]px;align-items:center;justify-content:center;}.slider-control{width:$[CW]px;height:$[dp(pill?104:56)]px;border-width:1px;border-color:$[C.surfaceContainer];border-radius:$(26);background-color:$[C.surfaceContainer];flex-direction:$[pill?'column':'row'];align-items:center;justify-content:center;}
 .slider-track-slot{width:$[CW-dp(pill?24:104)]px;height:$(36);align-items:center;justify-content:center;}.slider-rail{width:$[CW-dp(pill?24:104)]px;height:$(12);}.slider-unselected{position:absolute;left:0px;top:$(4);width:$[CW-dp(pill?24:104)]px;height:$(4);border-width:1px;border-color:#241F2A;border-radius:$(2);background-color:#241F2A;}.slider-selected{position:absolute;left:0px;top:0px;height:$(12);border-width:1px;border-color:$[C.primary];border-radius:$(6);background-color:$[C.primary];}.slider-dim{border-color:$[C.primaryDim];background-color:$[C.primaryDim];}.slider-separator{position:absolute;top:$(4);width:$(4);height:$(4);border-width:1px;border-color:$[C.primaryContainer];border-radius:$(2);background-color:$[C.primaryContainer];}

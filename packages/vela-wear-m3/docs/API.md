@@ -140,6 +140,6 @@ npx vela-wear-m3 gen --input template --out src --device band10 --animation enha
 
 完整基础结构见库内 `examples/minimal/template/`。生成器自动从实际列表结构提取布局，业务页调用 `setLayout([])`；不要另建高度表。
 
-基础控制器提供 `press(id)`、`release(id)`、`cancelPress()`、`animateControl(id,target,initial)`、`hold(id,callback)`、`later(fn,ms)`、返回处理及时钟／滚动调度。它们依赖 `base_head.js`、`base_data.js`、`base.js`，不是可脱离页面任意实例化的服务。
+基础控制器提供 `press(id)`、`release(id)`、`cancelPress()`、`animateControl(id,target,initial,stiffness)`、`hold(id,callback)`、`later(fn,ms)`、返回处理及时钟／滚动调度。它们依赖 `base_head.js`、`base_data.js`、`base.js`，不是可脱离页面任意实例化的服务。
 
 `pageShow`、`pageHide`、`pageDestroy`、`onMotionFrame` 等名称是组合扩展点。多个控制器同时使用时须人工合并调用，不要让后一个同名方法覆盖前一个。基础 `onHide`／`onDestroy` 必须保留清理路径；具体组合、状态字段和组件用例见[组件指南](COMPONENTS.md)。

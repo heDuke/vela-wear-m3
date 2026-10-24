@@ -13,16 +13,16 @@ const cases=[
  ['dialogs','confirmation','showConfirm',900],['dialogs','alert','openDlg',300],
  ['buttons','pressed','morphPress',150,'.morph-hit'],
  ['buttons','button-pressed','buttonMorphPress',150,'.button-morph-hit'],
- ['toggles','switch-no-leading','nextSwitchVariant',0,'.switch-row'],
- ['toggles','switch-plain-thumb',null,0,'.switch-row'],
+ ['toggles','switch-no-leading',null,0,'.switch-row'],
+ ['toggles','switch-leading','nextSwitchVariant',0,'.switch-row'],
  ['time','arc-time',null,0,'.arc-panel'],
  ['motion','progress-states','nextKind',0,'.progress-stage']
 ];
 for(let i=0;i<11;i++)cases.push(['motion','progress-'+i,'kind:'+i,300,'.progress-stage']);
-for(let i=0;i<4;i++)cases.push(['toggles','switch-kind-'+i,'switch:'+i,0,'.switch-row']);
+for(let i=0;i<2;i++)cases.push(['toggles','switch-kind-'+i,'switch:'+i,0,'.switch-row']);
 for(let i=0;i<3;i++)cases.push(['toggles','slider-'+i,'slider:'+i,0,'.slider-row']);
 for(const elapsed of [0,50,100,167,300,500,900,3900,4100,4250])cases.push(['dialogs','confirmation-'+elapsed,'showConfirm',elapsed]);
-for(let k=0;k<4;k++)for(let state=0;state<4;state++)cases.push(['toggles','switch-k'+k+'-s'+state,'switch:'+k,0,'switch-state:'+state]);
+for(let k=0;k<2;k++)for(let state=0;state<4;state++)cases.push(['toggles','switch-k'+k+'-s'+state,'switch:'+k,0,'switch-state:'+state]);
 async function main(){
  fs.mkdirSync(OUT,{recursive:true});
  const server=http.createServer((req,res)=>{
@@ -93,7 +93,7 @@ async function main(){
  },{state,elapsed,d,targetSelector});
  await page.evaluate(()=>document.fonts.ready);
  fs.mkdirSync('out/preview-html',{recursive:true}); fs.writeFileSync(path.join('out/preview-html',id+'_'+label+'.html'),await page.content());
- if(/^switch-k[0-3]-s[0-3]$/.test(label))await page.locator('.switch-row').nth(+targetSelector.split(':')[1]).screenshot({path:path.join(OUT,id+'_'+label+'.png')});else await page.screenshot({path:path.join(OUT,id+'_'+label+'.png')});
+ if(/^switch-k[01]-s[0-3]$/.test(label))await page.locator('.switch-row').nth(+targetSelector.split(':')[1]).screenshot({path:path.join(OUT,id+'_'+label+'.png')});else await page.screenshot({path:path.join(OUT,id+'_'+label+'.png')});
  if(['home','buttons','cards','list','edge','time','switches','dialogs','progress'].includes(label)){
   const scroll=await page.locator('list').evaluate(el=>({height:el.scrollHeight,viewport:el.clientHeight}));
   for(let pos=0,index=0;pos<scroll.height;pos+=Math.max(1,scroll.viewport),index++){

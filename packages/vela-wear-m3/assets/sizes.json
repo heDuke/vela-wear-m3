@@ -47,9 +47,9 @@
   "sun_primary_24.png": 525,
   "top_scrim.png": 509,
   "water_primary_18.png": 440,
-  "wifi_onPrimaryC_24.png": 496,
   "wifi_onSurface_24.png": 496,
-  "_total_bytes": 24360
+  "wifi_primary_24.png": 464,
+  "_total_bytes": 24328
  },
  "pro": {
   "add_onPrimary_20.png": 242,
@@ -94,9 +94,9 @@
   "sun_primary_24.png": 525,
   "top_scrim.png": 486,
   "water_primary_18.png": 440,
-  "wifi_onPrimaryC_24.png": 496,
   "wifi_onSurface_24.png": 496,
-  "_total_bytes": 20653
+  "wifi_primary_24.png": 464,
+  "_total_bytes": 20621
  },
  "band10": {
   "add_onPrimary_20.png": 229,
@@ -141,9 +141,9 @@
   "sun_primary_24.png": 426,
   "top_scrim.png": 456,
   "water_primary_18.png": 394,
-  "wifi_onPrimaryC_24.png": 392,
   "wifi_onSurface_24.png": 392,
-  "_total_bytes": 18385
+  "wifi_primary_24.png": 360,
+  "_total_bytes": 18353
  },
  "band9": {
   "add_onPrimary_20.png": 229,
@@ -188,8 +188,8 @@
   "sun_primary_24.png": 426,
   "top_scrim.png": 454,
   "water_primary_18.png": 394,
-  "wifi_onPrimaryC_24.png": 392,
   "wifi_onSurface_24.png": 392,
-  "_total_bytes": 18362
+  "wifi_primary_24.png": 360,
+  "_total_bytes": 18330
  }
 }

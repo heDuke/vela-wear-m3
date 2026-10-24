@@ -63,37 +63,76 @@
    "/common/img/compactMorph_17.png",
    "/common/img/compactMorph_18.png"
   ],
-  "switchPlain": [
-   "/common/img/sw_n_0.png",
-   "/common/img/sw_n_1.png",
-   "/common/img/sw_n_2.png",
-   "/common/img/sw_n_3.png",
-   "/common/img/sw_n_4.png",
-   "/common/img/sw_n_5.png",
-   "/common/img/sw_n_6.png",
-   "/common/img/sw_n_7.png",
-   "/common/img/sw_n_8.png",
-   "/common/img/sw_n_9.png"
+  "switchFrameMs": 33,
+  "switchThumb": {
+   "on": [
+    0.0,
+    0.3499,
+    0.7064,
+    0.8842,
+    0.9575,
+    0.9851,
+    0.9949,
+    0.9983,
+    0.9994,
+    0.9998,
+    0.9999,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "off": [
+    1.0,
+    0.6501,
+    0.2936,
+    0.1158,
+    0.0425,
+    0.0149,
+    0.0051,
+    0.0017,
+    0.0006,
+    0.0002,
+    0.0001,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "switchOn": [
+   "/common/img/sw_on_0.png",
+   "/common/img/sw_on_1.png",
+   "/common/img/sw_on_2.png",
+   "/common/img/sw_on_3.png",
+   "/common/img/sw_on_4.png",
+   "/common/img/sw_on_5.png",
+   "/common/img/sw_on_6.png",
+   "/common/img/sw_on_7.png",
+   "/common/img/sw_on_8.png",
+   "/common/img/sw_on_9.png",
+   "/common/img/sw_on_10.png",
+   "/common/img/sw_on_11.png",
+   "/common/img/sw_on_12.png",
+   "/common/img/sw_on_13.png"
   ],
-  "switchDisabledPlain": [
-   "/common/img/sw_dn_0.png",
-   "/common/img/sw_dn_1.png"
+  "switchOff": [
+   "/common/img/sw_on_13.png",
+   "/common/img/sw_off_1.png",
+   "/common/img/sw_off_2.png",
+   "/common/img/sw_off_3.png",
+   "/common/img/sw_off_4.png",
+   "/common/img/sw_off_5.png",
+   "/common/img/sw_off_6.png",
+   "/common/img/sw_off_7.png",
+   "/common/img/sw_off_8.png",
+   "/common/img/sw_off_9.png",
+   "/common/img/sw_off_10.png",
+   "/common/img/sw_off_11.png",
+   "/common/img/sw_off_12.png",
+   "/common/img/sw_on_0.png"
   ],
-  "switchIcon": [
-   "/common/img/sw_n_0.png",
-   "/common/img/sw_i_1.png",
-   "/common/img/sw_i_2.png",
-   "/common/img/sw_i_3.png",
-   "/common/img/sw_i_4.png",
-   "/common/img/sw_i_5.png",
-   "/common/img/sw_i_6.png",
-   "/common/img/sw_i_7.png",
-   "/common/img/sw_i_8.png",
-   "/common/img/sw_i_9.png"
-  ],
-  "switchDisabledIcon": [
-   "/common/img/sw_dn_0.png",
-   "/common/img/sw_di_1.png"
+  "switchDisabled": [
+   "/common/img/sw_dis_0.png",
+   "/common/img/sw_dis_1.png"
   ],
   "ring": [
    "/common/img/ring_0.png",
@@ -736,10 +775,10 @@
     "8": 17.40625,
     "9": 17.40625,
     ":": 9.328125,
-    "同": 30.0,
-    "步": 30.0,
+    "\u540c": 30.0,
+    "\u6b65": 30.0,
     " ": 6.78125,
-    "·": 8
+    "\u00b7": 8
    },
    "glyphs": {
     "0": "/common/img/font_0.png",
@@ -753,10 +792,10 @@
     "8": "/common/img/font_8.png",
     "9": "/common/img/font_9.png",
     ":": "/common/img/font_10.png",
-    "同": "/common/img/font_11.png",
-    "步": "/common/img/font_12.png",
+    "\u540c": "/common/img/font_11.png",
+    "\u6b65": "/common/img/font_12.png",
     " ": "/common/img/font_13.png",
-    "·": "/common/img/font_14.png"
+    "\u00b7": "/common/img/font_14.png"
    },
    "family": "Noto Sans SC",
    "sourceLicense": "OFL-1.1"
@@ -959,37 +998,76 @@
    "/common/img/compactMorph_17.png",
    "/common/img/compactMorph_18.png"
   ],
-  "switchPlain": [
-   "/common/img/sw_n_0.png",
-   "/common/img/sw_n_1.png",
-   "/common/img/sw_n_2.png",
-   "/common/img/sw_n_3.png",
-   "/common/img/sw_n_4.png",
-   "/common/img/sw_n_5.png",
-   "/common/img/sw_n_6.png",
-   "/common/img/sw_n_7.png",
-   "/common/img/sw_n_8.png",
-   "/common/img/sw_n_9.png"
+  "switchFrameMs": 33,
+  "switchThumb": {
+   "on": [
+    0.0,
+    0.3499,
+    0.7064,
+    0.8842,
+    0.9575,
+    0.9851,
+    0.9949,
+    0.9983,
+    0.9994,
+    0.9998,
+    0.9999,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "off": [
+    1.0,
+    0.6501,
+    0.2936,
+    0.1158,
+    0.0425,
+    0.0149,
+    0.0051,
+    0.0017,
+    0.0006,
+    0.0002,
+    0.0001,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "switchOn": [
+   "/common/img/sw_on_0.png",
+   "/common/img/sw_on_1.png",
+   "/common/img/sw_on_2.png",
+   "/common/img/sw_on_3.png",
+   "/common/img/sw_on_4.png",
+   "/common/img/sw_on_5.png",
+   "/common/img/sw_on_6.png",
+   "/common/img/sw_on_7.png",
+   "/common/img/sw_on_8.png",
+   "/common/img/sw_on_9.png",
+   "/common/img/sw_on_10.png",
+   "/common/img/sw_on_11.png",
+   "/common/img/sw_on_12.png",
+   "/common/img/sw_on_13.png"
   ],
-  "switchDisabledPlain": [
-   "/common/img/sw_dn_0.png",
-   "/common/img/sw_dn_1.png"
+  "switchOff": [
+   "/common/img/sw_on_13.png",
+   "/common/img/sw_off_1.png",
+   "/common/img/sw_off_2.png",
+   "/common/img/sw_off_3.png",
+   "/common/img/sw_off_4.png",
+   "/common/img/sw_off_5.png",
+   "/common/img/sw_off_6.png",
+   "/common/img/sw_off_7.png",
+   "/common/img/sw_off_8.png",
+   "/common/img/sw_off_9.png",
+   "/common/img/sw_off_10.png",
+   "/common/img/sw_off_11.png",
+   "/common/img/sw_off_12.png",
+   "/common/img/sw_on_0.png"
   ],
-  "switchIcon": [
-   "/common/img/sw_n_0.png",
-   "/common/img/sw_i_1.png",
-   "/common/img/sw_i_2.png",
-   "/common/img/sw_i_3.png",
-   "/common/img/sw_i_4.png",
-   "/common/img/sw_i_5.png",
-   "/common/img/sw_i_6.png",
-   "/common/img/sw_i_7.png",
-   "/common/img/sw_i_8.png",
-   "/common/img/sw_i_9.png"
-  ],
-  "switchDisabledIcon": [
-   "/common/img/sw_dn_0.png",
-   "/common/img/sw_di_1.png"
+  "switchDisabled": [
+   "/common/img/sw_dis_0.png",
+   "/common/img/sw_dis_1.png"
   ],
   "ring": [
    "/common/img/ring_0.png",
@@ -1632,10 +1710,10 @@
     "8": 17.40625,
     "9": 17.40625,
     ":": 9.328125,
-    "同": 30.0,
-    "步": 30.0,
+    "\u540c": 30.0,
+    "\u6b65": 30.0,
     " ": 6.78125,
-    "·": 8
+    "\u00b7": 8
    },
    "glyphs": {
     "0": "/common/img/font_0.png",
@@ -1649,10 +1727,10 @@
     "8": "/common/img/font_8.png",
     "9": "/common/img/font_9.png",
     ":": "/common/img/font_10.png",
-    "同": "/common/img/font_11.png",
-    "步": "/common/img/font_12.png",
+    "\u540c": "/common/img/font_11.png",
+    "\u6b65": "/common/img/font_12.png",
     " ": "/common/img/font_13.png",
-    "·": "/common/img/font_14.png"
+    "\u00b7": "/common/img/font_14.png"
    },
    "family": "Noto Sans SC",
    "sourceLicense": "OFL-1.1"
@@ -1805,37 +1883,76 @@
    "/common/img/compactMorph_16.png",
    "/common/img/compactMorph_18.png"
   ],
-  "switchPlain": [
-   "/common/img/sw_n_0.png",
-   "/common/img/sw_n_1.png",
-   "/common/img/sw_n_2.png",
-   "/common/img/sw_n_3.png",
-   "/common/img/sw_n_4.png",
-   "/common/img/sw_n_5.png",
-   "/common/img/sw_n_6.png",
-   "/common/img/sw_n_7.png",
-   "/common/img/sw_n_8.png",
-   "/common/img/sw_n_9.png"
+  "switchFrameMs": 33,
+  "switchThumb": {
+   "on": [
+    0.0,
+    0.3499,
+    0.7064,
+    0.8842,
+    0.9575,
+    0.9851,
+    0.9949,
+    0.9983,
+    0.9994,
+    0.9998,
+    0.9999,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "off": [
+    1.0,
+    0.6501,
+    0.2936,
+    0.1158,
+    0.0425,
+    0.0149,
+    0.0051,
+    0.0017,
+    0.0006,
+    0.0002,
+    0.0001,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "switchOn": [
+   "/common/img/sw_on_0.png",
+   "/common/img/sw_on_1.png",
+   "/common/img/sw_on_2.png",
+   "/common/img/sw_on_3.png",
+   "/common/img/sw_on_4.png",
+   "/common/img/sw_on_5.png",
+   "/common/img/sw_on_6.png",
+   "/common/img/sw_on_7.png",
+   "/common/img/sw_on_8.png",
+   "/common/img/sw_on_9.png",
+   "/common/img/sw_on_10.png",
+   "/common/img/sw_on_11.png",
+   "/common/img/sw_on_12.png",
+   "/common/img/sw_on_13.png"
   ],
-  "switchDisabledPlain": [
-   "/common/img/sw_dn_0.png",
-   "/common/img/sw_dn_1.png"
+  "switchOff": [
+   "/common/img/sw_on_13.png",
+   "/common/img/sw_off_1.png",
+   "/common/img/sw_off_2.png",
+   "/common/img/sw_off_3.png",
+   "/common/img/sw_off_4.png",
+   "/common/img/sw_off_5.png",
+   "/common/img/sw_off_6.png",
+   "/common/img/sw_off_7.png",
+   "/common/img/sw_off_8.png",
+   "/common/img/sw_off_9.png",
+   "/common/img/sw_off_10.png",
+   "/common/img/sw_off_11.png",
+   "/common/img/sw_off_12.png",
+   "/common/img/sw_on_0.png"
   ],
-  "switchIcon": [
-   "/common/img/sw_n_0.png",
-   "/common/img/sw_i_1.png",
-   "/common/img/sw_i_2.png",
-   "/common/img/sw_i_3.png",
-   "/common/img/sw_i_4.png",
-   "/common/img/sw_i_5.png",
-   "/common/img/sw_i_6.png",
-   "/common/img/sw_i_7.png",
-   "/common/img/sw_i_8.png",
-   "/common/img/sw_i_9.png"
-  ],
-  "switchDisabledIcon": [
-   "/common/img/sw_dn_0.png",
-   "/common/img/sw_di_1.png"
+  "switchDisabled": [
+   "/common/img/sw_dis_0.png",
+   "/common/img/sw_dis_1.png"
   ],
   "ring": [
    "/common/img/ring_0.png",
@@ -2478,10 +2595,10 @@
     "8": 13.921875,
     "9": 13.921875,
     ":": 7.46875,
-    "同": 24.0,
-    "步": 24.0,
+    "\u540c": 24.0,
+    "\u6b65": 24.0,
     " ": 5.421875,
-    "·": 6
+    "\u00b7": 6
    },
    "glyphs": {
     "0": "/common/img/font_0.png",
@@ -2495,10 +2612,10 @@
     "8": "/common/img/font_8.png",
     "9": "/common/img/font_9.png",
     ":": "/common/img/font_10.png",
-    "同": "/common/img/font_11.png",
-    "步": "/common/img/font_12.png",
+    "\u540c": "/common/img/font_11.png",
+    "\u6b65": "/common/img/font_12.png",
     " ": "/common/img/font_13.png",
-    "·": "/common/img/font_14.png"
+    "\u00b7": "/common/img/font_14.png"
    },
    "family": "Noto Sans SC",
    "sourceLicense": "OFL-1.1"
@@ -2651,37 +2768,76 @@
    "/common/img/compactMorph_16.png",
    "/common/img/compactMorph_18.png"
   ],
-  "switchPlain": [
-   "/common/img/sw_n_0.png",
-   "/common/img/sw_n_1.png",
-   "/common/img/sw_n_2.png",
-   "/common/img/sw_n_3.png",
-   "/common/img/sw_n_4.png",
-   "/common/img/sw_n_5.png",
-   "/common/img/sw_n_6.png",
-   "/common/img/sw_n_7.png",
-   "/common/img/sw_n_8.png",
-   "/common/img/sw_n_9.png"
+  "switchFrameMs": 33,
+  "switchThumb": {
+   "on": [
+    0.0,
+    0.3499,
+    0.7064,
+    0.8842,
+    0.9575,
+    0.9851,
+    0.9949,
+    0.9983,
+    0.9994,
+    0.9998,
+    0.9999,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "off": [
+    1.0,
+    0.6501,
+    0.2936,
+    0.1158,
+    0.0425,
+    0.0149,
+    0.0051,
+    0.0017,
+    0.0006,
+    0.0002,
+    0.0001,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "switchOn": [
+   "/common/img/sw_on_0.png",
+   "/common/img/sw_on_1.png",
+   "/common/img/sw_on_2.png",
+   "/common/img/sw_on_3.png",
+   "/common/img/sw_on_4.png",
+   "/common/img/sw_on_5.png",
+   "/common/img/sw_on_6.png",
+   "/common/img/sw_on_7.png",
+   "/common/img/sw_on_8.png",
+   "/common/img/sw_on_9.png",
+   "/common/img/sw_on_10.png",
+   "/common/img/sw_on_11.png",
+   "/common/img/sw_on_12.png",
+   "/common/img/sw_on_13.png"
   ],
-  "switchDisabledPlain": [
-   "/common/img/sw_dn_0.png",
-   "/common/img/sw_dn_1.png"
+  "switchOff": [
+   "/common/img/sw_on_13.png",
+   "/common/img/sw_off_1.png",
+   "/common/img/sw_off_2.png",
+   "/common/img/sw_off_3.png",
+   "/common/img/sw_off_4.png",
+   "/common/img/sw_off_5.png",
+   "/common/img/sw_off_6.png",
+   "/common/img/sw_off_7.png",
+   "/common/img/sw_off_8.png",
+   "/common/img/sw_off_9.png",
+   "/common/img/sw_off_10.png",
+   "/common/img/sw_off_11.png",
+   "/common/img/sw_off_12.png",
+   "/common/img/sw_on_0.png"
   ],
-  "switchIcon": [
-   "/common/img/sw_n_0.png",
-   "/common/img/sw_i_1.png",
-   "/common/img/sw_i_2.png",
-   "/common/img/sw_i_3.png",
-   "/common/img/sw_i_4.png",
-   "/common/img/sw_i_5.png",
-   "/common/img/sw_i_6.png",
-   "/common/img/sw_i_7.png",
-   "/common/img/sw_i_8.png",
-   "/common/img/sw_i_9.png"
-  ],
-  "switchDisabledIcon": [
-   "/common/img/sw_dn_0.png",
-   "/common/img/sw_di_1.png"
+  "switchDisabled": [
+   "/common/img/sw_dis_0.png",
+   "/common/img/sw_dis_1.png"
   ],
   "ring": [
    "/common/img/ring_0.png",
@@ -3324,10 +3480,10 @@
     "8": 13.921875,
     "9": 13.921875,
     ":": 7.46875,
-    "同": 24.0,
-    "步": 24.0,
+    "\u540c": 24.0,
+    "\u6b65": 24.0,
     " ": 5.421875,
-    "·": 6
+    "\u00b7": 6
    },
    "glyphs": {
     "0": "/common/img/font_0.png",
@@ -3341,10 +3497,10 @@
     "8": "/common/img/font_8.png",
     "9": "/common/img/font_9.png",
     ":": "/common/img/font_10.png",
-    "同": "/common/img/font_11.png",
-    "步": "/common/img/font_12.png",
+    "\u540c": "/common/img/font_11.png",
+    "\u6b65": "/common/img/font_12.png",
     " ": "/common/img/font_13.png",
-    "·": "/common/img/font_14.png"
+    "\u00b7": "/common/img/font_14.png"
    },
    "family": "Noto Sans SC",
    "sourceLicense": "OFL-1.1"

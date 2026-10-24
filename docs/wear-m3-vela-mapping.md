@@ -109,7 +109,7 @@
 | Picker | 渐变占比 GradientRatio 0.33（上下边缘渐隐） | `SRC/Picker.kt` |
 | Stepper | 按钮 60×48；按钮权重 0.35，内容权重 0.3；垂直间距 8；图标 24 | `SRC/Stepper.kt` |
 | Slider | 高 52；控制按钮 48；进度条 12（未选部分 4）；分段间隔 4；容器 surfaceContainer，圆角 large；已选部分 primary | `SRC/Slider.kt`、`SRC/tokens/SliderTokens.kt` |
-| SwitchButton | 最小高度 52；内边距 14 / 8；开关控件 32×24（内高 22），轨道描边 2；滑块半径：关 6、开 9；开时容器 primaryContainer，关时 surfaceContainer；开时轨道 primary，关时轨道 surfaceContainer、描边 outline | `SRC/SwitchButton.kt`（第 2037–2047 行）、`SRC/tokens/SwitchButtonTokens.kt` |
+| SwitchButton | 最小高度 52；内边距 14 / 8；开关控件 32×24（内高 22），轨道描边 2；滑块半径：关 6、开 9；开时容器 primaryContainer，关时 surfaceContainer；开时轨道 primary，关时轨道 surfaceContainer、描边 outline；滑块 outline→primaryContainer，对勾 primary（两段 2dp 圆头，按 1−(1−p)³ 缩放）；位置 fastEffectsSpec，颜色 slowEffectsSpec | `SRC/SwitchButton.kt`（第 2037–2047 行）、`SRC/tokens/SwitchButtonTokens.kt` |
 
 ### 1.5 动效（`SRC/tokens/MotionTokens.kt`、`SRC/MotionScheme.kt`）
 - 时长：Short1–4 为 **50 / 100 / 150 / 200**；Medium1–4 为 **250 / 300 / 350 / 400**；Long1–4 为 **450 / 500 / 550 / 600**；ExtraLong1–4 为 **700 / 800 / 900 / 1000** ms。
@@ -182,7 +182,7 @@
 | Picker（时间 / 数字） | 🟡 | 原生 `picker type=time / text` 可以改 selected-color、font-size，但没有渐隐遮罩，也没有 numeral 字体；自绘版用 `scroll` 加 scroll-snap（3+），渐隐同样只能用 PNG |
 | Stepper | ✅ | 两个 60×48 按钮夹一个数字 |
 | Slider（M3 分段条） | ✅（自绘） / 🟡（原生） | 自绘：52dp 高的 div 容器，两侧放 −/+ 按钮，中间用 div 画分段条；原生 slider 只能改颜色，属于近似 |
-| SwitchButton | ✅（自绘） | 52dp 胶囊按钮，右侧放 32×24 的 div 轨道加圆形滑块；滑块位置不能 transition，切换是瞬间完成的（背景色可以过渡） |
+| SwitchButton | ✅（自绘） | 52dp 胶囊按钮，右侧 32×24 开关为按方向/时间索引的 PNG 序列（滑块 fastEffects 1400、颜色 slowEffects 260、滑块内官方对勾）；容器背景 CSS transition 420ms；文字颜色瞬时（Vela 不能过渡 color）；手环纵向堆叠、开关右对齐 |
 | 触感反馈 | ✅ | `vibrator.vibrate({mode:'short'})`，外面包 try/catch |
 | 表冠滚动（Wear 依赖 rotary） | ❌ | 未文档化 |
 | 返回（SwipeToDismissBox） | 🟡 | 系统右滑通过 `onBackPress` 处理；没有跟手的页面拖拽动画 |

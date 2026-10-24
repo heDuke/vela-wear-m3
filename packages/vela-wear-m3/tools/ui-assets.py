@@ -37,6 +37,57 @@ def save(im,name,w=None,h=None):
  key=hashlib.sha256(str(im.size).encode()+im.tobytes()).hexdigest();uri='/common/img/'+name+'.png'
  im.quantize(colors=16,method=Image.Quantize.FASTOCTREE).save(folder+'/'+name+'.png',optimize=True)
  return dedup.setdefault(key,uri)
+SW_MS=33;SW_N=14  # androidx SwitchButton: SWITCH_PROGRESS = fastEffectsSpec, COLOR = slowEffectsSpec
+def crit(k,ms):
+ if ms<=0:return 0.
+ w=math.sqrt(k)*ms/1000;return 1-(1+w)*math.exp(-w)
+def _rgba(c):return ImageColor.getrgb(c)+(255,) if isinstance(c,str) else tuple(c)
+def _lin(v):return v/12.92 if v<=.04045 else ((v+.055)/1.055)**2.4
+def _gam(v):return 12.92*v if v<=.0031308 else 1.055*v**(1/2.4)-.055
+def _lab(c):
+ r,g,b=(_lin(v/255) for v in c[:3]);l=(.4122214708*r+.5363325363*g+.0514459929*b)**(1/3);m_=(.2119034982*r+.6806995451*g+.1073969566*b)**(1/3);s_=(.0883024619*r+.2817188376*g+.6299787005*b)**(1/3)
+ return (.2104542553*l+.793617785*m_-.0040720468*s_,1.9779984951*l-2.428592205*m_+.4505937099*s_,.0259040371*l+.7827717662*m_-.808675766*s_)
+def _rgb(L,a,b):
+ l=(L+.3963377774*a+.2158037573*b)**3;m_=(L-.1055613458*a-.0638541728*b)**3;s_=(L-.0894841775*a-1.291485548*b)**3
+ return tuple(round(255*max(0,min(1,_gam(max(0,v))))) for v in (4.0767416621*l-3.3077115913*m_+.2309699292*s_,-1.2684380046*l+2.6097574011*m_-.3413193965*s_,-.0041960863*l-.7034186147*m_+1.707614701*s_))
+def oklab_mix(a,b,t):
+ a,b=_rgba(a),_rgba(b);la,lb=_lab(a),_lab(b);return _rgb(*(x+(y-x)*t for x,y in zip(la,lb)))+(round(a[3]+(b[3]-a[3])*t),)
+def switch_frame(k,p,colors):
+ # SWITCH_WIDTH 32, outer 24, inner (track) 22, border 2, thumb radius 6->9, padding 5/2, tick 2dp at the official path.
+ track,border,thumb,tick=colors;W,H=round(32*k),round(24*k);cy=H/2;layers=[]
+ def layer():
+  im,dr=canvas(W,H);layers.append(im);return dr
+ box=(0,round(k*S),W*S-1,round(23*k*S)-1)
+ if track[3]:layer().rounded_rectangle(box,radius=11*k*S,fill=track)
+ if border[3] and border!=track:layer().rounded_rectangle(box,radius=11*k*S,outline=border,width=round(2*k*S))
+ r=(6+3*p)*k;cx=(1-p)*(r+5*k)+p*(32*k-r-2*k)  # lerp(r+padUnchecked, W-r-padChecked, p) with the animated radius
+ if thumb[3]:ellipse(layer(),(cx-r,cy-r,cx+r,cy+r),thumb)
+ sc=1-(1-max(0,min(1,p)))**3
+ if tick[3] and sc>0:
+  dr=layer()
+  for (x1,y1),(x2,y2) in (((-4.6,1),(-2.1,3.5)),((-1.5,3.1),(4.5,-2.9))):line(dr,[(cx+x1*k*sc,cy+y1*k*sc),(cx+x2*k*sc,cy+y2*k*sc)],tick,2*k*sc)
+ out=canvas(W,H)[0]
+ for im in layers:out=Image.alpha_composite(out,im)
+ return out
+def pal8(im):
+ # Exact-ish PNG8 (pure Pillow): exact colours when <=256, else snap RGB to a 4-level grid (alpha kept exact), keep the
+ # 256 most frequent and map the rest by premultiplied distance. Low-alpha antialias edges keep every alpha level
+ # (FASTOCTREE/16 colours kept ~5, which read as jagged dotted edges on the disabled frames).
+ b=im.convert('RGBA').tobytes();raw=[tuple(b[i:i+4]) for i in range(0,len(b),4)];raw=[(0,0,0,0) if c[3]==0 else c for c in raw]
+ px=raw if len(set(raw))<=256 else [c if c[3]==0 else tuple(min(255,(v+1)//4*4) for v in c[:3])+(c[3],) for c in raw];cnt={}
+ for c in px:cnt[c]=cnt.get(c,0)+1
+ keep=sorted(cnt,key=lambda c:-cnt[c])[:256];pm=lambda c:(c[0]*c[3]/255,c[1]*c[3]/255,c[2]*c[3]/255,c[3])
+ kp=[pm(c) for c in keep];pos={c:j for j,c in enumerate(keep)};index={}
+ for c in cnt:
+  q=pm(c);index[c]=pos[c] if c in pos else min(range(len(keep)),key=lambda j:sum((x-y)**2 for x,y in zip(q,kp[j])))
+ out=Image.new('P',im.size);pal=[v for c in keep for v in c[:3]];out.putpalette(pal+[0]*(768-len(pal)))
+ out.putdata([index[c] for c in px]);out.info['transparency']=bytes(c[3] for c in keep);return out
+def save_sw(im,name):
+ im=im.resize((round(im.width/S),round(im.height/S)),Image.Resampling.LANCZOS)
+ key=hashlib.sha256(str(im.size).encode()+im.tobytes()).hexdigest();uri='/common/img/'+name+'.png'
+ if key in dedup:return dedup[key]
+ p=pal8(im);p.save(folder+'/'+name+'.png',optimize=True,transparency=p.info['transparency'])
+ return dedup.setdefault(key,uri)
 allmeta={}
 for ident,d in DEV.items():
  k=d['k'];px=lambda n:round(n*k);W,H=d['W'],d['H'];pill=d['shape']=='pill';folder=ROOT+'/assets/'+ident;os.makedirs(folder,exist_ok=True);dedup={};m={}
@@ -51,25 +102,22 @@ for ident,d in DEV.items():
   for i in range(19):
    im,dr=canvas(w,h);r=px(rest+(pressed-rest)*i/18);dr.rounded_rectangle((0,0,im.width-1,im.height-1),radius=r*S,fill=P);frames.append(save(im,kind+'_'+str(i)))
   m[kind]=frames
- for icon in (False,True):
-  frames=[]
-  for i in range(10):
-   t=i/9;w,h=px(32),px(24);im,dr=canvas(w,h)
-   def mix(a,b):return tuple(round(int(a[j:j+2],16)*(1-t)+int(b[j:j+2],16)*t) for j in (1,3,5))+(255,)
-   track=mix(SUR,P);border=mix(OUT,P);thumb=mix(OUT,PC)
-   dr.rounded_rectangle((0,px(1)*S,w*S-1,px(23)*S-1),radius=px(11)*S,fill=track,outline=border,width=px(2)*S)
-   r=(6+3*t)*k;cx=(11+10*t)*k;cy=h/2;ellipse(dr,(cx-r,cy-r,cx+r,cy+r),thumb)
-   if icon and t>0:line(dr,[(cx-px(4)*t,cy),(cx-px(1)*t,cy+px(3)*t),(cx+px(5)*t,cy-px(4)*t)],P,max(1,px(1.6)*t))
-   frames.append(save(im,('sw_i_' if icon else 'sw_n_')+str(i)))
-  m['switchIcon' if icon else 'switchPlain']=frames
-  frames=[]
-  for checked in (False,True):
-   im,dr=canvas(px(32),px(24));r=px(9 if checked else 6);cx=px(21 if checked else 11);cy=px(24)/2
-   dr.rounded_rectangle((0,px(1)*S,px(32)*S-1,px(23)*S-1),radius=px(11)*S,fill=(246,237,255,31) if checked else (0,0,0,0),outline=(246,237,255,31),width=px(2)*S)
-   ellipse(dr,(cx-r,cy-r,cx+r,cy+r),(0,0,0,97) if checked else (246,237,255,31))
-   if icon and checked:line(dr,[(cx-px(4),cy),(cx-px(1),cy+px(3)),(cx+px(5),cy-px(4))],(246,237,255,31),px(1.6))
-   frames.append(save(im,('sw_di_' if icon else 'sw_dn_')+str(int(checked))))
-  m['switchDisabledIcon' if icon else 'switchDisabledPlain']=frames
+ # SwitchButton (androidx SwitchButton.kt Switch/drawThumbAndTick + AnimateTick.drawScalingTick). Official default only:
+ # the thumb always carries the tick. Thumb progress = fastEffectsSpec (critically damped, stiffness 1400) and every
+ # colour (track, border, thumb, tick alpha) = slowEffectsSpec (stiffness 260), Oklab-interpolated like animateColorAsState.
+ # Frames are time-indexed per direction (one per 33ms page tick, 0..396ms, last frame = exact end state), so the two
+ # specs stay decoupled without a 2-D sprite. Layers are alpha-composited in the official draw order.
+ m['switchFrameMs']=SW_MS;m['switchThumb']={}
+ for dirn,name in ((1,'On'),(0,'Off')):
+  frames=[];thumbs=[]
+  for i in range(SW_N):
+   last=i==SW_N-1;Pf=1. if last else crit(1400,i*SW_MS);Cc=1. if last else crit(260,i*SW_MS)
+   p=Pf if dirn else 1-Pf;c=Cc if dirn else 1-Cc
+   frames.append(save_sw(switch_frame(k,p,(oklab_mix(SUR,P,c),oklab_mix(OUT,P,c),oklab_mix(OUT,PC,c),oklab_mix((0,0,0,0),P,c))),'sw_'+name.lower()+'_'+str(i)))
+   thumbs.append(round(p,4))
+  m['switch'+name]=frames;m['switchThumb'][name.lower()]=thumbs
+ OS12=(246,237,255,31)
+ m['switchDisabled']=[save_sw(switch_frame(k,0,((0,0,0,0),OS12,OS12,(0,0,0,0))),'sw_dis_0'),save_sw(switch_frame(k,1,(OS12,OS12,(0,0,0,97),OS12)),'sw_dis_1')]
  for kind in ('ring','seg','segBinary','arc','linear','linearThick','overflow'):
   frames=[]
   for pct in [0,1,2,3,4]+list(range(5,101,5)):

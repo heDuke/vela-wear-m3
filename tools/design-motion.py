@@ -8,7 +8,7 @@ font=ImageFont.truetype(str(pathlib.Path.home()/'.vela/sdk/qa/font/MiSansW_Norma
 small=ImageFont.truetype(str(pathlib.Path.home()/'.vela/sdk/qa/font/MiSansW_Normal.ttf'),16)
 ffmpeg=root/'out/runtime/package/ffmpeg.exe'
 for device in ['round','band10']:
-    kinds=['morph','buttonMorph','switchIcon','indeterminate','arcLoading','check']
+    kinds=['morph','buttonMorph','switchOn','indeterminate','arcLoading','check']
     assets={kind:[Image.open(root/'packages/vela-wear-m3/assets'/device/pathlib.PurePosixPath(uri).name).convert('RGBA') for uri in meta[device][kind]] for kind in kinds}
     output=dest/(device+'-asset-motion.mp4')
     cmd=[str(ffmpeg),'-hide_banner','-loglevel','error','-y','-f','rawvideo','-pixel_format','rgb24','-video_size','960x640','-framerate','30','-i','pipe:0','-an','-c:v','libx264','-preset','fast','-crf','21','-pix_fmt','yuv420p','-movflags','+faststart',str(output)]

@@ -26,7 +26,7 @@ const ICONS = [
   ['add_onPrimary_20', 'add', 'onPrimary', 20, 20], ['settings_primary_24', 'settings', 'primary', 24, 24],
   ['water_primary_18', 'water_drop', 'primary', 18, 18], ['check_onPrimary_16', 'check', 'onPrimary', 16, 16],
   ['remove_primary_24', 'remove', 'primary', 24, 24], ['add_primary_24', 'add', 'primary', 24, 24],
-  ['wifi_onSurface_24', 'wifi', 'onSurface', 24, 20], ['wifi_onPrimaryC_24', 'wifi', 'onPrimaryContainer', 24, 20],
+  ['wifi_onSurface_24', 'wifi', 'onSurface', 24, 20], ['wifi_primary_24', 'wifi', 'primary', 24, 20],
   ['bt_onSurface_24', 'bluetooth', 'onSurface', 24, 20], ['bt_onPrimaryC_24', 'bluetooth', 'onPrimaryContainer', 24, 20],
   ['bell_onSurface_24', 'notifications', 'onSurface', 24, 20], ['bell_onPrimaryC_24', 'notifications', 'onPrimaryContainer', 24, 20],
   ['sun_primary_24', 'light_mode', 'primary', 24, 20],

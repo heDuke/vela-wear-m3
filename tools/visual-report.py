@@ -18,7 +18,7 @@ canvas.save(dest/'all-devices-nine-pages.png')
 # Actual sampled asset frames (graphics only, no runtime timing claim).
 a=json.loads((root/'packages/vela-wear-m3/assets/animations.json').read_text())
 for device in devices:
- cases=[('morph',[0,4,9,14,18]),('buttonMorph',[0,4,9,14,18]),('switchIcon',[0,2,4,7,9]),('indeterminate',[0,37,75,112,149]),('arcLoading',[0,6,12,18,27]),('check',[0,2,4,6,8])]
+ cases=[('morph',[0,4,9,14,18]),('buttonMorph',[0,4,9,14,18]),('switchOn',[0,1,2,4,13]),('indeterminate',[0,37,75,112,149]),('arcLoading',[0,6,12,18,27]),('check',[0,2,4,6,8])]
  sheet=Image.new('RGB',(800,len(cases)*160+40),'#161318');dr=ImageDraw.Draw(sheet);dr.text((12,8),device+' 动画局部关键帧 / 固定参考采样',font=font,fill='white')
  for row,(kind,indexes) in enumerate(cases):
   dr.text((8,44+row*160),kind,font=small,fill='white')
@@ -34,10 +34,10 @@ for device in devices:
  sheet=Image.new('RGB',(1120,560),'#161318');dr=ImageDraw.Draw(sheet)
  dr.text((12,8),device+' Switch 状态矩阵 / 设计预览，非模拟器实拍',font=font,fill='white')
  states=['开启','关闭','禁用开启','禁用关闭']
- for kind in range(4):
+ for kind in range(2):
   for state in range(4):
    im=Image.open(folder/(device+f'_switch-k{kind}-s{state}.png')).convert('RGBA');im.thumbnail((260,86))
-   x=kind*280;y=40+state*130
+   x=280+kind*280;y=40+state*130
    dr.text((x+8,y),f'组合 {kind+1} · '+states[state],font=small,fill='white')
    sheet.paste(im,(x+(280-im.width)//2,y+28),im)
  sheet.save(dest/(device+'-switch-matrix.png'))

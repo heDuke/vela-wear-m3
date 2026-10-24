@@ -4,7 +4,7 @@
 <!-- #if pill -->
 <list-item type="title" class="li-page-title"><text class="t-titleM c-on">开关选择</text></list-item>
 <!-- #endif -->
-<list-item type="selector" class="li-56"><div class="btn bt" onclick="nextSwitchVariant"><text class="t-labelM c-onS">{{switchVariant+1}} / 4 · 切换组合</text></div></list-item>
+<list-item type="selector" class="li-56"><div class="btn bt" onclick="nextSwitchVariant"><text class="t-labelM c-onS">{{switchVariant+1}} / 2 · 切换行首图标</text></div></list-item>
 <list-item type="description" class="li-note"><text class="note">{{switchNote}}</text></list-item>
 <list-item type="switch" class="switch-row" for="{{switches}}" tid="id">
 <!-- #component switch-button {"item": "$item", "index": "$idx"} -->
@@ -39,7 +39,7 @@ pageTitle:'开关选择',tlcBase:-1,
 // #include @wear/selection.data.js
 },
 onInit(){this.updateSlider();this.setLayout([])},
-nextSwitchVariant(){this.stopSwitches();this.switchVariant=(this.switchVariant+1)%4;this.switches=variants(this.switchVariant);this.switchNote=(this.switchVariant>=2?'行首图标':'纯文字')+'／'+(this.switchVariant%2?'状态图标 · 官方默认':'无状态图标 · 适配变体')},
+nextSwitchVariant(){this.stopSwitches();this.switchVariant=(this.switchVariant+1)%2;this.switches=variants(this.switchVariant);this.switchNote=(this.switchVariant?'行首图标':'无行首图标')+' · 滑块内对勾（官方默认）'},
 // #include @wear/selection.methods.js
 // #include @wear/range.js
 // #include @wear/base.js

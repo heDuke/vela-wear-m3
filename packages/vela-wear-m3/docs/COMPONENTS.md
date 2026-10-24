@@ -12,7 +12,7 @@
 
 `base_data.js` 放在 private 对象内；`base.js` 放在页面方法对象内。private 至少再提供 `tlcBase:-1`，业务页在 onInit 调用 `setLayout([])`。`pageShow` / `pageHide` / `pageDestroy` 为扩展钩子，`onMotionFrame(id,position)` 接收动作更新；多个控制器共用一个页面时必须合并同名钩子。不要让业务方法覆盖 `cleanup` 或遗失基础 onHide/onDestroy。
 
-`press(id)` / `release(id)` / `cancelPress()`、`animateControl(id,target,initial)` 和 `hold(id,callback)` 共享动作调度器。业务 disabled 状态需在触发前拒绝，Switch 和 Stepper 控制器已处理；取消后抬手不会重新触发。使用者声明所有会在模板读取的反馈键，或在 `setLayout` 后通过赋予完整 feedback 对象增加键。
+`press(id)` / `release(id)` / `cancelPress()`、`animateControl(id,target,initial,stiffness)` 和 `hold(id,callback)` 共享动作调度器（stiffness 省略时为按压反馈：按下 1400、抬起 260；给定时为双向同一临界阻尼弹簧，且首帧立即计算）。业务 disabled 状态需在触发前拒绝，Switch 和 Stepper 控制器已处理；取消后抬手不会重新触发。使用者声明所有会在模板读取的反馈键，或在 `setLayout` 后通过赋予完整 feedback 对象增加键。
 
 ## 按钮与卡片
 
@@ -24,7 +24,7 @@
 
 ## 选择与数值
 
-Switch / Checkbox / Radio / InlineSlider 页引入 selection.head.js（已包含 range.head.js）、selection.data.js（已包含 range.data.js）、selection.methods.js、range.js；样式为 toggles.css / range.css。Switch 接收 item / index 表达式，所有四种组合由 `variants(kind)` 创建：kind 0–3 为行首图标无/有 × 滑块状态图标无/有。每个数组项包含 id、checked、disabled、leading、tick、label、caption、position、src；使用 toggleSwitch(index)，切换页面前 stopSwitches。
+Switch / Checkbox / Radio / InlineSlider 页引入 selection.head.js（已包含 range.head.js）、selection.data.js（已包含 range.data.js）、selection.methods.js、range.js；样式为 toggles.css / range.css。Switch 接收 item / index 表达式，两种官方组合由 `variants(kind)` 创建：kind 0 无行首图标、kind 1 有行首图标；滑块内对勾始终绘制（androidx 默认，已移除“无对勾”变体）。每个数组项包含 id、checked、disabled、leading、label、caption、dir、frame、src；使用 toggleSwitch(index)，按压反馈用 pressSwitch / releaseSwitch，切换页面前 stopSwitches。
 
 Checkbox：bt、checkSrc，方法 tBt；Radio：sel、radios（id / label / st），方法 pick(index)。InlineSlider：lvl 0–5、sliderMode 0/1/2 对应连续/分段/变色、sliderStyle、separators，调用 updateSlider / dec / inc。首版控制器使用这些既定范围；扩展范围需同步控制器与资源映射，不能只改展示数字。
 
@@ -167,7 +167,11 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 </div>
 ```
 
-使用选择与 Slider 组合。item / index 默认 `$item` / `$idx`；item 字段见上文。`variants(0..3)` 分别是无前置图标无状态图标、无前置有状态、有前置无状态、有前置有状态，包含开启／关闭／禁用两态。调用 `toggleSwitch(index)`，禁用直接返回；反向切换从当前 position 接续。无滑块状态图标属于项目适配变体。两种 API 共享静态几何和当前状态过渡资源。
+使用选择与 Slider 组合。item / index 默认 `$item` / `$idx`；item 字段见上文。`variants(0..1)` 分别是无行首图标、有行首图标（Primary 着色），每种都含开启／关闭／禁用两态，滑块内始终有对勾。调用 `toggleSwitch(index)`，禁用直接返回。
+
+时序按 androidx SwitchButton：滑块位置/半径走 fastEffectsSpec（临界阻尼，stiffness 1400，约 178ms 到 99%），轨道、描边、滑块、对勾透明度走 slowEffectsSpec（stiffness 260，约 412ms），对勾为官方两段 2dp 圆头描边，以滑块中心按 1−(1−p)³ 缩放。精灵按方向和时间索引（开/关各 14 帧，每 33ms 一帧，最后一帧为精确终态），点击后首帧立即显示；动画中途反向时跳到反方向序列里滑块位置最接近的一帧（颜色可能小幅跳变）。容器背景/描边用 CSS transition 420ms cubic-bezier(0.2,0.1,0.2,1) 拟合 slowEffectsSpec；文字颜色 Vela 不支持 transition，瞬时切换。禁用态按官方合成：选中滑块为 Background 38% 叠在 12% 轨道上。标签 15/18 粗体（Vela 无 500 字重）最多 3 行，副标签 13/16 最多 2 行、间距 1dp，选中时副标签 onPrimaryContainer 0.9。
+
+手环适配：官方左右并排在 117dp 宽的卡片上只剩不到 52dp 给文字，因此标签纵向堆叠、开关放在下一行末端（右对齐，间距 6dp）；标签 13、副标签 11、行首图标 20dp，与库内其他手环标签一致。两种 API 共享静态几何和当前状态过渡资源。
 
 ### checkbox-button
 
