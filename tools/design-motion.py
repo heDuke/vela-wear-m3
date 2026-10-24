@@ -1,5 +1,5 @@
 """Export asset sampling demonstrations; these are not emulator recordings."""
-import json,pathlib,subprocess,math
+import json,pathlib,subprocess,math,shutil
 from PIL import Image,ImageDraw,ImageFont
 root=pathlib.Path(__file__).resolve().parent.parent
 dest=root/'docs/screenshots/ui-2026-10-24/design-motion';dest.mkdir(exist_ok=True)
@@ -7,9 +7,10 @@ meta=json.loads((root/'packages/vela-wear-m3/assets/animations.json').read_text(
 font=ImageFont.truetype(str(pathlib.Path.home()/'.vela/sdk/qa/font/MiSansW_Normal.ttf'),20)
 small=ImageFont.truetype(str(pathlib.Path.home()/'.vela/sdk/qa/font/MiSansW_Normal.ttf'),16)
 ffmpeg=root/'out/runtime/package/ffmpeg.exe'
+if not ffmpeg.exists():ffmpeg=shutil.which('ffmpeg') or ffmpeg
 for device in ['round','band10']:
     kinds=['morph','buttonMorph','switchOn','indeterminate','arcLoading','check']
-    assets={kind:[Image.open(root/'packages/vela-wear-m3/assets'/device/pathlib.PurePosixPath(uri).name).convert('RGBA') for uri in meta[device][kind]] for kind in kinds}
+    assets={kind:[Image.open(root/'packages/vela-wear-m3/assets'/device/pathlib.PurePosixPath(uri).name).convert('RGBA') for uri in (meta[device]['switchOn']+[meta[device]['switchOn'][-1]]*16+meta[device]['switchOff']+[meta[device]['switchOff'][-1]]*16 if kind=='switchOn' else meta[device][kind])] for kind in kinds}
     output=dest/(device+'-asset-motion.mp4')
     cmd=[str(ffmpeg),'-hide_banner','-loglevel','error','-y','-f','rawvideo','-pixel_format','rgb24','-video_size','960x640','-framerate','30','-i','pipe:0','-an','-c:v','libx264','-preset','fast','-crf','21','-pix_fmt','yuv420p','-movflags','+faststart',str(output)]
     proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
@@ -22,6 +23,7 @@ for device in ['round','band10']:
             frames=assets[kind];n=len(frames)
             if kind=='indeterminate': position=frame%n
             elif kind=='arcLoading': position=frame%n
+            elif kind=='switchOn': position=frame%n  # on 14 frames + hold, off 14 frames + hold, one sprite per 33ms
             elif kind=='check': position=round(min(1,(t%2)/.267)*(n-1))
             else: position=round((.5-.5*math.cos(2*math.pi*(t%2)/2))*(n-1))
             im=frames[position].copy()

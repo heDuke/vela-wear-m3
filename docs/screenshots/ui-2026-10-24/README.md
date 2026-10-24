@@ -4,7 +4,7 @@
 
 - [浏览全部预览](index.html)
 - [四设备九页总览](comparison/all-devices-nine-pages.png)
-- comparison/：每设备的动画局部关键帧、Confirmation 分阶段关键帧和四组合 × 四状态 Switch 矩阵。
+- comparison/：每设备的动画局部关键帧、Confirmation 分阶段关键帧和两种官方组合（无／有行首图标）× 四状态 Switch 矩阵。
 - design-motion/：round 与 band10 的局部资源动效示意。以 30fps 导出，属于图形采样演示，不代表设备帧率，也不是完整交互录屏。
 - diagnostics/：原生环境诊断中间截图。部分存在旧页面、资源读取失败或未确认最终安装版本，不可作为最终验收截图。
 

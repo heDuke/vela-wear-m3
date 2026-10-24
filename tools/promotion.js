@@ -17,7 +17,7 @@ function page(dark,detail){
 }
 async function main(){
  fs.mkdirSync(out,{recursive:true});
- const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+ const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||(process.platform==='win32'?'C:/Program Files/Google/Chrome/Application/chrome.exe':'/usr/bin/google-chrome'),headless:true});
  try{for(const [name,dark,detail]of [['cover-light',false,null],['cover-dark',true,null],['components-controls',true,'controls'],['components-display',false,'display']]){
   const p=await browser.newPage({viewport:{width:1280,height:detail?760:960},deviceScaleFactor:1});
   await p.setContent(page(dark,detail));await p.evaluate(()=>document.fonts.ready);
