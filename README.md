@@ -1,5 +1,7 @@
 # vela-wear-m3
 
+<img src="docs/design/brand/sailboat-rounded-192.png" alt="vela-wear-m3 小帆船项目图标" width="96" height="96">
+
 **面向小米 Vela 的 Wear Material 3 Expressive 组件库。**
 
 为圆屏、矩形屏和手环提供组件、布局与交互动效；随附一个使用该库的九页 Demo。
@@ -48,6 +50,8 @@
 
 **想体验 Demo**：到 [v0.1.0 实验性预发布](https://github.com/heDuke/vela-wear-m3/releases/tag/v0.1.0)选择对应布局 ZIP。每份包含 API 1／API 2 的 debug／release 包及说明；API 等级和构建模式分别选择，安装仍取决于固件和安装工具。`release` 表示构建模式，不代表稳定性认证。
 
+当前源码已接入小帆船项目图标；v0.1.0 的既有附件保留发布时内容。
+
 **想开发自己的应用**：安装预发布中的独立库 tarball，从库内 GPL 最小示例开始。组件在构建时展开为普通 UX／JavaScript 和所需图片，不需要将 Gallery 页面复制进你的项目。尚未发布 npm registry。
 
 - [从空目录到首个 debug 包](packages/vela-wear-m3/docs/GETTING-STARTED.md)
@@ -83,3 +87,5 @@ npm run build
 **组件库允许遵守 GPL 的免费或收费商用；Demo 限于其许可允许的非商业用途**。需要闭源分发时可洽谈单独商业授权，GPL 用户无需强制向作者付费。详见[授权范围](LICENSE.md)、[商业授权说明](COMMERCIAL.md)与[第三方声明](THIRD_PARTY_NOTICES.md)。
 
 原创部分 © 2026 heDuke。本项目不隶属 Google 或小米。欢迎通过 [Issues](https://github.com/heDuke/vela-wear-m3/issues)交流，贡献前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+小帆船为项目原创标识，沿用 Demo 展示素材的非商业许可，不属于独立 GPL 库包；[SVG、头像与图标下载](docs/design/brand/README.md)。

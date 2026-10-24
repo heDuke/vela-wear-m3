@@ -8,6 +8,8 @@ fs.mkdirSync(project,{recursive:true});
 for(const name of ['template','tools','licenses'])fs.cpSync(path.join(root,name),path.join(project,name),{recursive:true});
 for(const name of ['package.json','LICENSE.md'])fs.copyFileSync(path.join(root,name),path.join(project,name));
 fs.mkdirSync(path.join(project,'docs/releases/0.1.0'),{recursive:true});fs.copyFileSync(path.join(root,'docs/releases/0.1.0/baseline-size-report.json'),path.join(project,'docs/releases/0.1.0/baseline-size-report.json'));
+// Demo 的品牌资源独立于 GPL 库包；复制消费应用实际使用的图标。
+fs.mkdirSync(path.join(project,'docs/design/brand'),{recursive:true});fs.copyFileSync(path.join(root,'docs/design/brand/sailboat-circle-192.png'),path.join(project,'docs/design/brand/sailboat-circle-192.png'));
 fs.mkdirSync(path.join(project,'node_modules'),{recursive:true});
 const modules={'vela-wear-m3':path.join(root,'out/library-consumer/package'),'aiot-toolkit':path.dirname(require.resolve('aiot-toolkit/package.json')),'jsrsasign':path.dirname(require.resolve('jsrsasign/package.json'))};
 for(const [name,actual]of Object.entries(modules)){

@@ -165,3 +165,9 @@ box 上的环境（Linux x86_64；不随包提供，SDK ≈ 3.4 GB + AVD ≈ 1 G
 - 授权分区见 `LICENSE.md`：库 GPL-3.0-or-later（含指定 Demo 集成许可），Demo PolyForm Noncommercial；第三方声明必须随独立包和生成物保留。
 - 字形资源采用 OFL Noto Sans SC；不得上传 SDK 字体、私钥、下载缓存或凭据。
 - 生成与构建命令兼容，另运行 `npm run test:library` 验证 tarball 的独立消费。
+
+## 15. 2026-10-24 项目图标
+
+- 确认的小帆船 SVG 与 PNG 位于 `docs/design/brand/`，背景品牌色为 `#67508F`，不是官方组件令牌。
+- `npm run assets:brand` 重新导出；Demo 的 `tools/gen.js` 接入 192px 圆形 PNG，不依赖资源重绘。
+- 品牌素材按既有非商业展示素材政策授权，禁止复制进独立 GPL 库包；库资源管线保留通用图标。

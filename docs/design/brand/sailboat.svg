@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2026 heDuke. SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">vela-wear-m3 小帆船</title>
+  <desc id="desc">柔和紫色底，浅紫色鼓帆、蓝紫色前帆与暖杏色弧形船身组成的原创几何小帆船。</desc>
+  <rect id="background" width="1024" height="1024" fill="#67508F"/>
+  <g id="sailboat">
+    <path id="main-sail" fill="#E9DDFF" d="M 515,194 C 526,179 546,185 546,205 L 546,585 Q 546,612 519,612 L 253,612 C 230,612 220,593 233,574 C 316,445 419,302 515,194 Z"/>
+    <path id="jib" fill="#BAC3FF" d="M 598,332 C 586,316 574,322 574,342 L 574,589 Q 574,612 597,612 L 777,612 C 797,612 804,593 791,577 C 729,495 660,410 598,332 Z"/>
+    <path id="hull" fill="#FFDCC2" d="M 195,660 L 829,660 C 847,660 854,675 843,689 L 799,743 C 772,776 734,794 686,794 L 338,794 C 290,794 252,776 225,743 L 181,689 C 170,675 177,660 195,660 Z"/>
+  </g>
+</svg>

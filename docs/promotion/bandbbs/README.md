@@ -7,6 +7,7 @@
 - `components-controls.png` / `components-display.png`：1280×760，精选组件图。
 - `round-motion.gif` / `band10-motion.gif`：从既有局部资源演示 MP4 以 8fps 采样；各 5 秒、小于 3MB，不代表设备性能。
 - `motion-source.json`：动图来源、时长、采样与大小。
+- [项目小帆船图标](../../design/brand/README.md)：SVG、PNG、圆形头像与裁切预览；封面已使用确认的柔和紫色版本。
 
 图来自已保存的实际 Chrome 设计预览，动图来自 `docs/screenshots/ui-2026-10-24/design-motion/`；都不是原生设备录屏。不要将诊断目录中的中间截图作为本次验收证据。
 

@@ -1,7 +1,7 @@
 // Package only a complete, verified current build matrix.
 const fs=require('fs'),path=require('path'),crypto=require('crypto'),archiver=require('archiver');
 const ROOT=path.resolve(__dirname,'..');process.chdir(ROOT);
-const version=require('./project-manifest')().versionName;
+const manifest=require('./project-manifest')(),version=manifest.versionName;
 const rows=JSON.parse(fs.readFileSync('out/size-report.json','utf8'));
 const expected=new Set();
 for(const d of ['round','pro','band10','band9'])for(const api of [1,2])for(const mode of ['debug','release'])expected.add(d+'-'+api+'-'+mode);
@@ -14,6 +14,7 @@ for(const row of rows){
 if(expected.size)throw new Error('构建矩阵未完整：'+[...expected].join(', '));
 const readme=[
  'Wear Material 3 Expressive Vela Demo '+version+' / com.velam3.demo',
+ '构建版本号 versionCode：'+manifest.versionCode+'。同名旧版附件以 manifest 内版本号和 SHA-256 区分。',
  '四设备 × API 1 基础版、API 2 增强版 × debug/release，共 16 个 RPK。',
  'round 466×466；pro 336×480；band10 212×520；band9 192×490。',
  'API 等级与 debug/release 构建模式分别选择；安装取决于固件和安装工具，本次不作通用侧载推荐。',
@@ -22,7 +23,7 @@ const readme=[
  'API 2：image-animator 补足局部图形帧动画。',
  '本轮新 UI 尚未完成 Vela 模拟器及真机验收；设计预览不能代表设备实测。',
  '组件库与 API：https://github.com/heDuke/vela-wear-m3/blob/v0.1.0/packages/vela-wear-m3/docs/API.md',
- '对应源码、许可及构建提交见 GitHub 预发布的 RELEASE-PROVENANCE.json。',
+ '源码与许可：https://github.com/heDuke/vela-wear-m3；精确构建输入摘要见 size-report.json 的 sourceDigest。',
  '所有 release 包均超过交接时 81 KB 的体积预算，具体值见 size-report.json。',
  'SHA256SUMS.txt 可核对安装包完整性。源码参考固定 androidx 提交 2f557dc1f1ec71edae73e2c16b0e446523c644b7。',
  '',

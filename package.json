@@ -12,6 +12,7 @@
     "release": "aiot release",
     "build:all": "node tools/build-all.js",
     "assets": "node tools/assets.js && node tools/assets-ui.js --all",
+    "assets:brand": "node tools/brand-assets.js",
     "assets:ui": "node tools/assets-ui.js",
     "verify": "node tools/verify.js",
     "preview": "node tools/preview.js",
