@@ -44,12 +44,18 @@
 
 ## 屏幕与 API 配置
 
-| 布局配置 | 画布 | 排布方式 | Stepper 预览 |
-|---|---|---|---|
-| `round` | 466 × 466 | 圆屏阅读区域、Arc 时间、贴边组件；无页面返回按钮 | <img src="docs/screenshots/ui-2026-10-24/previews/round_stepper.png" alt="round Stepper 设计预览" height="140"> |
-| `pro` | 336 × 480 | 利用横向空间，顶部默认直排时间 | <img src="docs/screenshots/ui-2026-10-24/previews/pro_stepper.png" alt="pro Stepper 设计预览" height="140"> |
-| `band10` | 212 × 520 | 单列内容、顶部居中返回、独立一行的滑块轨道 | <img src="docs/screenshots/ui-2026-10-24/previews/band10_stepper.png" alt="band10 Stepper 设计预览" height="140"> |
-| `band9` | 192 × 490 | 更窄的纵向排布；时间演示的小时与分钟上下排列 | <img src="docs/screenshots/ui-2026-10-24/previews/band9_stepper.png" alt="band9 Stepper 设计预览" height="140"> |
+| 布局配置 | 画布 | 排布方式 |
+|---|---|---|
+| `round` | 466 × 466 | 圆屏阅读区域、Arc 时间、贴边组件；无页面返回按钮 |
+| `pro` | 336 × 480 | 利用横向空间，顶部默认直排时间 |
+| `band10` | 212 × 520 | 单列内容、顶部居中返回、独立一行的滑块轨道 |
+| `band9` | 192 × 490 | 更窄的纵向排布；时间演示的小时与分钟上下排列 |
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/promotion/bandbbs/layouts-stepper-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/promotion/bandbbs/layouts-stepper.png">
+  <img alt="Stepper 设计预览：round 466×466 圆屏、pro 336×480 矩形屏、band10 212×520 与 band9 192×490 胶囊屏手环，按同一比例缩放" src="docs/promotion/bandbbs/layouts-stepper.png" width="1280">
+</picture>
 
 这些是**提供的布局配置，不是已验证兼容的机型清单**。Stepper 在所有配置上都是全屏、无返回头部，用右滑返回。
 
