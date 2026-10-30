@@ -74,7 +74,7 @@ console.log(Object.keys(components))
 console.log(devices.band10.W, devices.band10.H)
 ```
 
-`components` 是 `components/registry.json` 的对象：键为组件名，值含 `template`（包内模板路径）、`defaults`（默认绑定对象）、`styles`（登记的样式片段数组）。空 `styles` **不表示组件无需样式**，有些几何样式由构建上下文生成；以组件指南为准。共 20 个注册模板。
+`components` 是 `components/registry.json` 的对象：键为组件名，值含 `template`（包内模板路径）、`defaults`（默认绑定对象）、`styles`（登记的样式片段数组）。空 `styles` **不表示组件无需样式**，有些几何样式由构建上下文生成；以组件指南为准。共 23 个注册模板。
 
 `devices` 是布局配置对象，各项字段包含 `name`（描述文字）、`W`、`H`（物理像素）、`shape`（`circle` / `rect` / `pill`）和 `k`（每 dp 的像素数）。这不是运行时设备探测或兼容机型表。
 

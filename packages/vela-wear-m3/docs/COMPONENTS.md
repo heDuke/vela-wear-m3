@@ -2,7 +2,7 @@
 
 [从零接入](GETTING-STARTED.md) · [生成器 API 与模板语法](API.md)
 
-以下先说明共享契约，再列出全部 20 个注册模板的最小插入用例。用例是插入页面的片段，必须同时准备所列状态、样式和脚本；单独粘贴一行标记不等于完整页面。基础页面可从库内 GPL 最小示例复制。
+以下先说明共享契约，再列出全部 23 个注册模板的最小插入用例。用例是插入页面的片段，必须同时准备所列状态、样式和脚本；单独粘贴一行标记不等于完整页面。基础页面可从库内 GPL 最小示例复制。
 
 所有组件是编译期模板，不是 Vela 自定义组件实例。一个页面只展开一份共享状态和调度器。`components/registry.json` 给出模板及必需样式；`componentSource()` 只展开标记绑定，完整条件编译、dp、资源和布局处理由 `generate()` 完成。
 
@@ -47,6 +47,14 @@ alert-dialog 默认消费 dlgOn / dlgOut / pressId，并调用 dlgCancel / dlgOk
 confirmation 使用 cfOn / cfOut / cfBlobOn / cfIconOn / cfTextOn，模块变量 cfTimer / confirmEpoch；增强版还需 checkFrames。引入 confirm.js、confirm.css、overlay.css，调用 showConfirm / hideConfirm / clearConfirm。默认 4 秒结束；时序对齐 Wear M3：弹层 200ms 进入 opacity 0→1、scale 1.25→1，200ms 退出 opacity 1→0、scale 1→1.25（androidx 弹簧采样为线性关键帧，`ui-context.js` ovCss，与 AlertDialog 共用）；100ms 同时挂载拉伸容器（400ms、20ms 采样弹簧）、对勾与文字（200ms 淡入、无 CSS 延迟，不依赖 fill-mode）；退出时对勾保留末帧随弹层淡出。关闭、重入和隐藏必须通过这些入口，不能另建不带代次检查的延迟回调。
 
 edge-button 使用 ebSt、通用按压方法与 showConfirm 回调。应用不需要确认层时可绑定自己的事件处理；保持边缘几何与底部列表留白规则。任何同页组合须在消费方合并重名扩展钩子，0.1 不提供自动 mixin 冲突合并。
+
+## 媒体控件
+
+复刻 Horologist media-ui-material3 的播放页组件（规格、包体与降级见 [MEDIA.md](MEDIA.md)）：`media-play-pause`（scallop 播放键 + 波浪进度环）、`media-controls`（ButtonGroup 控制行，内含 media-play-pause）、`media-info`（标题 / 副标题 / 加载 / 未在播放）。三者共用 media.head.js、media.data.js、media.methods.js 和 media.css；它们是全屏非列表结构，放在 list 外，用 `.md-at-info` / `.md-at-ctl` 包裹即可按设备定位。一个页面只放一个控制行。
+
+控制器只用 `md*` 名称，不定义 pageShow / pageHide / onMotionFrame / press：消费页在 pageShow 调 `mdShow()`、pageHide 调 `mdHide()`。状态入口：`mdSetPlaying(b)`、`mdSetProgress(0..1)`、`mdSetLoading(b)`、`mdSetEnabled({play,prev,next})`、`mdSetMeta(title,artist)`、`mdSetInfo('ready'|'loading'|'none'[,text])`。页面若定义回调则被调用：`mdOnPlay`、`mdOnPause`、`mdOnPrev`、`mdOnNext`、`mdOnSeek(秒)`（侧键为 ±N 秒时）。禁用键的触摸在控制器内拒绝。
+
+可选音频适配器：再引入 media-audio.head.js（模块区，导入 `@system.audio`）与 media-audio.methods.js（放在 media.methods.js 之前），它提供 mdOnPlay / mdOnPause / mdOnSeek；页面调用 `mdaOpen(src, meta)`，在 pageDestroy 调 `mdaStop()`，可选回调 `mdOnEnded`、`mdOnAudioError`。manifest 需声明 `system.audio`；后台播放另需 `config.background`，并经过上架审核。没有 timeupdate 事件，进度每秒轮询一次，只在页面可见且播放中进行。
 
 ## 基础页面与依赖的插入位置
 
@@ -100,6 +108,7 @@ export default {
 | Confirmation | `overlay.css`、`confirm.css` | 业务声明 cfTimer / confirmEpoch | 下文列出的 cf 状态与增强帧 | `confirm.js` |
 | AlertDialog | `overlay.css`、`$[dlgCss()]` | 基础 head | dlgOn / dlgOut | 业务开关与取消／确认回调 |
 | EdgeButton | `edge.css`（已含 ebCss） | 基础 head | 业务声明 ebSt:{} | 默认调用业务 `showConfirm()` |
+| 媒体控件 | `media.css` | `media.head.js`（音频另加 `media-audio.head.js`） | `media.data.js` | `media-audio.methods.js`（可选）、`media.methods.js`；onInit 调 `mdSetMeta()`，pageShow / pageHide 调 `mdShow()` / `mdHide()` |
 
 上表中的片段全部通过 `@wear/` 引入。控制器方法结尾通常带逗号，按 JS 对象成员插入。`head` 和计时器不放入 private；`data` 不放入模块作用域。
 
@@ -292,6 +301,35 @@ style 默认 `$item.st`；content 必须提供可信标记字符串。基础状�
 ```
 
 无占位参数。edge.css（已含 ebCss）、业务 ebSt（初始可为 `{}`）／基础按压方法；业务须提供 showConfirm（可作为自己的回调适配器，不必实际启用确认层）。模板固定对勾图标。列表留白与 scrim 可参照库的 ebCss / EBH / EBPAD，避免末项被覆盖；两种 API 均可用。
+
+### media-play-pause
+
+```html
+<!-- 放在 list 外；单独使用时由页面定位 -->
+<!-- #component media-play-pause {"ring":"'wavy'"} -->
+```
+
+参数均为编译期字符串：shape `'scallop'`（默认）或 `'round'`（圆形，默认配 circle 环）；ring `'wavy'`（默认，连续轨道 + 分段指示图）、`'circle'`（原生 `<progress type="arc">`，≈0 KB）或 `'none'`；steps `40`（手表默认，2.5 %）或 `20`（手环默认，5 %）；rotate `'true'` 时播放中 scallop 以 12°/s 旋转。点击调用 mdOnPlay / mdOnPause；按压时 scallop 切为 pill、环淡出。两种 API 均可用。
+
+### media-controls
+
+```html
+<div class="md-at-ctl">
+<!-- #component media-controls {"left":"'back5'","right":"'fwd30'"} -->
+</div>
+```
+
+left / right 取 `prev`、`next`、`back5|back10|back30`、`fwd5|fwd10|fwd30`（播客变体回调 `mdOnSeek(±秒)`），其余参数透传给内部的 media-play-pause。round / pro 横排，band 纵排（播放键一行、两侧键一行）。被按的键宽度 +12 dp、相邻键 −12 dp，按下 100 ms、抬起 450 ms 过渡。上一首在第一首且进度 < 3 s 时应由页面 `mdSetEnabled({prev:false})`。
+
+### media-info
+
+```html
+<div class="md-at-info">
+<!-- #component media-info {"marquee":"true"} -->
+</div>
+```
+
+marquee 默认 `'false'`：溢出时省略号 + 右侧 8 dp 渐隐（官方 TextMediaDisplay）；`'true'` 时标题溢出改用原生 `<marquee>`（64 dp/s、停 4 s、间距 96 dp、两侧渐隐，官方 MarqueeText），副标题保持省略号。API 1 无文字测量，溢出按字宽表估算。`mdSetInfo('loading')` 显示两条脉冲占位，`mdSetInfo('none')` 显示「未在播放」。
 
 ## 常见接入问题
 

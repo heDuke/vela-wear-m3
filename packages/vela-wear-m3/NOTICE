@@ -5,6 +5,7 @@ Includes adaptations of AndroidX Wear Compose Material3.
 Copyright 2023, 2024, 2025 The Android Open Source Project.
 Individual original years and notices retained in reference sources.
 AndroidX reference: 2f557dc1f1ec71edae73e2c16b0e446523c644b7.
+Includes adaptations of Horologist media UI (Apache-2.0), reference cdf245ceee02549a16d2da519a55e1e4d96777c3.
 Material Symbols and original SVG icons: Google, Apache-2.0.
 Noto Sans SC source font: Copyright 2014-2021 Adobe; OFL-1.1.
 This project is not affiliated with Google or Xiaomi.
