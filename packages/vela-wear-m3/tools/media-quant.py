@@ -41,7 +41,7 @@ for id in D:
         if not f.startswith('md_') or not f.endswith('.png'):continue
         im=Image.open(dd+f)
         if im.mode!='P':
-            n=12 if f.startswith('md_r') else 24 if f.startswith('md_scallop') else 16
+            n=12 if f.startswith(('md_r','md_c')) else 24 if f.startswith('md_scallop') else 16
             q=quant(im,n);q.save(dd+f,optimize=True,transparency=q.info['transparency'])
         r[f]=os.path.getsize(dd+f)
     for k in [k for k in r if k.startswith('md_') and not os.path.exists(dd+k)]:del r[k]

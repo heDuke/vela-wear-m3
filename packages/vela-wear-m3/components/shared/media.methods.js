@@ -1,26 +1,34 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 heDuke. Upstream material retains its own terms; see NOTICE.
 // Public: mdSetPlaying(b) mdSetProgress(f 0..1) mdSetLoading(b) mdSetEnabled({play,prev,next}) mdSetMeta(title,artist)
-// mdSetInfo('ready'|'loading'|'none'[,text]) mdShow() mdHide(). Emits (if defined on the page): mdOnPlay() mdOnPause()
-// mdOnPrev() mdOnNext() mdOnSeek(seconds). Template handlers: mdPlayDown/mdPrevDown/mdNextDown/mdUp/mdCancel, md*Tap.
+// mdSetInfo('ready'|'loading'|'none'[,text]) mdShow() mdHide(); settings row: mdSetOutput('headphones'|'watch'|'none')
+// mdSetVolume(v 0..1[,show]) mdSetSettingsEnabled(b); volume level: mdShowVolume([v]) mdLvHide(); whole screen:
+// mdSetState('playing'|'paused'|'loading'|'none'|'disconnected'). Emits (if defined on the page): mdOnPlay() mdOnPause()
+// mdOnPrev() mdOnNext() mdOnSeek(seconds) mdOnOutput() mdOnMore(). Template handlers: mdPlayDown/mdPrevDown/
+// mdNextDown/mdUp/mdCancel, md*Tap.
 mdSetPlaying(b){mdS.playing=!!b;this.mdPaint()},
 mdSetLoading(b){mdS.loading=!!b;this.mdLoading=mdS.loading;this.mdPaint()},
 mdSetEnabled(o){if(!o)return;['play','prev','next'].forEach(k=>{if(k in o)mdS[k+'On']=!!o[k]});if(mdS.press&&!mdS[mdS.press+'On'])this.mdRelease(true);this.mdPaint()},
 mdSetProgress(f){f=+f;if(!(f>=0))f=0;if(f>1)f=1;mdS.f=f;const pct=Math.round(f*100);if(this.mdPct!==pct)this.mdPct=pct
- if(MDC.ring!=='wavy')return;const q=Math.floor(f*MDC.steps+1e-6);if(q===mdS.q)return;mdS.q=q
- const ring=[];for(let k=0;k<10;k++)ring.push(mdLobe(k,q,MDC.steps));this.mdRing=ring},
-// visual state: shape (scallop / pill / circle), ring visibility, icon and side colours
+ if(MDC.ring!=='wavy')return;const q=Math.floor(f*MDC.steps+1e-6);if(q===mdS.q)return;mdS.q=q;this.mdRingPaint()},
+// playing: wavy ring around the scallop; paused: circle ring around the circle (RotatingWavyProgressIndicator morph
+// target circlePolygon), switched instantly like the official cached Morph.
+mdRingPaint(){if(!MDC.cl)return;const q=mdS.q,c=mdS.circ,ring=[],cr=[];let c9=''
+ for(let k=0;k<10;k++){if(c){ring.push('');const n=mdCLobe(k,q,MDC.steps);if(n==='9I'){cr.push('');c9=MDC.cl['9_I']}else cr.push(n)}else{ring.push(mdLobe(k,q,MDC.steps));cr.push('')}}
+ const rt=c?MDC.ct:MDC.rt;if(this.mdRtSrc!==rt)this.mdRtSrc=rt;this.mdRing=ring;this.mdCRing=cr;if(this.mdC9I!==c9)this.mdC9I=c9},
+// visual state: shape (scallop while playing, circle while paused, pill while pressed), ring, icon and side colours
 mdPaint(){
  if(!MDC.ic)return this.mdPaintSides()
  const p=mdS.press,pillShape=p==='play'||(!!p&&!MDC.vertical)||mdS.rel
- const solid=pillShape||(p&&MDC.vertical)||MDC.shape==='round'
+ const solid=pillShape||(p&&MDC.vertical)||MDC.shape==='round'||!mdS.playing
  const pc=solid?(mdS.playOn?'md-pon':'md-pdis'):'md-poff';if(this.mdPillCls!==pc)this.mdPillCls=pc
  const so=solid?0:1;if(this.mdScSt.opacity!==so)this.mdScSt={opacity:so}
  const ss=mdS.playOn?MDC.sc:MDC.scD;if(this.mdScSrc!==ss)this.mdScSrc=ss
  if(MDC.rotate){const sc=mdS.playing&&!p&&!mdS.loading?'md-spin':'';if(this.mdScCls!==sc)this.mdScCls=sc}
- const ro=pillShape||mdS.loading?0:mdS.playOn?1:.38;if(this.mdRingSt.opacity!==ro)this.mdRingSt={opacity:ro}
+ // the progress ring has no enabled state: full colours even when the button is disabled (golden notconnected)
+ const ro=pillShape||mdS.loading?0:1;if(this.mdRingSt.opacity!==ro)this.mdRingSt={opacity:ro}
+ const circ=!mdS.playing;if(mdS.circ!==circ){mdS.circ=circ;this.mdRingPaint()}
  const ic=mdS.playing?(mdS.playOn?MDC.ic.pause:MDC.ic.pauseD):(mdS.playOn?MDC.ic.play:MDC.ic.playD);if(this.mdIcon!==ic)this.mdIcon=ic
- if(MDC.steps&&MDC.ring==='wavy'&&!this.mdRing.length)this.mdSetProgress(mdS.f)
  this.mdPaintSides()
 },
 mdPaintSides(){if(!MDC.l)return;const lc=mdS.prevOn?'md-son':'md-sdis',rc=mdS.nextOn?'md-son':'md-sdis'

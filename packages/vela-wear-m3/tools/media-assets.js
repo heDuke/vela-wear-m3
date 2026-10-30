@@ -6,7 +6,7 @@ const {chromium}=require('playwright-core');
 const fs=require('fs'),path=require('path');
 const ROOT=path.join(__dirname,'..'),D=require('./devices.json'),{C}=require('./tokens'),G=require('./media-geom');
 const rgba=(hex,a)=>{const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`};
-const DIS_C=rgba(C.onSurface,.12),DIS_F=rgba(C.onSurface,.38);
+const DIS_C=rgba(C.onSurface,G.SPEC.colors.disabledContainer[1]),DIS_F=rgba(C.onSurface,.38);
 const P=(pts,ox,oy,s,close)=>'M'+pts.map(p=>((ox+p[0])*s).toFixed(3)+' '+((oy+p[1])*s).toFixed(3)).join('L')+(close?'Z':'');
 function svgIcon(name,size,color,s){ // centred in a size x size dp box
  const px=size*s;
@@ -39,7 +39,7 @@ function outline(q,w){const n=q.length,L=[],Rt=[];for(let i=0;i<n;i++){const a=q
   const box=px(80),c0=box/2,sp=sw*s,segPx=(a,b2)=>dedupe(G.seg(R.pts,R.L,a,b2).map(q=>[c0+q[0]*s,c0+q[1]*s]));
   const at=v=>{const L=R.L,i=Math.max(1,L.findIndex(x=>x>=v));const t=(v-L[i-1])/(L[i]-L[i-1]||1);return [c0+(R.pts[i-1][0]+(R.pts[i][0]-R.pts[i-1][0])*t)*s,c0+(R.pts[i-1][1]+(R.pts[i][1]-R.pts[i-1][1])*t)*s]};
   const circ=(q,r,col)=>`<circle cx="${q[0].toFixed(3)}" cy="${q[1].toFixed(3)}" r="${r}" fill="${col}"/>`;
-  const line=(a,b2,col,w,cap)=>{const q=segPx(a,b2);return `<path d="${outline(q,w)}" fill="${col}"/>`+(cap==='round'?circ(q[0],w/2,col)+circ(q[q.length-1],w/2,col):'')};
+  const line=(a,b2,col,w,cap)=>{const q=segPx(a,b2);if(q.length<2)return '';return `<path d="${outline(q,w)}" fill="${col}"/>`+(cap==='round'?circ(q[0],w/2,col)+circ(q[q.length-1],w/2,col):'')};
   const dot=(v,col)=>circ(at(v),sp/2,col);
   const h=R.gap/2;m.box=box;
   await shot(box,box,line(h,R.T-h,C.surfaceContainerLow,sp,'round'),path.join(dir,'md_ring_t.png'));
@@ -56,6 +56,21 @@ function outline(q,w){const n=q.length,L=[],Rt=[];for(let i=0;i<n;i++){const a=q
    body+=line(g.ind[0],g.ind[1],C.onSecondaryContainer,sp,'butt');
    if(g.capStart)body+=dot(g.ind[0],C.onSecondaryContainer);if(g.capEnd)body+=dot(g.ind[1],C.onSecondaryContainer);
    await shot(lb.w,lb.h,`<g transform="translate(${-lb.x} ${-lb.y})">${body}</g>`,path.join(dir,name+'.png'))}
+  // 2b) paused circle ring (circlePolygon, r 38dp): own track + lobe 0 / lobe 1 / lobe 9 'I' overlays; lobe 1 images are
+  //     rotated by 36*(k-1) deg at runtime for lobes 2..9 (verified seam-free on the vela-watch-5.0 emulator).
+  {const Rc=G.circleRing(),cpx=(a,b2)=>dedupe(G.seg(Rc.pts,Rc.L,a,b2).map(q=>[c0+q[0]*s,c0+q[1]*s]));
+   const cat=v=>{const L=Rc.L,i=Math.max(1,L.findIndex(x=>x>=v));const t=(v-L[i-1])/(L[i]-L[i-1]||1);return [c0+(Rc.pts[i-1][0]+(Rc.pts[i][0]-Rc.pts[i-1][0])*t)*s,c0+(Rc.pts[i-1][1]+(Rc.pts[i][1]-Rc.pts[i-1][1])*t)*s]};
+   const cline=(a,b2,col,w,cap)=>{const q=cpx(a,b2);if(q.length<2)return '';return `<path d="${outline(q,w)}" fill="${col}"/>`+(cap==='round'?circ(q[0],w/2,col)+circ(q[q.length-1],w/2,col):'')};
+   const ch=Rc.gap/2;await shot(box,box,cline(ch,Rc.T-ch,C.surfaceContainerLow,sp,'round'),path.join(dir,'md_cring_t.png'));
+   const cn=G.circleNames(40),cseg={};for(const n of cn)cseg[n]=G.lobeSegments(n,Rc.T,Rc.gap);m.cl={};
+   for(const k of [0,1,9]){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+    for(const n of cn.filter(n=>n.startsWith('md_c'+k+'_'))){const g=cseg[n],hi=g.erase?g.erase[1]:g.ind[1];
+     for(let v=g.ind[0];v<=hi+1e-6;v+=.25){const q=cat(Math.min(v,hi));x0=Math.min(x0,q[0]);y0=Math.min(y0,q[1]);x1=Math.max(x1,q[0]);y1=Math.max(y1,q[1])}}
+    const pad=sp/2+1.5,L=Math.max(0,Math.floor(x0-pad)),T=Math.max(0,Math.floor(y0-pad)),Rr=Math.min(box,Math.ceil(x1+pad)),B=Math.min(box,Math.ceil(y1+pad));m.cl[k]={x:L,y:T,w:Rr-L,h:B-T}}
+   for(const n of cn){const g=cseg[n],lb=m.cl[+n[4]];let body='';
+    if(g.erase)body+=cline(g.erase[0],g.erase[1],'#000000',sp+2,'butt')+circ(cat(g.trackCap),sp/2,C.surfaceContainerLow);
+    body+=cline(g.ind[0],g.ind[1],C.onSecondaryContainer,sp,'butt');if(g.capStart)body+=circ(cat(g.ind[0]),sp/2,C.onSecondaryContainer);if(g.capEnd)body+=circ(cat(g.ind[1]),sp/2,C.onSecondaryContainer);
+    await shot(lb.w,lb.h,`<g transform="translate(${-lb.x} ${-lb.y})">${body}</g>`,path.join(dir,n+'.png'))}}
   // 3) icons: 32dp play/pause/next/prev, 24dp seek; onPrimary + disabled (onSurface 38%)
   for(const [n,sz] of [['play',32],['pause',32],['next',32],['prev',32],['replay_5',24],['replay_10',24],['replay_30',24],['forward_5',24],['forward_10',24],['forward_30',24]]){
    const stem=n.startsWith('replay_')?'md_back'+n.slice(7):n.startsWith('forward_')?'md_fwd'+n.slice(8):'md_'+n,q=px(sz);

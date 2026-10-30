@@ -25,7 +25,9 @@ module.exports=function(c){
  };
  c.mdInfoOpts=marquee=>({marquee:marquee===true||marquee==='true'});
  // ---- markup helpers --------------------------------------------------------------------------------------------------
- c.mdLobes=()=>'<image class="md-rt" src="/common/img/md_ring_t.png"></image>'+Array.from({length:10},(_,k)=>'<image class="md-l'+k+'" if="{{mdRing['+k+']}}" src="{{mdRing['+k+']}}"></image>').join('');
+ // wavy ring (playing) and circle ring (paused) share one track element; lobes 1..9 of the circle are rotated lobe-1 images
+ c.mdLobes=()=>'<image class="md-rt" src="{{mdRtSrc}}"></image>'+Array.from({length:10},(_,k)=>'<image class="md-l'+k+'" if="{{mdRing['+k+']}}" src="{{mdRing['+k+']}}"></image>').join('')
+  +Array.from({length:10},(_,k)=>'<image class="md-c'+k+'" if="{{mdCRing['+k+']}}" src="{{mdCRing['+k+']}}"></image>').join('')+'<image class="md-c9i" if="{{mdC9I}}" src="{{mdC9I}}"></image>';
  // ---- geometry (px) ---------------------------------------------------------------------------------------------------
  const g={vertical:L.vertical,B,pill64:dp(64),pillUp:dp(64+S.expansion),pillDown:dp(64-S.expansion)};
  if(!L.vertical){
@@ -51,7 +53,11 @@ module.exports=function(c){
    o+='.md-pp{width:'+B+'px;height:'+B+'px;justify-content:center;align-items:center;transition-property:width;}\n';
    o+='.md-ring{position:absolute;left:0px;top:0px;width:'+B+'px;height:'+B+'px;transition-property:opacity;transition-duration:100ms;}\n';
    if(pp.ring==='wavy'){o+='.md-rt{position:absolute;left:0px;top:0px;width:'+B+'px;height:'+B+'px;}\n';
-    for(let k=0;k<10;k++){const b=MEDIA[id].lobes[k];o+='.md-l'+k+'{position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;height:'+b.h+'px;}\n';}}
+    for(let k=0;k<10;k++){const b=MEDIA[id].lobes[k];o+='.md-l'+k+'{position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;height:'+b.h+'px;}\n';}
+    // paused circle ring: lobe k>=1 = lobe-1 image rotated 36*(k-1) deg about the ring centre (explicit px origin)
+    const cl=MEDIA[id].cl,c0=MEDIA[id].box/2,bx=b=>'position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;height:'+b.h+'px;';
+    o+='.md-c0{'+bx(cl[0])+'}\n.md-c9i{'+bx(cl[9])+'}\n';
+    for(let k=1;k<10;k++)o+='.md-c'+k+'{'+bx(cl[1])+'transform:rotate('+36*(k-1)+'deg);transform-origin:'+(c0-cl[1].x)+'px '+(c0-cl[1].y)+'px;}\n';}
    const arc='width:'+B+'px;height:'+B+'px;stroke-width:'+dp(S.stroke)+'px;color:'+C[S.colors.ring]+';layer-color:'+C[S.colors.track]+';start-angle:0deg;total-angle:360deg;';
    if(pp.ring==='circle')o+='.md-arc{'+arc+'}\n';
    o+='.md-load{position:absolute;left:0px;top:0px;width:'+B+'px;height:'+B+'px;transform:rotate(0deg);transform-origin:'+B/2+'px '+B/2+'px;animation-name:mdLoad;animation-duration:1500ms;animation-timing-function:linear;animation-iteration-count:infinite;}\n';
@@ -75,7 +81,9 @@ module.exports=function(c){
    o+='.md-tl{width:'+tw+'px;height:'+th+'px;justify-content:center;}\n.md-al{width:'+aw+'px;height:'+ah+'px;justify-content:center;}\n';
    o+='.md-tt{width:'+tw+'px;height:'+th+'px;font-size:'+fs_+'px;line-height:'+th+'px;color:'+C.onSurface+';font-weight:bold;text-align:center;lines:1;text-overflow:ellipsis;}\n';
    o+='.md-at{width:'+aw+'px;height:'+ah+'px;font-size:'+afs+'px;line-height:'+ah+'px;color:'+C.onSurface+';text-align:center;lines:1;text-overflow:ellipsis;}\n';
-   o+='.md-none{width:'+tw+'px;height:'+th+'px;font-size:'+fs_+'px;line-height:'+th+'px;color:'+C[S.colors.nothing]+';font-weight:bold;text-align:center;lines:1;text-overflow:ellipsis;}\n';
+   // NothingPlayingDisplay: the message is centred in the title + subtitle block (20 + 18dp)
+   const nm=Math.round((dp(S.info.titleH+S.info.subH)-th)/2);
+   o+='.md-none{width:'+tw+'px;height:'+th+'px;margin-top:'+nm+'px;margin-bottom:'+nm+'px;font-size:'+fs_+'px;line-height:'+th+'px;color:'+C[S.colors.nothing]+';font-weight:bold;text-align:center;lines:1;text-overflow:ellipsis;}\n';
    o+='.md-fr{position:absolute;left:'+(tw-fw)+'px;top:0px;width:'+fw+'px;height:'+th+'px;}\n.md-fl{position:absolute;left:0px;top:0px;width:'+fw+'px;height:'+th+'px;}\n.md-fra{position:absolute;left:'+(aw-fw)+'px;top:0px;width:'+fw+'px;height:'+ah+'px;}\n';
    if(inf.marquee)o+='.md-mq{width:'+tw+'px;height:'+th+'px;font-size:'+fs_+'px;color:'+C.onSurface+';}\n';
    const [b1,b2]=S.loadingBars;
@@ -91,7 +99,8 @@ module.exports=function(c){
   const pp=c.mdPP,ctl=c.mdCtl,inf=c.mdInf,o={};
   if(pp){
    o.steps=pp.steps;o.ring=pp.ring;o.shape=pp.shape;o.rotate=pp.rotate;
-   if(pp.ring==='wavy')o.lobes=Object.fromEntries(G.lobeNames(pp.steps).map(n=>[n.slice(4),img(n)]));
+   if(pp.ring==='wavy'){o.lobes=Object.fromEntries(G.lobeNames(pp.steps).map(n=>[n.slice(4),img(n)]));
+    o.cl=Object.fromEntries(G.circleNames(pp.steps).map(n=>[n.slice(4),img(n)]));o.rt=img('md_ring_t');o.ct=img('md_cring_t');}
    o.sc=img('md_scallop');o.scD=img('md_scallop_d');
    o.ic={play:img('md_play_32'),pause:img('md_pause_32'),playD:img('md_play_32d'),pauseD:img('md_pause_32d')};
    o.pw={'':g.pill64,play:g.vertical?g.pill64:g.pillUp,side:g.vertical?g.pill64:g.pillDown};

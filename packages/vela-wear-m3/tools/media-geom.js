@@ -20,7 +20,9 @@ const SPEC={
  marquee:{speed:64,pause:4000,gap:96,edge:8},  // [src] MarqueeText defaults
  loadingBars:[[40,12],[80,10]],                // [src] LoadingMediaDisplay
  colors:{button:'primary',icon:'onPrimary',side:'primaryDim',ring:'onSecondaryContainer',track:'surfaceContainerLow',
-  disabledContainer:['onSurface',.12],disabledContent:['onSurface',.38],nothing:'onSurfaceVariant',placeholder:'outlineVariant'}
+  disabledContainer:['onSurface',.16],disabledContent:['onSurface',.38],nothing:'onSurfaceVariant',placeholder:'outlineVariant'},
+ // [src] DisabledContainerAlpha = 0.16 (golden player_notconnected #282629 over black); P1 used 0.12.
+ circleRing:38,          // [src] paused: Morph(pill, circlePolygon = pillPolygon(80-4, 80-4)) -> circle centre line r = 38dp
 };
 // RoundedPolygon.star with circular corner rounding (smoothing 0), cut clamped to half edge (plan render/geom.js).
 const sub=(a,b)=>[a[0]-b[0],a[1]-b[1]],add=(a,b)=>[a[0]+b[0],a[1]+b[1]],mul=(a,k)=>[a[0]*k,a[1]*k];
@@ -61,6 +63,8 @@ function offset(pts,d){const n=pts.length;return pts.map((p,i)=>{const a=pts[(i-
 // from its own pillStar (10/0.8, 12dp, 76dp), whose gap to the button swings 2.8-4.0dp; outerScallop is kept as reference.
 function ringOffset(){return (SPEC.outerScallop.size-SPEC.innerScallop.size)/2}
 function ring(){const p=closed(offset(button(),ringOffset())),L=cum(p),T=L[L.length-1];return {pts:p,L,T,gap:T*SPEC.gapFraction+SPEC.stroke}}
+// Paused ring (circlePolygon): circle of radius 38dp from 12 o'clock clockwise; same gap rule.
+function circleRing(N=720){const r=SPEC.circleRing,p=[];for(let i=0;i<=N;i++){const a=-Math.PI/2+2*Math.PI*i/N;p.push([r*Math.cos(a),r*Math.sin(a)])}const L=cum(p),T=L[L.length-1];return {pts:p,L,T,gap:T*SPEC.gapFraction+SPEC.stroke}}
 // Wavy progress ring (PLAN §4.1, revised): ONE continuous track image (md_ring_t) drawn under ten indicator overlays.
 // The outline is split into 10 equal trough-to-trough lobes; overlay images are drawn in place (never rotated, so
 // they stay in phase with the scallop and leave no seams). For quantised progress p=q/steps the boundary position in
@@ -69,13 +73,17 @@ function ring(){const p=closed(offset(button(),ringOffset())),L=cum(p),T=L[L.len
 // Indicator and track share the same stroke width. Every overlay except lobe 9's I ends with: indicator round cap at p*T-gap/2, a background-coloured eraser over the
 // track up to p*T+gap/2 and a track-coloured round cap there (the official indicator/track gap). Overlays of lobe
 // k>=1 start gap/2 (+overlap) before the lobe so they repaint the previous lobe's eraser; images are stacked k=0..9.
+// q=0: Z = the official minimum indicator segment (gap/2 .. gap/2+0.1px, round caps = a 4dp dot) with the track
+// starting at 1.5*gap (RotatingWavyProgressIndicator getSegment max(...)).
 function lobeState(k,q,steps){
+ if(q===0&&k===0)return 'md_r0_Z';
  const n=q*10-k*steps;if(n<=0)return '';if(n>=steps)return 'md_r'+k+'_I';return 'md_r'+k+'_P'+Math.round(n*4/steps);
 }
 function lobeNames(steps){const set=new Set();for(let q=0;q<=steps;q++)for(let k=0;k<10;k++){const n=lobeState(k,q,steps);if(n)set.add(n)}return [...set].sort()}
 // arc-length layout of one overlay: {ind:[a,b], capStart, capEnd, erase:[a,b]|null, trackCap:s|null}
 function lobeSegments(name,T,gap){
- const [,ks,st]=name.match(/^md_r(\d)_(\w+)$/),k=+ks,Lb=T/10,h=gap/2,ov=2;
+ const [,ks,st]=name.match(/^md_[rc](\d)_(\w+)$/),k=+ks,Lb=T/10,h=gap/2,ov=2;
+ if(st==='Z')return {ind:[h,h],capStart:true,capEnd:false,erase:[h,1.5*gap],trackCap:1.5*gap};
  const a=k===0?h:k*Lb-h-ov,p=k*Lb+(st==='I'?4:+st.slice(1))/4*Lb;
  if(k===9&&st==='I')return {ind:[a,T-h],capStart:false,capEnd:true,erase:null,trackCap:null};
  return {ind:[a,p-h],capStart:k===0,capEnd:true,erase:[p-h,p+h],trackCap:p+h};
@@ -99,7 +107,10 @@ function layout(d){
  const band9=W<125,info=band9?40:44,play=band9?88:94,row=band9?176:184,rowH=band9?48:52,gap=8;
  return {W,H,HP,CW,vertical:true,pad:{gap},info:{top:info,titleW:CW,subW:CW,title:15,sub:13},playTop:play,rowTop:row,rowH,pillW:(CW-gap)/2,playCY:play+B/2};
 }
-module.exports={SPEC,scallop,offset,ringOffset,cum,seg,closed,ring,button,lobeState,lobeNames,lobeSegments,crit,fitSpring,bezierY,layout};
+// Paused circle ring overlays: the circle is rotation invariant, so lobes 1..8 (and lobe 9 before its end) reuse lobe 1
+// rotated by 36*(k-1) deg about the ring centre; lobe 0 (start cap / Z dot) and lobe 9 'I' (end cap at 100 %) are own images.
+function circleNames(steps){const set=new Set();for(const n of lobeNames(steps)){const [,k,st]=n.match(/^md_r(\d)_(\w+)$/);set.add(k==='0'?'md_c0_'+st:k==='9'&&st==='I'?'md_c9_I':'md_c1_'+st)}return [...set].sort()}
+module.exports={SPEC,scallop,offset,ringOffset,cum,seg,closed,ring,circleRing,button,lobeState,lobeNames,lobeSegments,circleNames,crit,fitSpring,bezierY,layout};
 // Horologist LottiePlaceholders.kt static frames (24-unit viewport, Apache-2.0): pause / play / next (previous = mirrored).
 const ICON_PATHS={
  pause:'M7.68 4.416h-.008a2.16 2.16 0 0 0-2.16 2.16v10.8a2.16 2.16 0 0 0 2.16 2.16h.008a2.16 2.16 0 0 0 2.16-2.16v-10.8a2.16 2.16 0 0 0-2.16-2.16zM16.328 4.416h-.008a2.16 2.16 0 0 0-2.16 2.16v10.8a2.16 2.16 0 0 0 2.16 2.16h.008a2.16 2.16 0 0 0 2.16-2.16v-10.8a2.16 2.16 0 0 0-2.16-2.16z',
