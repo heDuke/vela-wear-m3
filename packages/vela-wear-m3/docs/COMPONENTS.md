@@ -50,11 +50,13 @@ edge-button 使用 ebSt、通用按压方法与 showConfirm 回调。应用不�
 
 ## 媒体控件
 
-复刻 Horologist media-ui-material3 的播放页组件（规格、包体与降级见 [MEDIA.md](MEDIA.md)）：`media-play-pause`（scallop 播放键 + 波浪进度环）、`media-controls`（ButtonGroup 控制行，内含 media-play-pause）、`media-info`（标题 / 副标题 / 加载 / 未在播放）。三者共用 media.head.js、media.data.js、media.methods.js 和 media.css；它们是全屏非列表结构，放在 list 外，用 `.md-at-info` / `.md-at-ctl` 包裹即可按设备定位。一个页面只放一个控制行。
+复刻 Horologist media-ui-material3 / audio-ui-material3 的播放页组件（规格、包体与降级见 [MEDIA.md](MEDIA.md)）：`media-play-pause`、`media-controls`、`media-info`，以及 P2 的 `media-settings`、`media-volume-level`、`media-player`。共用 media.head.js、media.data.js、media.methods.js 和 media.css；全屏非列表结构，放在 list 外。一个页面只放一个控制行 / 一个 media-player。
 
-控制器只用 `md*` 名称，不定义 pageShow / pageHide / onMotionFrame / press：消费页在 pageShow 调 `mdShow()`、pageHide 调 `mdHide()`。状态入口：`mdSetPlaying(b)`、`mdSetProgress(0..1)`、`mdSetLoading(b)`、`mdSetEnabled({play,prev,next})`、`mdSetMeta(title,artist)`、`mdSetInfo('ready'|'loading'|'none'[,text])`。页面若定义回调则被调用：`mdOnPlay`、`mdOnPause`、`mdOnPrev`、`mdOnNext`、`mdOnSeek(秒)`（侧键为 ±N 秒时）。禁用键的触摸在控制器内拒绝。
+控制器只用 `md*` 名称，不定义 pageShow / pageHide / onMotionFrame / press：消费页在 pageShow 调 `mdShow()`、pageHide 调 `mdHide()`。状态入口：`mdSetPlaying(b)`、`mdSetProgress(0..1)`、`mdSetLoading(b)`、`mdSetEnabled({play,prev,next})`、`mdSetMeta(title,artist)`、`mdSetInfo('ready'|'loading'|'none'[,text])`、`mdSetState('playing'|'paused'|'loading'|'none'|'disconnected')`、`mdSetOutput('headphones'|'watch'|'none')`、`mdSetSettingsEnabled(b)`、`mdSetVolume(v[,show])`、`mdShowVolume([v])`、`mdLvHide()`。页面回调：`mdOnPlay`、`mdOnPause`、`mdOnPrev`、`mdOnNext`、`mdOnSeek(秒)`、`mdOnOutput`、`mdOnMore`。禁用键的触摸在控制器内拒绝。
 
 可选音频适配器：再引入 media-audio.head.js（模块区，导入 `@system.audio`）与 media-audio.methods.js（放在 media.methods.js 之前），它提供 mdOnPlay / mdOnPause / mdOnSeek；页面调用 `mdaOpen(src, meta)`，在 pageDestroy 调 `mdaStop()`，可选回调 `mdOnEnded`、`mdOnAudioError`。manifest 需声明 `system.audio`；后台播放另需 `config.background`，并经过上架审核。没有 timeupdate 事件，进度每秒轮询一次，只在页面可见且播放中进行。
+
+可选音量适配器：再引入 `media-volume.head.js`（导入 `@system.volume`）与 `media-volume.methods.js`；`mdShow`/`mdHide` 会联动 `mdvShow`/`mdvHide`。`mdvSet(v)` 写 `setMediaValue` 并显示电平；首次 `getMediaValue` 只更新徽章（对齐官方 drop(1)）。manifest 声明 `system.volume`。
 
 ## 基础页面与依赖的插入位置
 
@@ -108,7 +110,7 @@ export default {
 | Confirmation | `overlay.css`、`confirm.css` | 业务声明 cfTimer / confirmEpoch | 下文列出的 cf 状态与增强帧 | `confirm.js` |
 | AlertDialog | `overlay.css`、`$[dlgCss()]` | 基础 head | dlgOn / dlgOut | 业务开关与取消／确认回调 |
 | EdgeButton | `edge.css`（已含 ebCss） | 基础 head | 业务声明 ebSt:{} | 默认调用业务 `showConfirm()` |
-| 媒体控件 | `media.css` | `media.head.js`（音频另加 `media-audio.head.js`） | `media.data.js` | `media-audio.methods.js`（可选）、`media.methods.js`；onInit 调 `mdSetMeta()`，pageShow / pageHide 调 `mdShow()` / `mdHide()` |
+| 媒体控件 | `media.css` | `media.head.js`（音频另加 `media-audio.head.js`；音量另加 `media-volume.head.js`） | `media.data.js` | `media-audio.methods.js` / `media-volume.methods.js`（可选）、`media.methods.js`；onInit 调 `mdSetMeta()`，pageShow / pageHide 调 `mdShow()` / `mdHide()` |
 
 上表中的片段全部通过 `@wear/` 引入。控制器方法结尾通常带逗号，按 JS 对象成员插入。`head` 和计时器不放入 private；`data` 不放入模块作用域。
 
@@ -330,6 +332,31 @@ left / right 取 `prev`、`next`、`back5|back10|back30`、`fwd5|fwd10|fwd30`（
 ```
 
 marquee 默认 `'false'`：溢出时省略号 + 右侧 8 dp 渐隐（官方 TextMediaDisplay）；`'true'` 时标题溢出改用原生 `<marquee>`（64 dp/s、停 4 s、间距 96 dp、两侧渐隐，官方 MarqueeText），副标题保持省略号。API 1 无文字测量，溢出按字宽表估算。`mdSetInfo('loading')` 显示两条脉冲占位，`mdSetInfo('none')` 显示「未在播放」。
+
+
+### media-settings
+
+```html
+<!-- #component media-settings {"left":"'output'","right":"'more'"} -->
+```
+
+left：`output`（耳机 / 手表 / 未连接 + 音量徽章）/ `volume`（无徽章的音量键）/ `none`；right：`more` / `none`。点击分别触发 `mdOnOutput` / `mdOnMore`。`mdSetOutput` 切换图标；`mdSetVolume` 更新徽章（静音 / 减 / 加）。详见 [MEDIA.md §7.2](MEDIA.md)。
+
+### media-volume-level
+
+```html
+<!-- #component media-volume-level {} -->
+```
+
+无参数。round 画弧形电平，pro / 手环画直条。由 `mdShowVolume` / `mdSetVolume(v,true)` 显示，2.5 s 后淡出。通常经 `media-player` 的 `level` 开关引入，不必单独放置。
+
+### media-player
+
+```html
+<!-- #component media-player {"marquee":"true","settings":"true","level":"true"} -->
+```
+
+组合电平 + media-info + media-controls + media-settings + TimeText。常用绑定：`settings` / `level`（默认 true）、`settingsLeft` / `settingsRight`、以及透传给控制行的 `left` / `right` / `ring` / `steps` / `rotate` / `marquee`。推荐用 `mdSetState` 切换官方各状态。
 
 ## 常见接入问题
 

@@ -1,4 +1,4 @@
-# 媒体控件规格（P0 冻结 · P1 实现）
+# 媒体控件规格（P0 冻结 · P1 / P2 实现）
 
 [组件指南](COMPONENTS.md#媒体控件) · [生成器 API](API.md)
 
@@ -15,7 +15,7 @@
 | 波浪进度环 | 官方：独立的 `pillStar(10, 0.8)`，圆角 12 dp，最大边 80−4 = 76 dp，描边 4 dp 圆头。本库：环中心线 = 按钮 scallop **向外平移 6 dp**（同一多边形、同心、同相，12 点钟为波谷），宽 76 dp、高 73.5 dp，与按钮的黑色间隙恒为 4 dp；官方两条独立曲线的间隙在 2.8–4.0 dp 间起伏 | 【源码】`RotatingWavyProgressIndicator.kt` +【适配】 |
 | 指示/轨道间隙 | gap = 0.006 × 周长 + 描边（周长 240.4 dp → 5.44 dp） | 【源码】同上 |
 | 归一化 | RoundedPolygon `normalized()` 按**较大边**缩放并居中：10 瓣、12 点为波谷 → 宽（波峰到波峰）= 64 / 76 dp，高（波谷到波谷）= 61.5 dp（环 73.5 dp）。golden 实测 scallop 63×61 dp、环外径 80 dp | 【源码】+ golden 测量 |
-| 颜色 | 键 primary、图标 onPrimary、侧键 primaryDim、指示 onSecondaryContainer、轨道 surfaceContainerLow、禁用 onSurface 12 % / 38 % | 【源码】`MediaButtonDefaults` / `ProgressIndicatorDefaults` |
+| 颜色 | 键 primary、图标 onPrimary、侧键 primaryDim、指示 onSecondaryContainer、轨道 surfaceContainerLow、禁用容器 onSurface **16 %** / 内容 38 %（DisabledContainerAlpha；进度环无禁用态） | 【源码】`MediaButtonDefaults` / `ProgressIndicatorDefaults` |
 | 图标 | 播放/暂停/下一首 32 dp（`LottiePlaceholders.kt` 静态帧路径，上一首为镜像）；±5/10/30 s 24 dp（Material Symbols replay_N / forward_N） | 【源码】 |
 | ButtonGroup | 侧格 `weight(1)`、中格 `weight(.5)+minWidth 80`；侧键内边距 外 7.1 % H、内 3 % H、上下 5.2 % H；按压扩展 12 dp（中格被按时两侧各 −6） | 【源码】`ButtonGroupLayout.kt` / `ButtonGroup.kt` |
 | 按压动效 | 按下 fastSpatial ×2 = 刚度 5600、抬起 slowSpatial 260，临界阻尼；Vela 用 `transition: width` + 拟合三次贝塞尔（100 ms `cubic-bezier(.18,0,.06,1)`，450 ms `cubic-bezier(.18,0,.08,1)`，最大误差 2.8 % / 2.4 %） | 【源码】+【推导】 |
@@ -29,7 +29,7 @@
 | 布局 | 方向 | 信息区顶 | 播放键顶 | 侧键（宽×高） | 标题宽 |
 |---|---|---|---|---|---|
 | round 233 | 横排 `[侧][80][侧]` | 32.5 | 76.5 | 52.5 × 54，外 17 / 内 7 | 155.5（66.72 % W） |
-| pro 168×240 | 横排 | 36 | 80 | 34 × 54，外 6 / 内 4【适配】 | 150（内容宽） |
+| pro 168×240 | 横排 | 36 | 80 | 34 × 54，外 **10** / 内 4【适配】（P2：为左侧直条电平留 2 dp） | 150（内容宽） |
 | band10 130×320 | 纵排：播放键一行 + 两键行【适配】 | 44 | 94 | 54.2 × 52，间距 8 | 116.5 |
 | band9 118×302 | 纵排【适配】 | 40 | 88 | 48.1 × 48 | 104.2 |
 
@@ -80,4 +80,67 @@ band 上按压侧键时播放键由 scallop 变为圆（没有横向挤压空间
 | 跑马灯 | 原生 `<marquee>`，速度/停顿/间距按官方；API 1 无文字测量，溢出用字宽表估算【推导】 |
 | 表冠调音量、封面取色、输出设备切换、Ambient | 做不了（无对应 API） |
 
-音乐播放页（播放键 + 上/下一首 + 信息区）实际拷贝：round 40 档 ≈ 22.5 KB、band10 20 档 ≈ 12.9 KB。
+
+## 7. P2：设置行 · 音量电平 · 圆形暂停环 · 播放页组合
+
+复刻 Horologist `PlayerScreen`（MediaPlayerTestCase）组合：`media-settings` + `media-volume-level` + `media-player`，可选 `@system.volume` 适配器。固定参考仍为 `cdf245ceee02549a16d2da519a55e1e4d96777c3`（含 `audio/ui-material3`）。
+
+### 7.1 暂停圆形环（选项 B）
+
+暂停（`playing=false`）时官方 Morph 目标是 `circlePolygon`：64 dp 圆键 + 直径 76 dp、中心线半径 38 dp 的圆环，与播放态瞬间切换。
+
+- **资源**：轨道 `md_cring_t`；覆盖图 `md_c0_{I,P1,P2,P3,Z}`、`md_c1_{I,P1,P2,P3}`、`md_c9_I`。
+- **实现【适配】**：第 0 段与第 9 段结尾用原位图；第 2–9 段复用第 1 段图，按 `36°·(k−1)` 旋转（`transform-origin` 显式 px）。**永不使用**整环 CSS 旋转（选项 C）。
+- **模拟器**：round / band10 在 q=5/13/21/29/33/37/39/40 与预渲染对照：峰值亮度恒定、无暗缝；中心线半径 std ≤ 0.5 px；宽度差 ≤ 1 px 抗锯齿。因此选用 **B**（非 A 的 20 档全量预渲染）。
+- **0 %**：`md_r0_Z` / `md_c0_Z` = 起点 gap/2 处 4 dp 圆点，轨道从 1.5·gap 开始。
+
+### 7.2 media-settings（VolumeButtonWithBadge + SettingsButton）
+
+| 项 | 值 | 来源 |
+|---|---|---|
+| 胶囊 | 44×32 dp，容器 onSurface 24 %；禁用 16 % / 内容 38 % | 【源码】 |
+| 触控区 | 48 dp 高，按钮 TopCenter 8 dp 落入 | 【源码】 |
+| 徽章 | 七角星 `star(7, .75, .5)` 18 dp，primaryDim；图标 14 dp onPrimary（mute / down / up） | 【源码】 |
+| 行 padding | 顶 ceil(1.2 % W)、左右 ceil(14.5 % W)；round / pro 两格均分 | 【源码】 |
+| 手环位置 | 顶 254 / 238 dp，中心 ∓32 / ∓30 dp，半宽 clamp 到屏宽【适配】 | 【适配】 |
+| left / right | `'output'\|'volume'\|'none'` / `'more'\|'none'`；回调 `mdOnOutput` / `mdOnMore` | 【适配】 |
+| 输出图标 | 默认耳机；`mdSetOutput('watch'\|'headphones'\|'none')`；未连接强制 off | 【源码】+【适配】 |
+
+没有表冠 / 旋钮事件：**不提供滑动调音量**；输出键走回调（P3 音量页再接）。
+
+### 7.3 media-volume-level（StepperLevelIndicator）
+
+| 项 | 值 |
+|---|---|
+| 颜色 | 指示 secondaryDim、轨道 surfaceContainer |
+| 显示 | 每次事件 2500 ms（新事件重计时）；`displayIndicatorEvents` 的 drop(1) 由适配器保证首次 get 不显示 |
+| 淡入 / 淡出 | 178 ms / 412 ms，`transition-property: opacity` + 拟合 `cubic-bezier(.18,0,.14,1)`（Vela 支持 opacity 过渡；无 animation-fill-mode） |
+| 数值 tween | 500 ms CubicBezier(0,0,0,1)；重新进入时 snap |
+| round | 复用 Stepper 弧形资源（sweep 72°、描边 6、边 2、间隙 3） |
+| pro / 手环 | **直条**【适配】：宽 6 dp、长 ≈ 2·sin(36°)·(W/2−5)+6，自下而上填充，接合处 3 dp 间隙；短于间隙时画圆点 |
+
+### 7.4 media-player 与音量适配器
+
+- `media-player`：一行组合 电平（可选）+ MediaInfo + 控制行 + 设置行（可选）+ TimeText；`mdSetState('playing'|'paused'|'loading'|'none'|'disconnected')`。
+- `media-volume`（可选，`system.volume`）：`mdvShow` → getMediaValue（只更新徽章）+ onMediaValueChanged（触发电平）；`mdvHide` 解除；`mdvSet(v)` 写系统音量并显示电平。
+
+### 7.5 P2 包体增量（PNG8，字节；examples/media 播放页实测）
+
+| 布局 | 全套 md_*（库资源） | 播放页拷贝 img | enhanced release rpk | enhanced debug rpk |
+|---|---|---|---|---|
+| round | 43 511 | 69 343 | 203 169 | 228 548 |
+| pro | 同 round 媒体图 38 202（无弧） | 35 474 | 161 368 | 186 312 |
+| band10 | 37 992 | 23 062 | 142 496 | 167 440 |
+| band9 | ≈ band10 | 23 060 | 142 616 | 167 579 |
+
+相对 P1：round release ≈ +35 KB（设置/徽章/圆环/四页内联 JS）；消费者若只生成单播放页，体量明显小于本 examples 四页包。16 组 debug+release 构建 warn = 0。
+
+### 7.6 与官方的新增差异
+
+| 项 | 状态 |
+|---|---|
+| 暂停圆形环 | 外形一致；分段旋转复用【适配】，模拟器无接缝 |
+| 设置行 / 徽章 / 输出图标 | 一致；手环位置【适配】 |
+| 音量电平 | round 弧一致；pro / 手环改直条【适配】；淡入淡出与 2.5 s 规则一致 |
+| 滑动 / 表冠调音量 | 不做（无 API）；输出键回调 |
+| Ambient / 封面取色 / 真实输出设备枚举 | 做不了 |

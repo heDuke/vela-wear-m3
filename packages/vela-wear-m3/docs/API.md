@@ -74,7 +74,7 @@ console.log(Object.keys(components))
 console.log(devices.band10.W, devices.band10.H)
 ```
 
-`components` 是 `components/registry.json` 的对象：键为组件名，值含 `template`（包内模板路径）、`defaults`（默认绑定对象）、`styles`（登记的样式片段数组）。空 `styles` **不表示组件无需样式**，有些几何样式由构建上下文生成；以组件指南为准。共 23 个注册模板。
+`components` 是 `components/registry.json` 的对象：键为组件名，值含 `template`（包内模板路径）、`defaults`（默认绑定对象）、`styles`（登记的样式片段数组）。空 `styles` **不表示组件无需样式**，有些几何样式由构建上下文生成；以组件指南为准。共 26 个注册模板（含 P2 的 media-settings / media-volume-level / media-player）。
 
 `devices` 是布局配置对象，各项字段包含 `name`（描述文字）、`W`、`H`（物理像素）、`shape`（`circle` / `rect` / `pill`）和 `k`（每 dp 的像素数）。这不是运行时设备探测或兼容机型表。
 
@@ -157,3 +157,17 @@ npx vela-wear-m3 gen --input template --out src --device band10 --animation enha
 
 几何（`animations.json` → `<device>.level`）：`cx`/`cy` 屏幕中心，`r` 弧半径 px，`o` 描边半宽 px，`start`/`sweep`/`gap` 为角度（ScrollIndicator.kt：sweep = 2·asin(h/2/Ru) + gap，gap = 2·asin(4.5 dp/Ru)，Ru = W/2−2 dp），`ind`/`trk`/`indDis`/`trkDis`/`maskLow`/`maskHigh` 为 `{src,x,y,w,h}`。
 
+## 媒体控件（media.*）
+
+规格与降级见 [MEDIA.md](MEDIA.md)；接入契约见 [COMPONENTS.md](COMPONENTS.md#媒体控件)。控制器方法（页面 `private` 经 include 注入）：
+
+| 方法 | 说明 |
+|---|---|
+| `mdSetPlaying` / `mdSetProgress` / `mdSetLoading` / `mdSetEnabled` / `mdSetMeta` / `mdSetInfo` | P1 状态 |
+| `mdSetState(st)` | `'playing'\|'paused'\|'loading'\|'none'\|'disconnected'` 一键切换 |
+| `mdSetOutput(kind)` / `mdSetSettingsEnabled(b)` / `mdSetVolume(v[,show])` | 设置行 |
+| `mdShowVolume([v])` / `mdLvHide([now])` | 音量电平显示 / 隐藏 |
+| `mdShow()` / `mdHide()` | 页可见性；联动可选 `mda*` / `mdv*` |
+| `mdvShow` / `mdvHide` / `mdvSet(v)` | 可选 `@system.volume` 适配器 |
+
+页面回调：`mdOnPlay` `mdOnPause` `mdOnPrev` `mdOnNext` `mdOnSeek` `mdOnOutput` `mdOnMore`（及音频的 `mdOnEnded` / `mdOnAudioError`）。
