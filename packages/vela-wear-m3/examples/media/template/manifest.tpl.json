@@ -7,7 +7,7 @@
   "minAPILevel":$[api],
   "icon":"/common/logo.png",
   "deviceTypeList":["watch"],
-  "features":[{"name":"system.router"},{"name":"system.vibrator"},{"name":"system.audio"}],
+  "features":[{"name":"system.router"},{"name":"system.vibrator"},{"name":"system.audio"},{"name":"system.volume"}],
   "config":{"designWidth":$[W]},
   "router":{"entry":"pages/index","pages":{"pages/index":{"component":"index"},"pages/player":{"component":"player"},"pages/podcast":{"component":"podcast"},"pages/audio":{"component":"audio"}}},
   "display":{"backgroundColor":"#000000"}

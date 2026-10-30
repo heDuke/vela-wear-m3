@@ -23,7 +23,28 @@ const SPEC={
   disabledContainer:['onSurface',.16],disabledContent:['onSurface',.38],nothing:'onSurfaceVariant',placeholder:'outlineVariant'},
  // [src] DisabledContainerAlpha = 0.16 (golden player_notconnected #282629 over black); P1 used 0.12.
  circleRing:38,          // [src] paused: Morph(pill, circlePolygon = pillPolygon(80-4, 80-4)) -> circle centre line r = 38dp
+ // [src] PlayerScreen settings row (MediaPlayerTestCase buttons): Row(padding top 1.2 % W, start/end 14.5 % W) of two
+ // weight(1) boxes, buttons TopCenter inside minimumInteractiveComponentSize (48dp) -> visible pill 8dp below the box top.
+ settings:{w:44,h:32,touch:48,icon:24,badge:18,badgeIcon:14,badgeDx:9,padTop:.012,padSide:.145,
+  container:['onSurface',.24],disabledContainer:['onSurface',.16],content:'onSurface',disabledContent:['onSurface',.38],
+  badgeColor:'primaryDim',badgeIconColor:'onPrimary',star:{n:7,inner:.75,rounding:.5}},
+ // [src] VolumeLevelIndicator = StepperLevelIndicator (sweep 72deg, 6dp, edge 2dp, gap 3dp), shown 2500 ms after each
+ // event (collectLatest restarts), fadeIn(fastEffects k1400) / fadeOut(slowEffects k260); value tween 500 ms.
+ level:{sweep:72,stroke:6,edge:2,gap:3,showMs:2500,enterK:1400,exitK:260,ind:'secondaryDim',trk:'surfaceContainer'}
 };
+// RoundedPolygon.star(n, innerRadius, rounding) rotated -90deg (peak at 12 o'clock), toShape() scales x and y
+// independently into the box -> unit-square outline [0,1]^2 (SettingsButton badge, golden 18dp star).
+function star(n,inner,rounding,N=16){
+ const V=[];for(let i=0;i<2*n;i++){const a=-Math.PI/2+i*Math.PI/n,r=i%2?inner:1;V.push([r*Math.cos(a),r*Math.sin(a)])}
+ const pts=[];
+ for(let i=0;i<V.length;i++){const v=V[i],p=V[(i-1+V.length)%V.length],q=V[(i+1)%V.length],u1=norm(sub(p,v)),u2=norm(sub(q,v));
+  const th=Math.acos(Math.max(-1,Math.min(1,dot(u1,u2))));let d=rounding/Math.tan(th/2);const mx=Math.min(len(sub(p,v)),len(sub(q,v)))/2;if(d>mx)d=mx;const rr=d*Math.tan(th/2);
+  const t1=add(v,mul(u1,d)),t2=add(v,mul(u2,d)),c=add(v,mul(norm(add(u1,u2)),rr/Math.sin(th/2)));
+  let a1=Math.atan2(t1[1]-c[1],t1[0]-c[0]),a2=Math.atan2(t2[1]-c[1],t2[0]-c[0]),da=a2-a1;while(da>Math.PI)da-=2*Math.PI;while(da<-Math.PI)da+=2*Math.PI;
+  for(let k=0;k<=N;k++){const a=a1+da*k/N;pts.push([c[0]+rr*Math.cos(a),c[1]+rr*Math.sin(a)])}}
+ let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const p of pts){x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])}
+ return pts.map(p=>[(p[0]-x0)/(x1-x0),(p[1]-y0)/(y1-y0)]);
+}
 // RoundedPolygon.star with circular corner rounding (smoothing 0), cut clamped to half edge (plan render/geom.js).
 const sub=(a,b)=>[a[0]-b[0],a[1]-b[1]],add=(a,b)=>[a[0]+b[0],a[1]+b[1]],mul=(a,k)=>[a[0]*k,a[1]*k];
 const dot=(a,b)=>a[0]*b[0]+a[1]*b[1],len=a=>Math.hypot(a[0],a[1]),norm=a=>{const l=len(a)||1;return[a[0]/l,a[1]/l]};
@@ -98,7 +119,7 @@ function layout(d){
  const B=SPEC.button;
  if(!pill){
   const mid=Math.max(B,H/3),side=(W-B)/2;
-  const pad=rect?{outer:6,inner:4,vert:13}:{outer:Math.ceil(H*SPEC.sidePad.outer),inner:Math.ceil(H*SPEC.sidePad.inner),vert:Math.ceil(H*SPEC.sidePad.vert)};
+  const pad=rect?{outer:10,inner:4,vert:13}:{outer:Math.ceil(H*SPEC.sidePad.outer),inner:Math.ceil(H*SPEC.sidePad.inner),vert:Math.ceil(H*SPEC.sidePad.vert)};
   const topH=Math.max(68,(H-mid)/2),infoBottom=topH-6;
   return {W,H,HP,CW,vertical:false,midH:mid,side,pad,pillW:side-pad.outer-pad.inner,pillH:mid-2*pad.vert,topH,
    info:{top:infoBottom-38,titleW:rect?CW:W*SPEC.info.titleW,subW:rect?CW:W*SPEC.info.subW,title:16,sub:14},
@@ -107,10 +128,23 @@ function layout(d){
  const band9=W<125,info=band9?40:44,play=band9?88:94,row=band9?176:184,rowH=band9?48:52,gap=8;
  return {W,H,HP,CW,vertical:true,pad:{gap},info:{top:info,titleW:CW,subW:CW,title:15,sub:13},playTop:play,rowTop:row,rowH,pillW:(CW-gap)/2,playCY:play+B/2};
 }
+// Settings row + volume level (dp). Round/pro: PlayerScreen bottom section = H - (top + middle); the Row starts
+// ceil(1.2 % W) below it, each weight(1) box is (W - 2*ceil(14.5 % W))/2 wide, pill TopCenter 8dp into the box.
+// Bands [adapt]: two 64 / 60dp boxes centred at W/2 -+ 32 / 30dp, pill top 254 / 238dp (18 / 14dp below the side keys).
+// Volume level: round = StepperLevelIndicator arc (assets/animations.json level); others [adapt] a straight 6dp bar
+// 2dp from the left edge, length 2*sin(36deg)*(W/2-5) + stroke, centred vertically (the arc would hit the side keys).
+function settingsLayout(d){
+ const k=d.k,W=d.W/k,H=d.H/k,pill=d.shape==='pill',S=SPEC.settings,L=layout(d);let top,cells,one;
+ if(!pill){const row=L.topH+L.midH+Math.ceil(W*S.padTop),side=Math.ceil(W*S.padSide),cw=(W-2*side)/2;
+  top=row+(S.touch-S.h)/2;cells=[[side,cw],[side+cw,cw]];one=[side,2*cw];}
+ else{const b9=W<125,c=b9?30:32,hw=Math.min(c,W/2-c);top=b9?238:254;cells=[[W/2-c-hw,2*hw],[W/2+c-hw,2*hw]];one=[W/2-c,2*c];}
+ const cellTop=top-(S.touch-S.h)/2,ind=2*Math.sin(SPEC.level.sweep/2*Math.PI/180)*(W/2-SPEC.level.edge-SPEC.level.stroke/2),bh=ind+SPEC.level.stroke;
+ return {top,cellTop,cellH:H-cellTop,cells,one,bar:{x:SPEC.level.edge,w:SPEC.level.stroke,top:H/2-bh/2,h:bh}};
+}
 // Paused circle ring overlays: the circle is rotation invariant, so lobes 1..8 (and lobe 9 before its end) reuse lobe 1
 // rotated by 36*(k-1) deg about the ring centre; lobe 0 (start cap / Z dot) and lobe 9 'I' (end cap at 100 %) are own images.
 function circleNames(steps){const set=new Set();for(const n of lobeNames(steps)){const [,k,st]=n.match(/^md_r(\d)_(\w+)$/);set.add(k==='0'?'md_c0_'+st:k==='9'&&st==='I'?'md_c9_I':'md_c1_'+st)}return [...set].sort()}
-module.exports={SPEC,scallop,offset,ringOffset,cum,seg,closed,ring,circleRing,button,lobeState,lobeNames,lobeSegments,circleNames,crit,fitSpring,bezierY,layout};
+module.exports={SPEC,scallop,star,offset,ringOffset,cum,seg,closed,ring,circleRing,button,lobeState,lobeNames,lobeSegments,circleNames,crit,fitSpring,bezierY,layout,settingsLayout};
 // Horologist LottiePlaceholders.kt static frames (24-unit viewport, Apache-2.0): pause / play / next (previous = mirrored).
 const ICON_PATHS={
  pause:'M7.68 4.416h-.008a2.16 2.16 0 0 0-2.16 2.16v10.8a2.16 2.16 0 0 0 2.16 2.16h.008a2.16 2.16 0 0 0 2.16-2.16v-10.8a2.16 2.16 0 0 0-2.16-2.16zM16.328 4.416h-.008a2.16 2.16 0 0 0-2.16 2.16v10.8a2.16 2.16 0 0 0 2.16 2.16h.008a2.16 2.16 0 0 0 2.16-2.16v-10.8a2.16 2.16 0 0 0-2.16-2.16z',

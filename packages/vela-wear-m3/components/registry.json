@@ -182,5 +182,41 @@
     "styles": [
       "media.css"
     ]
+  },
+  "media-settings": {
+    "template": "media-settings.tpl",
+    "defaults": {
+      "left": "'output'",
+      "right": "'more'"
+    },
+    "styles": [
+      "media.css"
+    ]
+  },
+  "media-volume-level": {
+    "template": "media-volume-level.tpl",
+    "defaults": {},
+    "styles": [
+      "media.css"
+    ]
+  },
+  "media-player": {
+    "template": "media-player.tpl",
+    "defaults": {
+      "shape": "'scallop'",
+      "ring": "''",
+      "steps": "''",
+      "rotate": "false",
+      "left": "'prev'",
+      "right": "'next'",
+      "marquee": "false",
+      "settings": "true",
+      "settingsLeft": "'output'",
+      "settingsRight": "'more'",
+      "level": "true"
+    },
+    "styles": [
+      "media.css"
+    ]
   }
 }

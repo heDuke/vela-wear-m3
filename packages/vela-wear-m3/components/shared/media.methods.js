@@ -18,6 +18,7 @@ mdRingPaint(){if(!MDC.cl)return;const q=mdS.q,c=mdS.circ,ring=[],cr=[];let c9=''
  const rt=c?MDC.ct:MDC.rt;if(this.mdRtSrc!==rt)this.mdRtSrc=rt;this.mdRing=ring;this.mdCRing=cr;if(this.mdC9I!==c9)this.mdC9I=c9},
 // visual state: shape (scallop while playing, circle while paused, pill while pressed), ring, icon and side colours
 mdPaint(){
+ this.mdPaintSet()
  if(!MDC.ic)return this.mdPaintSides()
  const p=mdS.press,pillShape=p==='play'||(!!p&&!MDC.vertical)||mdS.rel
  const solid=pillShape||(p&&MDC.vertical)||MDC.shape==='round'||!mdS.playing
@@ -69,5 +70,59 @@ mdMqArm(){if(mdMqTimer)clearTimeout(mdMqTimer);mdMqTimer=null;if(!mdVisible||!th
   mdMqTimer=setTimeout(()=>{mdMqTimer=null;try{const el=this.$element('mdMarquee');if(el)el.start()}catch(e){}},MDC.info.pause)},34)},
 mdMqStop(){if(mdMqTimer)clearTimeout(mdMqTimer);mdMqTimer=null;try{const el=this.$element('mdMarquee');if(el)el.stop()}catch(e){}},
 mdMqBounce(){this.mdMqStop();this.mdMqArm()},
-mdShow(){mdVisible=true;this.mdPaint();if(this.mdMq)this.mdMqArm();if(this.mdaShow)this.mdaShow()},
-mdHide(){mdVisible=false;this.mdMqStop();this.mdRelease(true);if(this.mdaHide)this.mdaHide()},
+// ---- settings row (MediaPlayerTestCase: VolumeButtonWithBadge + SettingsButton(MoreVert)) --------------------------
+// Output icon: headphones / watch speaker when connected, media_output_off (no badge) for 'none'. Badge / volume icon:
+// VolumeMute at the minimum, VolumeDown below the maximum, VolumeUp at the maximum or when unknown.
+mdSetOutput(kind){mdS.out=kind==='watch'||kind==='none'?kind:'headphones';if(kind!=='none')mdS.outPref=mdS.out;this.mdPaintSet()},
+mdSetSettingsEnabled(b){mdS.setOn=!!b;this.mdPaintSet()},
+mdSetVolume(v,show){v=+v;if(!(v>=0))v=0;if(v>1)v=1;mdS.vol=v;this.mdPaintSet();if(!MDC.lv)return
+ if(show)this.mdLvShow();else if(this.mdLvLive())this.mdLvTo(v,false)},
+mdPaintSet(){const T=MDC.set;if(!T)return;const on=mdS.setOn,k=on?'on':'off',v=mdS.vol,lvl=v<0||v>=.995?'up':v<=.005?'mute':'down'
+ const cls=on?'md-sbon':'md-sbdis';if(this.mdSetCls!==cls)this.mdSetCls=cls;let oi='',b=''
+ if(T.out){oi=T.out[mdS.out][k];b=mdS.out==='none'?'':T.badge[lvl][on?0:1]}else if(T.vol)oi=T.vol[lvl][k]
+ if(this.mdOutIc!==oi)this.mdOutIc=oi;if(this.mdBadge!==b)this.mdBadge=b;const mi=T.more[k];if(this.mdMoreIc!==mi)this.mdMoreIc=mi},
+mdOutTap(){if(mdS.setOn&&this.mdOnOutput)this.mdOnOutput()},
+mdMoreTap(){if(mdS.setOn&&this.mdOnMore)this.mdOnMore()},
+// ---- volume level indicator (VolumeLevelIndicator: arc on round, straight bar elsewhere) ---------------------------
+// Each event shows it for 2500 ms (a new event restarts the delay, collectLatest); fadeIn fastEffects (178 ms),
+// fadeOut slowEffects (412 ms) as opacity transitions. While visible (or fading out) value changes tween 500 ms;
+// a fresh entry snaps to the current value.
+mdShowVolume(v){if(v!==undefined&&v!==null)this.mdSetVolume(v,true);else this.mdLvShow()},
+mdLvLive(){return mdLv.on||Date.now()<mdLv.outEnd},
+mdLvShow(){if(!MDC.lv||!mdVisible||mdS.vol<0)return;this.mdLvTo(mdS.vol,!this.mdLvLive())
+ if(!mdLv.on){mdLv.on=true;mdLv.outEnd=0;this.mdLvCls='md-lvin';this.mdLvSt={opacity:1}}
+ if(mdLvTimer)clearTimeout(mdLvTimer);mdLvTimer=setTimeout(()=>{mdLvTimer=null;this.mdLvHide(false)},MDC.lvMs)},
+mdLvHide(now){if(mdLvTimer)clearTimeout(mdLvTimer);mdLvTimer=null;if(!MDC.lv)return
+ if(now){this.mdLvStop();mdLv.on=false;mdLv.outEnd=0;this.mdLvCls='';this.mdLvSt={opacity:0};return}
+ if(!mdLv.on)return;mdLv.on=false;mdLv.outEnd=Date.now()+412;this.mdLvCls='md-lvout';this.mdLvSt={opacity:0}},
+mdLvTo(v,snap){const now=Date.now()
+ if(snap||mdLv.to<0){this.mdLvStop();mdLv.from=mdLv.to=v;mdLv.t0=now-500;this.mdLvPaint(v);return}
+ if(v===mdLv.to)return;mdLv.from=this.mdLvAt(now);mdLv.to=v;mdLv.t0=now;this.mdLvPaint(this.mdLvAt(now,1))
+ if(!mdLvTween)mdLvTween=setInterval(()=>{const t=Date.now();this.mdLvPaint(this.mdLvAt(t,1));if(t-mdLv.t0>=500)this.mdLvStop()},33)},
+mdLvAt(t,shown){return mdLv.from+(mdLv.to-mdLv.from)*mdLvEase(Math.max(t-mdLv.t0,shown?1000/60:0)/500)},
+mdLvStop(){if(mdLvTween)clearInterval(mdLvTween);mdLvTween=null},
+// arc: ScrollIndicator.kt drawCurvedIndicator (same as the Stepper level); bar [adapt]: fill from the bottom, track
+// above, gap 3dp at the join, round caps; a piece no longer than the gap is a dot (size and alpha ~ length / gap).
+mdLvPaint(f){const L=MDC.lv
+ if(L.arc){const fill=L.sweep*f,rest=L.sweep-fill,end=L.start+fill,rot=a=>JSON.stringify({rotate:(a-180).toFixed(2)+'deg'})
+  this.mdLvI=fill>L.gap?{opacity:1,transform:rot(end-L.gap/2)}:{opacity:0,transform:rot(L.start)}
+  this.mdLvT=rest>L.gap?{opacity:1,transform:rot(end+L.gap/2)}:{opacity:0,transform:rot(L.start+L.sweep)}
+  const dot=(sweep,from)=>{const q=sweep/L.gap,r=L.o*q;if(sweep>L.gap||r<.25)return {opacity:0}
+   const a=(from+sweep/2)*Math.PI/180,x=L.cx+L.r*Math.cos(a),y=L.cy+L.r*Math.sin(a),d=Math.max(1,Math.round(2*r))
+   return {opacity:Math.round(q*100)/100,left:Math.round(x-d/2)+'px',top:Math.round(y-d/2)+'px',width:d+'px',height:d+'px',borderRadius:d/2+'px'}}
+  this.mdLvDI=dot(fill,L.start);this.mdLvDT=dot(rest,end);return}
+ const w=L.w,yb=L.ht-w/2,s=L.lc*f,r=L.lc-s
+ const piece=(u0,u1)=>({opacity:1,left:'0px',top:Math.round(yb-u1-w/2)+'px',width:w+'px',height:Math.round(u1-u0+w)+'px',borderRadius:w/2+'px'})
+ const dot=(len,u)=>{const q=len/L.gap,d=Math.round(w*q);if(d<1)return {opacity:0}
+  return {opacity:Math.round(q*100)/100,left:Math.round((w-d)/2)+'px',top:Math.round(yb-u-d/2)+'px',width:d+'px',height:d+'px',borderRadius:d/2+'px'}}
+ this.mdBarI=s>L.gap?piece(0,s-L.gap/2):dot(s,s/2);this.mdBarT=r>L.gap?piece(s+L.gap/2,L.lc):dot(r,s+r/2)},
+// ---- whole screen (PlayerScreen states) -----------------------------------------------------------------------------
+// playing / paused: media ready, keys and settings enabled; loading: placeholders + loading ring; none: "未在播放"
+// (connected, no media); disconnected: golden notconnected = "未在播放", every key disabled, output off, no badge.
+mdSetState(st){const on=st!=='disconnected'
+ if(MDC.ic){this.mdSetLoading(st==='loading');if(st==='playing'||st==='paused')this.mdSetPlaying(st==='playing');else if(!on)this.mdSetPlaying(false)}
+ this.mdSetEnabled(on?{play:true}:{play:false,prev:false,next:false})
+ if(st==='loading')this.mdSetInfo('loading');else if(st==='none'||!on){this.mdSetInfo('none');this.mdSetProgress(0)}else if(this.mdInfo!=='ready')this.mdSetInfo('ready')
+ if(MDC.set){mdS.setOn=on;this.mdSetOutput(on?mdS.outPref:'none')}},
+mdShow(){mdVisible=true;this.mdPaint();if(this.mdMq)this.mdMqArm();if(this.mdaShow)this.mdaShow();if(this.mdvShow)this.mdvShow()},
+mdHide(){mdVisible=false;this.mdMqStop();this.mdRelease(true);this.mdLvHide(true);if(this.mdaHide)this.mdaHide();if(this.mdvHide)this.mdvHide()},

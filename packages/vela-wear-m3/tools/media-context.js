@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 heDuke. Upstream material retains its own terms; see NOTICE.
-// Build-time context for media-play-pause / media-controls / media-info (Horologist media-ui-material3, PLAN P1).
-// Components set compile-time options with #set (mdPP / mdCtl / mdInf); media.css and media.head.js read them.
+// Build-time context for media-play-pause / media-controls / media-info / media-settings / media-volume-level /
+// media-player (Horologist media-ui-material3 + audio-ui-material3). Components set compile-time options with #set
+// (mdPP / mdCtl / mdInf / mdSet / mdLv); media.css, media.head.js, media.data.js and media.methods.js read them.
 const fs=require('fs'),path=require('path'),G=require('./media-geom');
 const MEDIA=JSON.parse(fs.readFileSync(path.join(__dirname,'../assets/media.json'),'utf8'));
 const KINDS=Object.keys(G.SIDE);
 module.exports=function(c){
- const {id,W,C,dp,pill}=c,L=G.layout(require('./devices.json')[id]),S=G.SPEC;
+ const {id,W,H,C,dp,pill,round}=c,DV=require('./devices.json')[id],L=G.layout(DV),SL=G.settingsLayout(DV),S=G.SPEC;
+ c.mdPP=null;c.mdCtl=null;c.mdInf=null;c.mdSet=null;c.mdLv=null;
  const img=n=>'/common/img/'+n+'.png',B=dp(S.button);
  // ---- compile-time options -------------------------------------------------------------------------------------------
  c.mdOpts=(shape,ring,steps,rotate)=>{
@@ -24,12 +26,20 @@ module.exports=function(c){
   return {left,right,lIc:G.SIDE[left][0].endsWith('24')?'md-ic24':'md-ic',rIc:G.SIDE[right][0].endsWith('24')?'md-ic24':'md-ic'};
  };
  c.mdInfoOpts=marquee=>({marquee:marquee===true||marquee==='true'});
+ // settings row: left 'output' (VolumeButtonWithBadge) | 'volume' (VolumeButton) | 'none'; right 'more' | 'none'
+ c.mdSetOpts=(left,right)=>{left=left||'output';right=right||'more';
+  if(!['output','volume','none'].includes(left))throw new Error('media-settings left must be output|volume|none');
+  if(!['more','none'].includes(right))throw new Error('media-settings right must be more|none');
+  if(left==='none'&&right==='none')throw new Error('media-settings needs at least one button');
+  return {left,right}};
+ // volume level indicator: arc on round (StepperLevelIndicator assets), straight bar elsewhere [adapt]
+ c.mdLvOpts=()=>({arc:!!round});
  // ---- markup helpers --------------------------------------------------------------------------------------------------
  // wavy ring (playing) and circle ring (paused) share one track element; lobes 1..9 of the circle are rotated lobe-1 images
  c.mdLobes=()=>'<image class="md-rt" src="{{mdRtSrc}}"></image>'+Array.from({length:10},(_,k)=>'<image class="md-l'+k+'" if="{{mdRing['+k+']}}" src="{{mdRing['+k+']}}"></image>').join('')
   +Array.from({length:10},(_,k)=>'<image class="md-c'+k+'" if="{{mdCRing['+k+']}}" src="{{mdCRing['+k+']}}"></image>').join('')+'<image class="md-c9i" if="{{mdC9I}}" src="{{mdC9I}}"></image>';
  // ---- geometry (px) ---------------------------------------------------------------------------------------------------
- const g={vertical:L.vertical,B,pill64:dp(64),pillUp:dp(64+S.expansion),pillDown:dp(64-S.expansion)};
+ const g={vertical:L.vertical,B,pill64:dp(64),pillUp:dp(64+S.expansion),pillDown:dp(64-S.expansion),infoTop:dp(L.info.top)};
  if(!L.vertical){
   g.outer=dp(L.pad.outer);g.inner=dp(L.pad.inner);g.ph=dp(L.pillH);g.rowH=dp(L.midH);
   g.mid=B;g.side=Math.round((W-2*g.outer-2*g.inner-B)/2);g.mid=W-2*g.outer-2*g.inner-2*g.side;const e=dp(S.expansion),h=Math.round(e/2);
@@ -92,11 +102,32 @@ module.exports=function(c){
    o+='.md-ph2{width:'+dp(b2[0])+'px;height:'+dp(b2[1])+'px;border-radius:'+dp(b2[1]/2)+'px;margin-top:'+Math.round((ah-dp(b2[1]))/2)+'px;}\n';
    o+='@keyframes mdPulse{0%{opacity:1;}50%{opacity:0.4;}100%{opacity:1;}}\n';
   }
+  const set=c.mdSet,lv=c.mdLv,ST=S.settings;
+  if(set){
+   const one=set.left==='none'||set.right==='none',cell=(cls,x,w)=>'.'+cls+'{position:absolute;left:'+dp(x)+'px;top:'+dp(SL.cellTop)+'px;width:'+(dp(x+w)-dp(x))+'px;height:'+(H-dp(SL.cellTop))+'px;flex-direction:column;align-items:center;}\n';
+   if(one)o+=cell(set.left==='none'?'md-cr':'md-cl',SL.one[0],SL.one[1]);else{o+=cell('md-cl',SL.cells[0][0],SL.cells[0][1]);o+=cell('md-cr',SL.cells[1][0],SL.cells[1][1]);}
+   const sw=dp(ST.w),sh=dp(ST.h),SC=rgba(C[ST.container[0]],ST.container[1]),SDC=rgba(C[ST.disabledContainer[0]],ST.disabledContainer[1]);
+   o+='.md-sb{width:'+sw+'px;height:'+sh+'px;margin-top:'+dp((ST.touch-ST.h)/2)+'px;border-width:1px;border-radius:'+Math.floor(sh/2)+'px;justify-content:center;align-items:center;}\n';
+   o+='.md-sbon{background-color:'+SC+';border-color:'+SC+';}\n.md-sbdis{background-color:'+SDC+';border-color:'+SDC+';}\n.md-sic{width:'+dp(ST.icon)+'px;height:'+dp(ST.icon)+'px;}\n';
+   // badge: Alignment.TopEnd + offset(x = 9dp) on the 44dp pill
+   const lc=one?SL.one:SL.cells[0],lw=dp(lc[0]+lc[1])-dp(lc[0]);
+   o+='.md-badge{position:absolute;left:'+(Math.floor((lw-sw)/2)+dp(ST.w-ST.badge+ST.badgeDx))+'px;top:'+dp((ST.touch-ST.h)/2)+'px;width:'+dp(ST.badge)+'px;height:'+dp(ST.badge)+'px;}\n';
+  }
+  if(lv){
+   const fi=G.fitSpring(S.level.enterK,178),fo=G.fitSpring(S.level.exitK,412);
+   o+='.md-lv{position:absolute;left:0px;top:0px;width:'+W+'px;height:'+H+'px;opacity:0;transition-property:opacity;}\n';
+   o+='.md-lvin{transition-duration:178ms;transition-timing-function:cubic-bezier('+fi.x1+',0,'+fi.x2+',1);}\n.md-lvout{transition-duration:412ms;transition-timing-function:cubic-bezier('+fo.x1+',0,'+fo.x2+',1);}\n';
+   if(lv.arc){const g=c.levelGeo,b=(n,q)=>'.'+n+'{position:absolute;left:'+q.x+'px;top:'+q.y+'px;width:'+q.w+'px;height:'+q.h+'px;'+(n.startsWith('md-lvm')?'':'transform:rotate(0deg);transform-origin:'+(g.cx-q.x)+'px '+(g.cy-q.y)+'px;')+'}\n';
+    o+=b('md-lvi',g.ind)+b('md-lvt',g.trk)+b('md-lvml',g.maskLow)+b('md-lvmh',g.maskHigh);
+    o+='.md-lvd{position:absolute;left:0px;top:0px;width:2px;height:2px;border-width:1px;border-radius:1px;}\n';
+   }else{const bw=dp(S.level.stroke);o+='.md-bar{position:absolute;left:'+dp(SL.bar.x)+'px;top:'+Math.round(dp(SL.bar.top))+'px;width:'+bw+'px;height:'+Math.round(dp(SL.bar.h))+'px;}\n.md-barp{position:absolute;left:0px;top:0px;width:'+bw+'px;height:'+bw+'px;border-width:1px;border-radius:'+bw/2+'px;}\n';}
+   o+='.md-lvc{background-color:'+C[S.level.ind]+';border-color:'+C[S.level.ind]+';}\n.md-lvk{background-color:'+C[S.level.trk]+';border-color:'+C[S.level.trk]+';}\n';
+  }
   return o;
  };
  // ---- runtime constants -----------------------------------------------------------------------------------------------
  c.mdJs=()=>{
-  const pp=c.mdPP,ctl=c.mdCtl,inf=c.mdInf,o={};
+  const pp=c.mdPP,ctl=c.mdCtl,inf=c.mdInf,set=c.mdSet,lv=c.mdLv,o={};
   if(pp){
    o.steps=pp.steps;o.ring=pp.ring;o.shape=pp.shape;o.rotate=pp.rotate;
    if(pp.ring==='wavy'){o.lobes=Object.fromEntries(G.lobeNames(pp.steps).map(n=>[n.slice(4),img(n)]));
@@ -108,6 +139,11 @@ module.exports=function(c){
   }
   o.vertical=g.vertical;o.w=g.w||null;o.ph=g.ph||0;
   if(ctl){const sd=k=>({ic:img(G.SIDE[k][0]),icD:img(G.SIDE[k][0]+'d'),seek:G.SIDE[k][2]});o.l=sd(ctl.left);o.r=sd(ctl.right)}
+  if(set){const ic=n=>({on:img(n+'_24'),off:img(n+'_24d')});o.set={left:set.left,right:set.right,more:ic('md_set_more')};
+   if(set.left==='output'){o.set.out={headphones:ic('md_set_hp'),watch:ic('md_set_watch'),none:ic('md_set_off')};o.set.badge={up:[img('md_badge_up'),img('md_badge_upd')],down:[img('md_badge_down'),img('md_badge_downd')],mute:[img('md_badge_mute'),img('md_badge_muted')]}}
+   if(set.left==='volume')o.set.vol={up:ic('md_vol_up'),down:ic('md_vol_down'),mute:ic('md_vol_mute')};}
+  if(lv){o.lvMs=S.level.showMs;if(lv.arc){const g=c.levelGeo;o.lv={arc:true,cx:g.cx,cy:g.cy,r:g.r,o:g.o,sweep:g.sweep,gap:g.gap,start:g.start,ind:g.ind.src,trk:g.trk.src}}
+   else{const bw=dp(S.level.stroke),ht=Math.round(dp(SL.bar.h));o.lv={arc:false,w:bw,ht,lc:ht-bw,gap:dp(S.level.gap)}}}
   if(inf)o.info={fs:fs_,afs,tw,aw,marquee:inf.marquee,amt:dp(S.marquee.speed),gap:dp(S.marquee.gap),pause:S.marquee.pause};
   return JSON.stringify(o);
  };

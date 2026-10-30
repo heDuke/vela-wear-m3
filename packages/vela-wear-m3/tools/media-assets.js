@@ -12,9 +12,9 @@ function svgIcon(name,size,color,s){ // centred in a size x size dp box
  const px=size*s;
  if(G.ICON_PATHS[name.replace(/^prev$/,'next')]){const flip=name==='prev',sc=px/24;
   return `<path d="${G.ICON_PATHS[flip?'next':name]}" fill="${color}" transform="${flip?`translate(${px} 0) scale(${-sc} ${sc})`:`scale(${sc})`}"/>`}
- const t=fs.readFileSync(path.join(__dirname,'icons','media_'+name+'.svg'),'utf8');
- const paths=[...t.matchAll(/<path[^>]*d="([^"]+)"/g)].map(m=>m[1]);
- return `<g transform="scale(${px/24})">${paths.map(p=>`<path d="${p}" fill="${color}"/>`).join('')}</g>`;
+ const t=fs.readFileSync(path.join(__dirname,'icons','media_'+name+'.svg'),'utf8'),vb=+(t.match(/viewBox="0 0 (\d+)/)||[0,24])[1];
+ const paths=[...t.matchAll(/<path([^>]*)>/g)].filter(m=>!/fill="none"/.test(m[1])).map(m=>m[1].match(/\bd="([^"]+)"/)[1]);
+ return `<g transform="scale(${px/vb})">${paths.map(p=>`<path d="${p}" fill="${color}"/>`).join('')}</g>`;
 }
 // Strokes are emitted as FILLED outlines (centre line offset +-w/2) plus circle caps: Chrome/Skia leaves sub-pixel
 // coverage cracks inside strokes built from many short segments (seen as dark rows/columns at fractional scales).
@@ -71,6 +71,16 @@ function outline(q,w){const n=q.length,L=[],Rt=[];for(let i=0;i<n;i++){const a=q
     if(g.erase)body+=cline(g.erase[0],g.erase[1],'#000000',sp+2,'butt')+circ(cat(g.trackCap),sp/2,C.surfaceContainerLow);
     body+=cline(g.ind[0],g.ind[1],C.onSecondaryContainer,sp,'butt');if(g.capStart)body+=circ(cat(g.ind[0]),sp/2,C.onSecondaryContainer);if(g.capEnd)body+=circ(cat(g.ind[1]),sp/2,C.onSecondaryContainer);
     await shot(lb.w,lb.h,`<g transform="translate(${-lb.x} ${-lb.y})">${body}</g>`,path.join(dir,n+'.png'))}}
+  // 2c) settings row: 24dp onSurface icons (+ disabled 38 %), 18dp 7-point star badges (primaryDim + 14dp onPrimary icon)
+  {const S=G.SPEC.settings,q=px(S.icon),SD=rgba(C.onSurface,S.disabledContent[1]),SDC=rgba(C.onSurface,S.disabledContainer[1]);
+   for(const [n,stem] of [['headphones','md_set_hp'],['watch','md_set_watch'],['output_off','md_set_off'],['more_vert','md_set_more'],['volume_up','md_vol_up'],['volume_down','md_vol_down'],['volume_mute','md_vol_mute']]){
+    await shot(q,q,svgIcon(n,S.icon,C.onSurface,q/S.icon),path.join(dir,stem+'_24.png'));
+    await shot(q,q,svgIcon(n,S.icon,SD,q/S.icon),path.join(dir,stem+'_24d.png'))}
+   const bq=px(S.badge),bi=px(S.badgeIcon),bo=(bq-bi)/2,st=G.star(S.star.n,S.star.inner,S.star.rounding);
+   const sd='M'+st.map(p=>(p[0]*bq).toFixed(3)+' '+(p[1]*bq).toFixed(3)).join('L')+'Z';
+   for(const [n,stem] of [['volume_up','up'],['volume_down','down'],['volume_mute','mute']]){
+    await shot(bq,bq,`<path d="${sd}" fill="${C[S.badgeColor]}"/><g transform="translate(${bo} ${bo})">${svgIcon(n,S.badgeIcon,C[S.badgeIconColor],bi/S.badgeIcon)}</g>`,path.join(dir,'md_badge_'+stem+'.png'));
+    await shot(bq,bq,`<path d="${sd}" fill="${SDC}"/><g transform="translate(${bo} ${bo})">${svgIcon(n,S.badgeIcon,SD,bi/S.badgeIcon)}</g>`,path.join(dir,'md_badge_'+stem+'d.png'))}}
   // 3) icons: 32dp play/pause/next/prev, 24dp seek; onPrimary + disabled (onSurface 38%)
   for(const [n,sz] of [['play',32],['pause',32],['next',32],['prev',32],['replay_5',24],['replay_10',24],['replay_30',24],['forward_5',24],['forward_10',24],['forward_30',24]]){
    const stem=n.startsWith('replay_')?'md_back'+n.slice(7):n.startsWith('forward_')?'md_fwd'+n.slice(8):'md_'+n,q=px(sz);
