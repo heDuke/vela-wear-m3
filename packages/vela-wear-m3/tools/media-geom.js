@@ -52,18 +52,25 @@ function closed(pts){return pts.concat([pts[0]])}
 function seg(pts,L,s0,s1){const out=[];if(s1<=s0)return out;for(let i=1;i<pts.length;i++){if(L[i]<s0)continue;if(L[i-1]>s1)break;
  const a=Math.max(s0,L[i-1]),b=Math.min(s1,L[i]);const f=x=>{const t=(x-L[i-1])/(L[i]-L[i-1]||1);return [pts[i-1][0]+(pts[i][0]-pts[i-1][0])*t,pts[i-1][1]+(pts[i][1]-pts[i-1][1])*t]};
  if(!out.length)out.push(f(a));out.push(f(b))}return out}
-function ring(){const o=SPEC.outerScallop,p=closed(scallop(o.n,o.ratio,o.R,o.rounding,o.size)),L=cum(p),T=L[L.length-1];return {pts:p,L,T,gap:T*SPEC.gapFraction+SPEC.stroke}}
 function button(){const o=SPEC.innerScallop;return scallop(o.n,o.ratio,o.R,o.rounding,o.size)}
+// Parallel offset of a closed clockwise (y-down) outline by d (outward > 0). Normals from central differences of the
+// dense arc samples; valid while d < the smallest concave corner radius (8dp*scale ≈ 12.8dp here, d = 6dp).
+function offset(pts,d){const n=pts.length;return pts.map((p,i)=>{const a=pts[(i-1+n)%n],b=pts[(i+1)%n],t=norm(sub(b,a));return [p[0]+t[1]*d,p[1]-t[0]*d]})}
+// [adapt] Ring centre line = the button scallop offset outward by (76-64)/2 = 6dp: same polygon, centre, lobe count and
+// phase, so the black gap to the button is uniform (6 - stroke/2 = 4dp) all the way round. Horologist draws the ring
+// from its own pillStar (10/0.8, 12dp, 76dp), whose gap to the button swings 2.8-4.0dp; outerScallop is kept as reference.
+function ringOffset(){return (SPEC.outerScallop.size-SPEC.innerScallop.size)/2}
+function ring(){const p=closed(offset(button(),ringOffset())),L=cum(p),T=L[L.length-1];return {pts:p,L,T,gap:T*SPEC.gapFraction+SPEC.stroke}}
 // Wavy progress ring (PLAN §4.1, revised): ONE continuous track image (md_ring_t) drawn under ten indicator overlays.
 // The outline is split into 10 equal trough-to-trough lobes; overlay images are drawn in place (never rotated, so
 // they stay in phase with the scallop and leave no seams). For quantised progress p=q/steps the boundary position in
 // lobe units is b = q*10/steps - k:  b<=0 -> no overlay;  0<b<1 -> Pj (indicator to j/4 of the lobe, j=4b);
 // b>=1 -> I (indicator to the lobe end; lobe 9 ends with a cap at the start gap = 100 %).
-// Every overlay except lobe 9's I ends with: indicator round cap at p*T-gap/2, a background-coloured eraser over the
+// Indicator and track share the same stroke width. Every overlay except lobe 9's I ends with: indicator round cap at p*T-gap/2, a background-coloured eraser over the
 // track up to p*T+gap/2 and a track-coloured round cap there (the official indicator/track gap). Overlays of lobe
 // k>=1 start gap/2 (+overlap) before the lobe so they repaint the previous lobe's eraser; images are stacked k=0..9.
 function lobeState(k,q,steps){
- const b=q*10/steps-k;if(b<=0)return '';if(b>=1)return 'md_r'+k+'_I';return 'md_r'+k+'_P'+Math.round(b*4);
+ const n=q*10-k*steps;if(n<=0)return '';if(n>=steps)return 'md_r'+k+'_I';return 'md_r'+k+'_P'+Math.round(n*4/steps);
 }
 function lobeNames(steps){const set=new Set();for(let q=0;q<=steps;q++)for(let k=0;k<10;k++){const n=lobeState(k,q,steps);if(n)set.add(n)}return [...set].sort()}
 // arc-length layout of one overlay: {ind:[a,b], capStart, capEnd, erase:[a,b]|null, trackCap:s|null}
@@ -92,7 +99,7 @@ function layout(d){
  const band9=W<125,info=band9?40:44,play=band9?88:94,row=band9?176:184,rowH=band9?48:52,gap=8;
  return {W,H,HP,CW,vertical:true,pad:{gap},info:{top:info,titleW:CW,subW:CW,title:15,sub:13},playTop:play,rowTop:row,rowH,pillW:(CW-gap)/2,playCY:play+B/2};
 }
-module.exports={SPEC,scallop,cum,seg,closed,ring,button,lobeState,lobeNames,lobeSegments,crit,fitSpring,bezierY,layout};
+module.exports={SPEC,scallop,offset,ringOffset,cum,seg,closed,ring,button,lobeState,lobeNames,lobeSegments,crit,fitSpring,bezierY,layout};
 // Horologist LottiePlaceholders.kt static frames (24-unit viewport, Apache-2.0): pause / play / next (previous = mirrored).
 const ICON_PATHS={
  pause:'M7.68 4.416h-.008a2.16 2.16 0 0 0-2.16 2.16v10.8a2.16 2.16 0 0 0 2.16 2.16h.008a2.16 2.16 0 0 0 2.16-2.16v-10.8a2.16 2.16 0 0 0-2.16-2.16zM16.328 4.416h-.008a2.16 2.16 0 0 0-2.16 2.16v10.8a2.16 2.16 0 0 0 2.16 2.16h.008a2.16 2.16 0 0 0 2.16-2.16v-10.8a2.16 2.16 0 0 0-2.16-2.16z',

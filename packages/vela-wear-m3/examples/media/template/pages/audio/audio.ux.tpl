@@ -4,7 +4,7 @@
 <!-- #component media-info {} -->
 </div>
 <div class="md-at-ctl">
-<!-- #component media-controls {"left":"'back5'","right":"'fwd5'","rotate":"true"} -->
+<!-- #component media-controls {"left":"'back5'","right":"'fwd5'"} -->
 </div>
 <!-- #component time-text {} -->
 </div>

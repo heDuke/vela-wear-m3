@@ -14,7 +14,10 @@ module.exports=function(c){
   if(!ring)ring=shape==='round'?'circle':'wavy';if(!['wavy','circle','none'].includes(ring))throw new Error('media ring must be wavy|circle|none');
   // default precision: 2.5 % (40 steps, 41 ring images) on watches, 5 % (20 steps, 21 images) on bands (50 KB budget)
   steps=+steps||(pill?20:40);if(![20,40].includes(steps))throw new Error('media steps must be 20 or 40');
-  return {shape,ring,steps,rotate:rotate===true||rotate==='true'};
+  rotate=rotate===true||rotate==='true';
+  // the wavy ring is pre-rendered in place; spinning only the scallop would put it out of phase with the ring
+  if(rotate&&ring==='wavy')throw new Error("media rotate needs ring 'circle' or 'none' (the wavy ring cannot rotate in phase)");
+  return {shape,ring,steps,rotate};
  };
  c.mdSides=(left,right)=>{left=left||'prev';right=right||'next';
   if(!KINDS.includes(left)||!KINDS.includes(right))throw new Error('media side keys: '+KINDS.join('|'));

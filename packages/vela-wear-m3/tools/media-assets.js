@@ -16,6 +16,12 @@ function svgIcon(name,size,color,s){ // centred in a size x size dp box
  const paths=[...t.matchAll(/<path[^>]*d="([^"]+)"/g)].map(m=>m[1]);
  return `<g transform="scale(${px/24})">${paths.map(p=>`<path d="${p}" fill="${color}"/>`).join('')}</g>`;
 }
+// Strokes are emitted as FILLED outlines (centre line offset +-w/2) plus circle caps: Chrome/Skia leaves sub-pixel
+// coverage cracks inside strokes built from many short segments (seen as dark rows/columns at fractional scales).
+const dedupe=q=>q.filter((p,i)=>!i||Math.hypot(p[0]-q[i-1][0],p[1]-q[i-1][1])>.02);
+function outline(q,w){const n=q.length,L=[],Rt=[];for(let i=0;i<n;i++){const a=q[Math.max(0,i-1)],b=q[Math.min(n-1,i+1)];let tx=b[0]-a[0],ty=b[1]-a[1];const l=Math.hypot(tx,ty)||1;tx/=l;ty/=l;
+ L.push([q[i][0]+ty*w/2,q[i][1]-tx*w/2]);Rt.push([q[i][0]-ty*w/2,q[i][1]+tx*w/2])}
+ return 'M'+L.concat(Rt.reverse()).map(p=>p[0].toFixed(3)+' '+p[1].toFixed(3)).join('L')+'Z'}
 (async()=>{
  const b=await chromium.launch({executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',args:['--no-sandbox']});
  const pg=await (await b.newContext({deviceScaleFactor:1})).newPage();const meta={};
@@ -30,10 +36,11 @@ function svgIcon(name,size,color,s){ // centred in a size x size dp box
   await shot(bs,bs,`<path d="${P(btn,bo,bo,bs/64,true)}" fill="${C.primary}"/>`,path.join(dir,'md_scallop.png'));
   await shot(bs,bs,`<path d="${P(btn,bo,bo,bs/64,true)}" fill="${DIS_C}"/>`,path.join(dir,'md_scallop_d.png'));
   // 2) wavy ring: one continuous track image (80dp box) + per-lobe indicator overlays drawn in place (no rotation).
-  const box=px(80),c0=box/2,sp=sw*s,pathD=(a,b2)=>'M'+G.seg(R.pts,R.L,a,b2).map(q=>(c0+q[0]*s).toFixed(3)+' '+(c0+q[1]*s).toFixed(3)).join('L');
+  const box=px(80),c0=box/2,sp=sw*s,segPx=(a,b2)=>dedupe(G.seg(R.pts,R.L,a,b2).map(q=>[c0+q[0]*s,c0+q[1]*s]));
   const at=v=>{const L=R.L,i=Math.max(1,L.findIndex(x=>x>=v));const t=(v-L[i-1])/(L[i]-L[i-1]||1);return [c0+(R.pts[i-1][0]+(R.pts[i][0]-R.pts[i-1][0])*t)*s,c0+(R.pts[i-1][1]+(R.pts[i][1]-R.pts[i-1][1])*t)*s]};
-  const line=(a,b2,col,w,cap)=>`<path d="${pathD(a,b2)}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="${cap}" stroke-linejoin="round"/>`;
-  const dot=(v,col)=>{const q=at(v);return `<circle cx="${q[0].toFixed(3)}" cy="${q[1].toFixed(3)}" r="${sp/2}" fill="${col}"/>`};
+  const circ=(q,r,col)=>`<circle cx="${q[0].toFixed(3)}" cy="${q[1].toFixed(3)}" r="${r}" fill="${col}"/>`;
+  const line=(a,b2,col,w,cap)=>{const q=segPx(a,b2);return `<path d="${outline(q,w)}" fill="${col}"/>`+(cap==='round'?circ(q[0],w/2,col)+circ(q[q.length-1],w/2,col):'')};
+  const dot=(v,col)=>circ(at(v),sp/2,col);
   const h=R.gap/2;m.box=box;
   await shot(box,box,line(h,R.T-h,C.surfaceContainerLow,sp,'round'),path.join(dir,'md_ring_t.png'));
   // per-lobe pixel boxes: union of everything an overlay of lobe k may draw
@@ -46,7 +53,7 @@ function svgIcon(name,size,color,s){ // centred in a size x size dp box
    m.lobes[k]={x:L,y:T,w:Rr-L,h:B-T}}
   for(const name of names){const g=seg[name],k=+name[4],lb=m.lobes[k];let body='';
    if(g.erase)body+=line(g.erase[0],g.erase[1],'#000000',sp+2,'butt')+dot(g.trackCap,C.surfaceContainerLow);
-   body+=line(g.ind[0],g.ind[1],C.onSecondaryContainer,sp+.5,'butt');
+   body+=line(g.ind[0],g.ind[1],C.onSecondaryContainer,sp,'butt');
    if(g.capStart)body+=dot(g.ind[0],C.onSecondaryContainer);if(g.capEnd)body+=dot(g.ind[1],C.onSecondaryContainer);
    await shot(lb.w,lb.h,`<g transform="translate(${-lb.x} ${-lb.y})">${body}</g>`,path.join(dir,name+'.png'))}
   // 3) icons: 32dp play/pause/next/prev, 24dp seek; onPrimary + disabled (onSurface 38%)

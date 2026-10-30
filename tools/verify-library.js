@@ -29,6 +29,7 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
  assert(fs.readFileSync(path.join(media,'pages/audio/audio.ux'),'utf8').includes("import audio from '@system.audio'"));
  for(const img of fs.readFileSync(path.join(media,'pages/player/player.ux'),'utf8').match(/\/common\/img\/md_[A-Za-z0-9_]+\.png/g))assert(fs.existsSync(path.join(media,img)),img);
  assert(!fs.readdirSync(path.join(output,'common/img')).some(f=>f.startsWith('md_')),'media assets must not leak into pages that do not use them');
+ if(configurations===1){const G=require(path.join(dest,'package/tools/media-geom.js')),r=G.ring(),b=G.button();let lo=1e9,hi=0;for(let i=0;i<r.pts.length;i+=5){const p=r.pts[i];let m=1e9;for(const q of b)m=Math.min(m,Math.hypot(p[0]-q[0],p[1]-q[1]));lo=Math.min(lo,m);hi=Math.max(hi,m)}assert(hi-lo<.05&&Math.abs(lo-G.ringOffset())<.05,'wavy ring must be the scallop offset outward (uniform gap)');}
 }
 const protect=path.join(dest,'not-generated');fs.mkdirSync(protect,{recursive:true});fs.writeFileSync(path.join(protect,'user.txt'),'keep');
 assert.throws(()=>independent.generate({input:path.join(dest,'package/examples/minimal/template'),output:protect}),/not owned/);assert.equal(fs.readFileSync(path.join(protect,'user.txt'),'utf8'),'keep');
