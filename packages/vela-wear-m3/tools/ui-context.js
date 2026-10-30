@@ -42,5 +42,6 @@ module.exports=function(c,enhanced){
  };
 
  require("./time-layout")(c,a.font);
+ require("./media-context")(c);
  return c;
 };

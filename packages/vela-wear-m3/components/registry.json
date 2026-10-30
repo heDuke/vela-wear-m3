@@ -147,5 +147,40 @@
     "styles": [
       "edge.css"
     ]
+  },
+  "media-play-pause": {
+    "template": "media-play-pause.tpl",
+    "defaults": {
+      "shape": "'scallop'",
+      "ring": "''",
+      "steps": "''",
+      "rotate": "false"
+    },
+    "styles": [
+      "media.css"
+    ]
+  },
+  "media-controls": {
+    "template": "media-controls.tpl",
+    "defaults": {
+      "shape": "'scallop'",
+      "ring": "''",
+      "steps": "''",
+      "rotate": "false",
+      "left": "'prev'",
+      "right": "'next'"
+    },
+    "styles": [
+      "media.css"
+    ]
+  },
+  "media-info": {
+    "template": "media-info.tpl",
+    "defaults": {
+      "marquee": "false"
+    },
+    "styles": [
+      "media.css"
+    ]
   }
 }

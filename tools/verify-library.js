@@ -20,6 +20,15 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
  assert.equal(JSON.parse(fs.readFileSync(path.join(output,'manifest.json'))).minAPILevel,animation==='basic'?1:2);
  assert(fs.existsSync(path.join(output,'common/legal/vela-wear-m3/LICENSE.txt')));
  configurations++;
+ const media=path.join(dest,'generated',device+'-'+animation+'-media');
+ independent.generate({input:path.join(dest,'package/examples/media/template'),output:media,device,animation});
+ for(const pg of ['index','player','podcast','audio']){const ux=fs.readFileSync(path.join(media,'pages',pg,pg+'.ux'),'utf8');assert(!/#component|#include|#set|@\{|\$\[|\$\(/.test(ux),'media '+pg+' unexpanded');}
+ const player=fs.readFileSync(path.join(media,'pages/player/player.ux'),'utf8');
+ assert(player.includes('onclick="mdPlayTap"')&&player.includes('onclick="mdNextTap"')&&player.includes('<marquee id="mdMarquee"'));
+ assert(fs.readFileSync(path.join(media,'pages/podcast/podcast.ux'),'utf8').includes('md_fwd30_24.png'));
+ assert(fs.readFileSync(path.join(media,'pages/audio/audio.ux'),'utf8').includes("import audio from '@system.audio'"));
+ for(const img of fs.readFileSync(path.join(media,'pages/player/player.ux'),'utf8').match(/\/common\/img\/md_[A-Za-z0-9_]+\.png/g))assert(fs.existsSync(path.join(media,img)),img);
+ assert(!fs.readdirSync(path.join(output,'common/img')).some(f=>f.startsWith('md_')),'media assets must not leak into pages that do not use them');
 }
 const protect=path.join(dest,'not-generated');fs.mkdirSync(protect,{recursive:true});fs.writeFileSync(path.join(protect,'user.txt'),'keep');
 assert.throws(()=>independent.generate({input:path.join(dest,'package/examples/minimal/template'),output:protect}),/not owned/);assert.equal(fs.readFileSync(path.join(protect,'user.txt'),'utf8'),'keep');
