@@ -12,9 +12,9 @@
 |---|---|---|
 | 播放键格 | 80 dp（大屏；小屏 64 dp）。四种布局按 `screenHeightDp > 224` 均为大屏 | 【源码】`Constants.kt` / `LargeScreen.kt` |
 | 内 scallop | `pillStar(10, innerRadiusRatio 0.82)`，圆角 8 dp，`normalized()` 后最大边 = 80−2·8 = 64 dp | 【源码】`AnimatedPlayPauseButton.kt` |
-| 波浪进度环 | `pillStar(10, 0.8)`，圆角 12 dp，最大边 80−4 = 76 dp，描边 4 dp 圆头；与 scallop 同相（12 点钟为波谷） | 【源码】`RotatingWavyProgressIndicator.kt` |
-| 指示/轨道间隙 | gap = 0.006 × 周长 + 描边（周长 242.3 dp → 5.45 dp） | 【源码】同上 |
-| 归一化 | RoundedPolygon `normalized()` 按**较大边**缩放并居中：10 瓣、12 点为波谷 → 宽（波峰到波峰）= 64 / 76 dp，高（波谷到波谷）= 61.5 / 73.0 dp。golden 实测 scallop 63×61 dp、环外径 80 dp | 【源码】+ golden 测量 |
+| 波浪进度环 | 官方：独立的 `pillStar(10, 0.8)`，圆角 12 dp，最大边 80−4 = 76 dp，描边 4 dp 圆头。本库：环中心线 = 按钮 scallop **向外平移 6 dp**（同一多边形、同心、同相，12 点钟为波谷），宽 76 dp、高 73.5 dp，与按钮的黑色间隙恒为 4 dp；官方两条独立曲线的间隙在 2.8–4.0 dp 间起伏 | 【源码】`RotatingWavyProgressIndicator.kt` +【适配】 |
+| 指示/轨道间隙 | gap = 0.006 × 周长 + 描边（周长 240.4 dp → 5.44 dp） | 【源码】同上 |
+| 归一化 | RoundedPolygon `normalized()` 按**较大边**缩放并居中：10 瓣、12 点为波谷 → 宽（波峰到波峰）= 64 / 76 dp，高（波谷到波谷）= 61.5 dp（环 73.5 dp）。golden 实测 scallop 63×61 dp、环外径 80 dp | 【源码】+ golden 测量 |
 | 颜色 | 键 primary、图标 onPrimary、侧键 primaryDim、指示 onSecondaryContainer、轨道 surfaceContainerLow、禁用 onSurface 12 % / 38 % | 【源码】`MediaButtonDefaults` / `ProgressIndicatorDefaults` |
 | 图标 | 播放/暂停/下一首 32 dp（`LottiePlaceholders.kt` 静态帧路径，上一首为镜像）；±5/10/30 s 24 dp（Material Symbols replay_N / forward_N） | 【源码】 |
 | ButtonGroup | 侧格 `weight(1)`、中格 `weight(.5)+minWidth 80`；侧键内边距 外 7.1 % H、内 3 % H、上下 5.2 % H；按压扩展 12 dp（中格被按时两侧各 −6） | 【源码】`ButtonGroupLayout.kt` / `ButtonGroup.kt` |
@@ -22,7 +22,7 @@
 | 文字 | 标题 titleMedium 16 dp / 行高 20，副标题 bodyMedium 14 dp / 18；round 宽 66.72 % / 71 % W；溢出省略号 + 右侧 8 dp 渐隐 | 【源码】`TextMediaDisplay` |
 | 跑马灯 | 64 dp/s、每轮停 4000 ms、首尾间距 96 dp、两侧 8 dp 渐隐 | 【源码】`MarqueeText` |
 | 加载占位 | 40×12 dp、80×10 dp outlineVariant 圆角条 | 【源码】`LoadingMediaDisplay` |
-| 旋转 | 播放时 scallop 每 3000 ms 转 −36°（12°/s），本库默认关闭 | 【源码】，可选 `rotate:true` |
+| 旋转 | 播放时 scallop 与环每 3000 ms 转 −36°（12°/s），环起点反向补偿。本库默认关闭；`rotate:true` 只能配 `ring:'circle'` 或 `'none'`（波浪环为原位预渲染，不能同相旋转，组合时编译报错） | 【源码】+【降级】 |
 
 ## 2. 布局（dp）
 
@@ -37,23 +37,24 @@ band 上按压侧键时播放键由 scallop 变为圆（没有横向挤压空间
 
 ## 3. 波浪进度环实现
 
-- **轨道**：一张连续的整环图 `md_ring_t`（80 dp 方框，从起点间隙 gap/2 画到 T−gap/2，圆头），与 scallop 同一套 `pillStar` 数学、同相、同心，**不旋转**。
+- **轨道**：一张连续的整环图 `md_ring_t`（80 dp 方框，从起点间隙 gap/2 画到 T−gap/2，圆头），由按钮 scallop 外移 6 dp 得到（`media-geom.js` 的 `offset()`），同相、同心，**不旋转**。
 - **指示**：环按波谷切成 10 段等弧长；每段的覆盖图在**最终位置**直接渲染（不使用 `transform: rotate`，避免 Vela 旋转重采样造成相位偏差和接缝）。第 k 段状态：未到 → 不显示；段内 j/4 → `md_rk_Pj`；到段尾及以后 → `md_rk_I`。
 - **间隙**：除 100 % 外，覆盖图末端依次画：指示圆头（p·T−gap/2）、背景色擦除带（到 p·T+gap/2）、轨道色圆头，复现官方「指示—间隙—轨道」。第 k≥1 段覆盖图向前多画 gap/2+2 dp，盖住上一段的擦除带，因此相邻段无接缝。前提：环下方是纯黑背景（播放页默认）。
+- **渲染**：轨道与指示都以填充轮廓（中心线 ±描边/2）加圆形端头输出，不用 SVG 描边——Chrome 在 1.625× 等分数缩放下对密集折线描边会留下亚像素裂缝。PNG8 量化的颜色距离同时比较「叠在黑底上」与「叠在白底上」的结果，避免半透明白边被映射成不透明灰点。
 - **精度**：手表默认 40 档（2.5 %，40 张覆盖图），手环默认 20 档（5 %，20 张），可用 `steps` 改。只在档位变化时 setData。
-- **检查**：逐档合成后沿中心线采样（round 40 档 × 970 点），只在间隙边缘 1 dp 内出现抗锯齿差异；模拟器 4× 放大与 golden 对照见仓库外的 `impl-p1/shape-fix/`。
+- **检查**：逐档合成后沿中心线采样，只在间隙边缘 1 dp 内出现抗锯齿差异。模拟器截图逐 0.5° 测量环内缘到 scallop 外缘的最短距离（亚像素）：round 与 band10 在 0/25/50/75/100 % 下均匀度 ≤ 1 px，均值 4 dp；4× 放大与 golden 对照见仓库外的 `impl-p1/shape-fix2/`。
 
 ## 4. 包体（PNG8，字节）
 
 | 资源 | round / pro | band10 / band9 |
 |---|---|---|
-| scallop + 禁用 | 1 600 | 1 273 |
-| 播放/暂停 32 dp（含禁用 4 张） | 1 502 | 1 336 |
-| 上一首/下一首（4 张） | 1 495 | 1 249 |
-| 渐隐（2 张） | 340 | 310 |
-| 环：轨道 1 张 + 覆盖图 40 张（40 档） | 18 433 | 15 802 |
-| 环：轨道 + 20 张（20 档，手环默认） | 10 616 | 9 090 |
-| ±5/10/30 s（12 张，按需只拷贝用到的） | 6 431 | 5 662 |
+| scallop + 禁用 | 1 601 | 1 271 |
+| 播放/暂停 32 dp（含禁用 4 张） | 1 467 | 1 349 |
+| 上一首/下一首（4 张） | 1 468 | 1 225 |
+| 渐隐（2 张） | 330 | 310 |
+| 环：轨道 1 张 + 覆盖图 40 张（40 档） | 17 659 | 15 166 |
+| 环：轨道 + 20 张（20 档，手环默认） | 10 211 | 8 740 |
+| ±5/10/30 s（12 张，按需只拷贝用到的） | 6 387 | 5 735 |
 
 生成器只拷贝页面实际引用的 `md_*` 图片；不用媒体组件的页面不增加任何媒体资源（`tools/verify-library.js` 断言）。
 
@@ -70,13 +71,13 @@ band 上按压侧键时播放键由 scallop 变为圆（没有横向挤压空间
 
 | 项 | 状态 |
 |---|---|
-| scallop / 环外形、相位、颜色、尺寸 | 一致（按 `normalized()` 修正后与 golden 叠图 IoU：填充 0.96、轨道 0.86，余差为抗锯齿与 RGB565） |
+| scallop / 环外形、相位、颜色、尺寸 | scallop 一致（按 `normalized()`，与 golden 叠图 IoU 0.96）；环【适配】为 scallop 外移曲线，波峰更圆、间隙处处 4 dp（官方 2.8–4.0 dp），外框 76×73.5 dp 与官方相同 |
 | 进度连续性 | 【降级】按 2.5 % / 5 % 量化 |
-| scallop 播放时旋转 | 【降级】默认关闭；`rotate:true` 用 30 步 CSS 旋转（环不转） |
+| scallop 播放时旋转 | 【降级】默认关闭；`rotate:true` 用 30 步 CSS 旋转，仅限 circle / none 环 |
 | 按压 scallop→pill 形变 | 【降级】端点切换（scallop 隐藏、pill 宽度过渡），环在按压时淡出 |
 | Lottie 图标动画 | 【降级】直接切换静态帧 |
 | 加载 shimmer | 【降级】透明度脉冲；加载环为旋转的 25 % 圆弧 |
 | 跑马灯 | 原生 `<marquee>`，速度/停顿/间距按官方；API 1 无文字测量，溢出用字宽表估算【推导】 |
 | 表冠调音量、封面取色、输出设备切换、Ambient | 做不了（无对应 API） |
 
-音乐播放页（播放键 + 上/下一首 + 信息区）实际拷贝：round 40 档 ≈ 23.4 KB、band10 20 档 ≈ 13.3 KB。
+音乐播放页（播放键 + 上/下一首 + 信息区）实际拷贝：round 40 档 ≈ 22.5 KB、band10 20 档 ≈ 12.9 KB。

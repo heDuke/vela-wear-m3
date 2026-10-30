@@ -309,7 +309,7 @@ style 默认 `$item.st`；content 必须提供可信标记字符串。基础状�
 <!-- #component media-play-pause {"ring":"'wavy'"} -->
 ```
 
-参数均为编译期字符串：shape `'scallop'`（默认）或 `'round'`（圆形，默认配 circle 环）；ring `'wavy'`（默认，连续轨道 + 分段指示图）、`'circle'`（原生 `<progress type="arc">`，≈0 KB）或 `'none'`；steps `40`（手表默认，2.5 %）或 `20`（手环默认，5 %）；rotate `'true'` 时播放中 scallop 以 12°/s 旋转。点击调用 mdOnPlay / mdOnPause；按压时 scallop 切为 pill、环淡出。两种 API 均可用。
+参数均为编译期字符串：shape `'scallop'`（默认）或 `'round'`（圆形，默认配 circle 环）；ring `'wavy'`（默认，连续轨道 + 分段指示图）、`'circle'`（原生 `<progress type="arc">`，≈0 KB）或 `'none'`；steps `40`（手表默认，2.5 %）或 `20`（手环默认，5 %）；rotate `'true'` 时播放中 scallop 以 12°/s 旋转，只能配 ring `'circle'` / `'none'`（波浪环为原位预渲染，组合会编译报错）。点击调用 mdOnPlay / mdOnPause；按压时 scallop 切为 pill、环淡出。两种 API 均可用。
 
 ### media-controls
 
