@@ -16,7 +16,7 @@
 
 ## 这是什么
 
-- **编译期组件库**：组件在构建时展开为普通 UX／JavaScript 和所需图片，不需要把 Demo 页面复制进你的项目，也不是运行时 `<import>` 的自定义组件。
+- **编译期组件库**：页面写 `.m3.tpl`（`<template>` 里 `fun Screen()`，`<script>` 里业务 ViewModel），构建时编成普通 UX／JavaScript 和所需图片。不需要把 Demo 页面复制进你的项目，也不是运行时 `<import>` 的自定义组件。
 - **对照官方实现**：尺寸、配色、形状与动效参考固定提交的 [AndroidX Wear Compose Material3](https://android.googlesource.com/platform/frameworks/support/+/2f557dc1f1ec71edae73e2c16b0e446523c644b7/wear/compose/compose-material3/)，再按 Vela 的渲染能力和窄屏空间适配；官方默认、可选变体与项目适配在[组件指南](packages/vela-wear-m3/docs/COMPONENTS.md)中分别标注。
 - **按屏幕组织**：圆屏、矩形屏（Pro）和两种胶囊屏手环（band10／band9）各有布局配置，而不是把整页等比缩小。
 
@@ -34,14 +34,14 @@
 
 共 27 个注册模板，用法与最小示例见组件指南：
 
-| 类别 | 组件 |
+| 类别 | 组件（Compose 名 · 锚点仍为注册模板） |
 |---|---|
-| 按钮 | [Button](packages/vela-wear-m3/docs/COMPONENTS.md#button) · [IconButton](packages/vela-wear-m3/docs/COMPONENTS.md#icon-button) · [CompactButton](packages/vela-wear-m3/docs/COMPONENTS.md#compact-button) · [按压形变 Button](packages/vela-wear-m3/docs/COMPONENTS.md#button-morph) / [IconButton](packages/vela-wear-m3/docs/COMPONENTS.md#icon-button-morph) · [EdgeButton](packages/vela-wear-m3/docs/COMPONENTS.md#edge-button) |
-| 卡片与列表 | [Card](packages/vela-wear-m3/docs/COMPONENTS.md#card) · [TransformingLazyColumn 列表项](packages/vela-wear-m3/docs/COMPONENTS.md#transforming-list-item) |
-| 选择与数值 | [SwitchButton](packages/vela-wear-m3/docs/COMPONENTS.md#switch-button) · [CheckboxButton](packages/vela-wear-m3/docs/COMPONENTS.md#checkbox-button) · [RadioButton](packages/vela-wear-m3/docs/COMPONENTS.md#radio-button) · [InlineSlider](packages/vela-wear-m3/docs/COMPONENTS.md#inline-slider) · [Stepper](packages/vela-wear-m3/docs/COMPONENTS.md#stepper) · [LevelIndicator](packages/vela-wear-m3/docs/COMPONENTS.md#level-indicator) |
-| 指示与时间 | [PageIndicator](packages/vela-wear-m3/docs/COMPONENTS.md#page-indicator) · [ScrollIndicator](packages/vela-wear-m3/docs/COMPONENTS.md#scroll-indicator) · [TimeText](packages/vela-wear-m3/docs/COMPONENTS.md#time-text) · [ProgressIndicator](packages/vela-wear-m3/docs/COMPONENTS.md#progress-indicator) |
-| 对话框 | [AlertDialog](packages/vela-wear-m3/docs/COMPONENTS.md#alert-dialog) · [Confirmation](packages/vela-wear-m3/docs/COMPONENTS.md#confirmation) |
-| 媒体（Horologist） | [播放键](packages/vela-wear-m3/docs/COMPONENTS.md#media-play-pause) · [控制行](packages/vela-wear-m3/docs/COMPONENTS.md#media-controls) · [MediaInfo](packages/vela-wear-m3/docs/COMPONENTS.md#media-info) · [设置行](packages/vela-wear-m3/docs/COMPONENTS.md#media-settings) · [音量电平](packages/vela-wear-m3/docs/COMPONENTS.md#media-volume-level) · [PlayerScreen](packages/vela-wear-m3/docs/COMPONENTS.md#media-player) · [VolumeScreen](packages/vela-wear-m3/docs/COMPONENTS.md#volume-screen) |
+| 按钮 | [Button](packages/vela-wear-m3/docs/COMPONENTS.md#button) · [IconButton](packages/vela-wear-m3/docs/COMPONENTS.md#icon-button) · [CompactButton](packages/vela-wear-m3/docs/COMPONENTS.md#compact-button) · [ButtonMorph](packages/vela-wear-m3/docs/COMPONENTS.md#button-morph) / [IconButtonMorph](packages/vela-wear-m3/docs/COMPONENTS.md#icon-button-morph) · [EdgeButton](packages/vela-wear-m3/docs/COMPONENTS.md#edge-button) |
+| 卡片与列表 | [Card](packages/vela-wear-m3/docs/COMPONENTS.md#card) · [TransformingLazyColumn](packages/vela-wear-m3/docs/COMPONENTS.md#transforming-list-item) |
+| 选择与数值 | [SwitchButton](packages/vela-wear-m3/docs/COMPONENTS.md#switch-button) · [CheckboxButton](packages/vela-wear-m3/docs/COMPONENTS.md#checkbox-button) · [RadioButton](packages/vela-wear-m3/docs/COMPONENTS.md#radio-button) · [Slider](packages/vela-wear-m3/docs/COMPONENTS.md#inline-slider) · [Stepper](packages/vela-wear-m3/docs/COMPONENTS.md#stepper) · [StepperLevelIndicator](packages/vela-wear-m3/docs/COMPONENTS.md#level-indicator) |
+| 指示与时间 | [HorizontalPager / VerticalPager](packages/vela-wear-m3/docs/COMPONENTS.md#page-indicator) · [ScrollIndicator](packages/vela-wear-m3/docs/COMPONENTS.md#scroll-indicator) · [TimeText](packages/vela-wear-m3/docs/COMPONENTS.md#time-text) · [ProgressIndicator](packages/vela-wear-m3/docs/COMPONENTS.md#progress-indicator) |
+| 对话框 | [AlertDialog](packages/vela-wear-m3/docs/COMPONENTS.md#alert-dialog) · [SuccessConfirmationDialog](packages/vela-wear-m3/docs/COMPONENTS.md#confirmation) |
+| 媒体（Horologist） | [media-play-pause](packages/vela-wear-m3/docs/COMPONENTS.md#media-play-pause)（经 PlayerScreen） · [MediaButtonRow](packages/vela-wear-m3/docs/COMPONENTS.md#media-controls) · [MediaInfo](packages/vela-wear-m3/docs/COMPONENTS.md#media-info) · [media-settings](packages/vela-wear-m3/docs/COMPONENTS.md#media-settings) · [media-volume-level](packages/vela-wear-m3/docs/COMPONENTS.md#media-volume-level) · [PlayerScreen](packages/vela-wear-m3/docs/COMPONENTS.md#media-player) · [VolumeScreen](packages/vela-wear-m3/docs/COMPONENTS.md#volume-screen) |
 
 ## 屏幕与 API 配置
 

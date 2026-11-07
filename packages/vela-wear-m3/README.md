@@ -2,7 +2,7 @@
 
 **面向小米 Vela 的 Wear Material 3 Expressive 组件库。**
 
-在构建时展开组件模板、样式、状态逻辑与所需资源，输出普通 UX／JavaScript，不创建额外的自定义组件 ViewModel。适合希望在 Vela JS 快应用中使用 Wear M3 风格，并愿意按当前模板契约组合页面的开发者。
+在构建时把 Compose 形状的页面 DSL（`.m3.tpl`）编译成组件模板、样式、状态逻辑与所需资源，输出普通 UX／JavaScript，不创建额外的自定义组件 ViewModel。适合希望在 Vela JS 快应用中使用 Wear M3 风格，并愿意按当前模板契约组合页面的开发者。
 
 [快速上手](docs/GETTING-STARTED.md) · [API 参考](docs/API.md) · [全部组件与用例](docs/COMPONENTS.md) · [项目展示与下载](https://github.com/heDuke/vela-wear-m3)
 
@@ -29,7 +29,7 @@ console.log(result.device, result.images)
 
 ## 使用前了解
 
-组件是**编译期模板**，不是可直接 `<import>` 的自定义组件。绑定字符串是表达式；消费页面负责业务状态、回调及生命周期组合。部分 0.1 控制器保留固定字段和范围，未提供通用 props 或自动 mixin 合并。
+组件是**编译期模板**，不是可直接 `<import>` 的自定义组件。页面在 `.m3.tpl` 里用 `Button` / `ScreenScaffold` 等函数描述 UI，在 `<script>` 里写业务 ViewModel；生成器注入控制器并合并同名钩子。函数名、接线范围与 0.1 未接线的回调见[组件指南](docs/COMPONENTS.md#compose-函数名)。部分控制器保留固定字段和范围。不支持的 Compose 参数会在编译期失败。
 
 只编译可信模板：模板表达式会在构建机器上执行。输出目录默认必须为空或带有生成器标记；后续生成会替换它，不要在里面存放手写文件。详见 [generate() 的覆盖行为](docs/API.md#generateoptions)。
 

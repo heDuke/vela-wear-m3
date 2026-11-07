@@ -2,6 +2,15 @@
 
 [组件指南](COMPONENTS.md#媒体控件) · [生成器 API](API.md)
 
+`.m3.tpl` 里用下面的 Compose 名；规格仍按 Horologist 组件对照。独立函数 `PlayPauseButton` / `SettingsRow` / `VolumeLevelIndicator` 当前会报 unknown component，经 `PlayerScreen` 内部展开。
+
+| Compose | 注册模板 | 常用参数 |
+|---|---|---|
+| `PlayerScreen` | media-player | `marquee`、`left`、`right` |
+| `MediaButtonRow` | media-controls | `left`、`right` |
+| `MediaInfo` | media-info | `marquee` |
+| `VolumeScreen` | volume-screen | `content`（`'device'` / `'label'`） |
+
 复刻对象：Horologist `media/ui-material3` 的 **Animated** 组合（官方 golden 截图所用：scallop 播放键 + 波浪进度环 + 胶囊侧键 + 标题/副标题），固定版本 `google/horologist@cdf245ceee02549a16d2da519a55e1e4d96777c3`；ButtonGroup / MotionScheme 取自本库已固定的 `androidx/androidx@2f557dc1f1ec71edae73e2c16b0e446523c644b7`。全部常量集中在 `tools/media-geom.js`（`SPEC`），资源由 `tools/media-assets.js`（Chrome 渲染）+ `tools/media-quant.py`（PNG8）生成。
 
 标注：**【源码】** Kotlin 常量；**【推导】** 由源码公式计算；**【适配】** Vela / 非圆屏自拟；**【降级】** 官方行为做不到时的替代。

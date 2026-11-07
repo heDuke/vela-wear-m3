@@ -8,6 +8,10 @@ for(const m of componentDoc.matchAll(/^<!-- #component ([\w-]+) (\{.*\}) -->/gm)
  const bindings=JSON.parse(m[2]),rendered=lib.componentSource(m[1],bindings);assert(!/@\{\w+\}/.test(rendered),'Unexpanded binding '+m[1]);covered.add(m[1]);snippets++;
 }
 assert.deepEqual([...covered].sort(),Object.keys(lib.components).sort(),'Every registered component needs an example');
+const composeNames=['ScreenScaffold','TransformingLazyColumn','Button','FilledTonalButton','OutlinedButton','ChildButton','IconButton','FilledIconButton','CompactButton','ButtonMorph','IconButtonMorph','Card','OutlinedCard','SwitchButton','CheckboxButton','RadioButton','Slider','Stepper','StepperLevelIndicator','HorizontalPager','VerticalPager','TimeText','ScrollIndicator','ProgressIndicator','AlertDialog','SuccessConfirmationDialog','EdgeButton','PlayerScreen','MediaButtonRow','MediaInfo','VolumeScreen','NativeSwitch','NativeSlider'];
+for(const name of composeNames){
+ assert(componentDoc.includes(name),'COMPONENTS.md missing Compose name '+name);
+}
 const files=['README.md','packages/vela-wear-m3/README.md','packages/vela-wear-m3/docs/API.md','packages/vela-wear-m3/docs/COMPONENTS.md','packages/vela-wear-m3/docs/GETTING-STARTED.md','docs/promotion/bandbbs/README.md','docs/promotion/bandbbs/POST.md'];
 let links=0;
 for(const file of files){const text=fs.readFileSync(path.join(root,file),'utf8').replace(/```[\s\S]*?```/g,'');for(const m of text.matchAll(/\]\(([^)]+)\)|(?:src|srcset)="([^"]+)"/g)){const href=m[1]||m[2];if(/^(?:https?:|#|mailto:)/.test(href))continue;const target=href.split('#')[0];assert(fs.existsSync(path.resolve(root,path.dirname(file),target)),file+' broken link '+href);links++}}

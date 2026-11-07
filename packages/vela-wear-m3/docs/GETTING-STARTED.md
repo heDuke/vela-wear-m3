@@ -50,13 +50,48 @@ npx aiot build
 
 ## 4. 开始编写页面
 
-修改 `template/pages/index/index.ux.tpl` 中的 `label` 和 `toggle()`，即可观察业务状态如何连接组件。新增组件时同时引入其样式、状态和控制器，详见[组件指南](COMPONENTS.md)。生成器及模板语法见 [API 参考](API.md)。
+最小示例的页面是 `template/pages/index/index.m3.tpl`：
+
+```html
+<template>
+fun IndexScreen() {
+  ScreenScaffold(showBack = false) {
+    TransformingLazyColumn {
+      item {
+        Button(
+          onClick = { toggle() },
+          icon = { Icon(icon) },
+          label = { Text(label) }
+        )
+      }
+      item {
+        Text(count)
+      }
+    }
+  }
+}
+</template>
+<script>
+export default {
+  private: {
+    isHome: true,
+    label: '点击计数',
+    icon: '/common/img/star_primary_24.png',
+    count: 0
+  },
+  toggle() { this.count++ }
+}
+</script>
+```
+
+修改 `label` 和 `toggle()` 即可观察业务状态如何连接组件。UI 写在 `<template>` 的 `fun …Screen()` 里，业务状态与回调写在 `<script> export default`。生成器注入所需样式和控制器，并把同名生命周期钩子合并进同一 ViewModel。组件一览见[组件指南](COMPONENTS.md)，生成器及模板语法见 [API 参考](API.md)。
+
+GitHub 预发布 `v0.1.0` tarball 可能仍是旧的 `#component` 模板。Compose DSL（`.m3.tpl`）以本仓库源码为准；从源码接入时在仓库根目录执行 `npm pack ./packages/vela-wear-m3`，把得到的 `.tgz` 装到消费项目。
 
 注意：
 
 - 不在 `src/` 中保存手写内容；生成器会整体替换已标记的输出目录。
 - 只处理可信模板，表达式在构建机器上执行。
-- 不同页面各有一份基础状态；同一页面多个控制器须显式合并同名钩子。
 - 生成文件包含库代码，分发时保留适用的 GPL、版权及第三方材料。
 
 ## 离线准备

@@ -2,15 +2,19 @@
 
 [从零接入](GETTING-STARTED.md) · [生成器 API 与模板语法](API.md)
 
-以下先说明共享契约，再列出全部 27 个注册模板的最小插入用例。用例是插入页面的片段，必须同时准备所列状态、样式和脚本；单独粘贴一行标记不等于完整页面。基础页面可从库内 GPL 最小示例复制。
+消费页默认写 `pages/<name>/<name>.m3.tpl`：`<template>` 里用 Compose 形状的函数描述 UI，`<script>` 里写业务 ViewModel。生成器按本页用到的函数注入 CSS、head、data 与 methods，并把同名生命周期钩子合并进同一 ViewModel。单独粘贴一行不等于完整页面；基础页从库内 GPL 最小示例复制。
 
-所有组件是编译期模板，不是 Vela 自定义组件实例。一个页面只展开一份共享状态和调度器。`components/registry.json` 给出模板及必需样式；`componentSource()` 只展开标记绑定，完整条件编译、dp、资源和布局处理由 `generate()` 完成。
+所有组件是编译期模板，不是 Vela 自定义组件实例。一个页面只展开一份共享状态和调度器。`components/registry.json` 给出模板及必需样式；`componentSource()` 只展开标记绑定，完整条件编译、dp、资源和布局处理由 `generate()` 完成。公开包导出不含 `compileM3`，它只作为 `generate()` 处理 `.m3.tpl` 的内部步骤。
+
+每个组件先给 Compose 最小片段，再保留同一套模板的底层 `#component` 绑定（供 `verify-docs` 与手写 `.ux.tpl`）。`#component` 不是消费页默认写法。
 
 ## 公共页面控制器
 
-`base_head.js` 声明模块级计时器、滚动和动作状态，并导入系统 router / vibrator 与 `../../common/m3.js`。因此消费模板需有 `common/m3.js` 引用 `@wear/runtime/m3.js.tpl`，页面位于 `pages/<name>/<name>.ux.tpl`。manifest 需声明 system.router / system.vibrator；不需要振动时由消费方替换 `vib` 方法适配器。
+`base_head.js` 声明模块级计时器、滚动和动作状态，并导入系统 router / vibrator 与 `../../common/m3.js`。因此消费模板需有 `common/m3.js` 引用 `@wear/runtime/m3.js.tpl`。manifest 需声明 system.router / system.vibrator；不需要振动时由消费方替换 `vib` 方法适配器。
 
-`base_data.js` 放在 private 对象内；`base.js` 放在页面方法对象内。private 至少再提供 `tlcBase:-1`，业务页在 onInit 调用 `setLayout([])`。`pageShow` / `pageHide` / `pageDestroy` 为扩展钩子，`onMotionFrame(id,position)` 接收动作更新；多个控制器共用一个页面时必须合并同名钩子。不要让业务方法覆盖 `cleanup` 或遗失基础 onHide/onDestroy。
+`.m3.tpl` 由生成器写入这些片段，业务页不必再 `#include`。手写 `.ux.tpl` 时：`base_data.js` 放在 private 对象内，`base.js` 放在页面方法对象内；private 至少再提供 `tlcBase:-1`，业务页在 onInit 调用 `setLayout([])`。
+
+`pageShow` / `pageHide` / `pageDestroy` 为扩展钩子，`onMotionFrame(id,position)` 接收动作更新。`.m3.tpl` 会把各组合里的这些钩子以及 `pressSpring` / `pressStyle` / `demoClose` / `overlayBack` 重命名后合并；业务方法可用同样的钩子名。手写 `.ux.tpl` 时必须自行合并同名钩子。不要覆盖 `cleanup`，也不要丢掉基础 `onHide` / `onDestroy`。
 
 `press(id)` / `release(id)` / `cancelPress()`、`animateControl(id,target,initial,stiffness)` 和 `hold(id,callback,every=120)` 共享动作调度器（stiffness 省略时为按压反馈：按下 1400、抬起 260；给定时为双向同一临界阻尼弹簧，且首帧立即计算）。页面若定义 `pressSpring(id)` 返回 `[kIn,kOut]`，该 id 改用临界阻尼精确解（按墙钟计算，适合 12600 这类显式 Euler 不稳定的刚度，首帧在按下时绘制）；`pressStyle(id,p)` 可返回自定义样式代替默认透明度反馈（Stepper 用它做底色与形状）。hold 在 500 ms 后按 every 重复，Stepper 传 60 ms。业务 disabled 状态需在触发前拒绝，Switch 和 Stepper 控制器已处理；取消后抬手不会重新触发。使用者声明所有会在模板读取的反馈键，或在 `setLayout` 后通过赋予完整 feedback 对象增加键。
 
@@ -46,11 +50,11 @@ alert-dialog 默认消费 dlgOn / dlgOut / pressId，并调用 dlgCancel / dlgOk
 
 confirmation 使用 cfOn / cfOut / cfBlobOn / cfIconOn / cfTextOn，模块变量 cfTimer / confirmEpoch；增强版还需 checkFrames。引入 confirm.js、confirm.css、overlay.css，调用 showConfirm / hideConfirm / clearConfirm。默认 4 秒结束；时序对齐 Wear M3：弹层 200ms 进入 opacity 0→1、scale 1.25→1，200ms 退出 opacity 1→0、scale 1→1.25（androidx 弹簧采样为线性关键帧，`ui-context.js` ovCss，与 AlertDialog 共用）；100ms 同时挂载拉伸容器（400ms、20ms 采样弹簧）、对勾与文字（200ms 淡入、无 CSS 延迟，不依赖 fill-mode）；退出时对勾保留末帧随弹层淡出。关闭、重入和隐藏必须通过这些入口，不能另建不带代次检查的延迟回调。
 
-edge-button 使用 ebSt、通用按压方法与 showConfirm 回调。应用不需要确认层时可绑定自己的事件处理；保持边缘几何与底部列表留白规则。任何同页组合须在消费方合并重名扩展钩子，0.1 不提供自动 mixin 冲突合并。
+edge-button 使用 ebSt、通用按压方法与 showConfirm 回调。应用不需要确认层时可绑定自己的事件处理；保持边缘几何与底部列表留白规则。`.m3.tpl` 会合并同页重名扩展钩子；手写 `.ux.tpl` 时由消费方自行合并。
 
 ## 媒体控件
 
-复刻 Horologist media-ui-material3 / audio-ui-material3 的播放页组件（规格、包体与降级见 [MEDIA.md](MEDIA.md)）：`media-play-pause`、`media-controls`、`media-info`，以及 P2 的 `media-settings`、`media-volume-level`、`media-player` 和 P3 的 `volume-screen`。共用 media.head.js、media.data.js、media.methods.js 和 media.css；全屏非列表结构，放在 list 外。一个页面只放一个控制行 / 一个 media-player。
+复刻 Horologist media-ui-material3 / audio-ui-material3 的播放页组件（规格、包体与降级见 [MEDIA.md](MEDIA.md)）。Compose：`PlayerScreen`、`MediaButtonRow`、`MediaInfo`、`VolumeScreen`。`.m3.tpl` 会注入 media 组合（`VolumeScreen` 改走 volume 组合）。手写 `.ux.tpl` 使用 `media-play-pause`、`media-controls`、`media-info`，以及 P2 的 `media-settings`、`media-volume-level`、`media-player` 和 P3 的 `volume-screen`。共用 media.head.js、media.data.js、media.methods.js 和 media.css；全屏非列表结构，放在 list 外。一个页面只放一个控制行 / 一个 media-player。
 
 控制器只用 `md*` 名称，不定义 pageShow / pageHide / onMotionFrame / press：消费页在 pageShow 调 `mdShow()`、pageHide 调 `mdHide()`。状态入口：`mdSetPlaying(b)`、`mdSetProgress(0..1)`、`mdSetLoading(b)`、`mdSetEnabled({play,prev,next})`、`mdSetMeta(title,artist)`、`mdSetInfo('ready'|'loading'|'none'[,text])`、`mdSetState('playing'|'paused'|'loading'|'none'|'disconnected')`、`mdSetOutput('headphones'|'watch'|'none')`、`mdSetSettingsEnabled(b)`、`mdSetVolume(v[,show])`、`mdShowVolume([v])`、`mdLvHide()`。页面回调：`mdOnPlay`、`mdOnPause`、`mdOnPrev`、`mdOnNext`、`mdOnSeek(秒)`、`mdOnOutput`、`mdOnMore`。禁用键的触摸在控制器内拒绝。
 
@@ -60,9 +64,63 @@ edge-button 使用 ebSt、通用按压方法与 showConfirm 回调。应用不�
 
 音量页 `volume-screen`（P3，Horologist VolumeScreen）：除媒体控件的 head / data / methods 外，还要引入 Stepper 的 range.head.js / range.data.js / range.js 与 volume-screen.head.js / volume-screen.data.js / volume-screen.methods.js（方法顺序：volume-screen.methods.js → range.js → media.methods.js → base.js），样式 media.css + range.css。onInit 调 `volSetup({max,value,output,name,binding})`，pageShow / pageHide 调 `volShow()` / `volHide()`（不要再调 mdShow / mdHide）。默认绑定 `@system.volume`（manifest 声明 `system.volume`）：进入时 `getMediaValue` 定位，每步 `setMediaValue(v/max)`，系统音量变化回写；`binding:false` 只发事件。其他入口：`volSet(v)`、`volUp()`、`volDown()`、`volSetOutput('headphones'|'watch'[,name])`；回调 `volOnChange(v)`、`volOnDevice()`（点设备键；Vela 无音频路由接口，官方的输出选择需页面自己处理）。
 
+## Compose 函数名
+
+文档只列出当前能编过的函数。`modifier` / `colors` / `shape` 等参数会在编译期失败。lambda 只允许方法调用或简单赋值，不能写 `if` / `await`。`onClick` 接到 Button / IconButton / CompactButton；`SwitchButton` / `Slider` / `Stepper` / 对话框上的 Compose 回调在 0.1 **不接线**，仍走控制器方法。`PlayPauseButton`、`SettingsRow`、`VolumeLevelIndicator` 不能作为独立函数调用（会报 unknown component），由 `PlayerScreen` 内部展开。
+
+| Compose | 注册模板 | 接线 |
+|---|---|---|
+| `ScreenScaffold` | 注入 TimeText、ScrollIndicator、非圆屏返回 | `title`、`showBack` / `timeText` / `scrollIndicator`（默认 true）、`siFrac` |
+| `TransformingLazyColumn` + `item` / `items` | transforming-list-item | 列表项需 `id` / `st` |
+| `Button` `FilledTonalButton` `OutlinedButton` `ChildButton` | button | `onClick` lambda；`enabled = false` 无事件；`variant` / `ink` / `icon` / `label` / `secondaryLabel` |
+| `IconButton` `FilledIconButton` `FilledTonalIconButton` `OutlinedIconButton` | icon-button | `onClick`；`variant` / `icon` |
+| `CompactButton` | compact-button | 无 label 时固定「添加」演示；有 `onClick` + `label` 时内联 |
+| `ButtonMorph` / `IconButtonMorph` | button-morph / icon-button-morph | 固定演示；页面提供 `tap` / `togglePlaying` |
+| `Card` `OutlinedCard` `TitleCard` `AppCard` | card | 子树 `Text` / `Icon` / `Row`；点击 `vib()` |
+| `SwitchButton` `CheckboxButton` `RadioButton` `Slider` | switch-button / checkbox-button / radio-button / inline-slider | 仍用 `toggleSwitch` / `tBt` / `pick` / `updateSlider`；`onCheckedChange` / `onValueChange` 不接线 |
+| `Stepper` / `StepperLevelIndicator` | stepper / level-indicator | `openStepper`、`stepValue` 0–10；`visible` / `onValueChange` 不接线 |
+| `HorizontalPager` / `VerticalPager` | page-indicator | `openHorizontalPager` / `openVerticalPager` |
+| `TimeText` / `ScrollIndicator` | time-text / scroll-indicator | Scaffold 默认注入 |
+| `CircularProgressIndicator` 等 / `ProgressIndicator` | progress-indicator | `setProgress` / `paintProgress` |
+| `AlertDialog` / `SuccessConfirmationDialog` | alert-dialog / confirmation | `dlgOn`、`showConfirm`；`visible` / `onDismissRequest` 不接线 |
+| `EdgeButton` | edge-button | 业务提供 `showConfirm`；`onClick` 不接线 |
+| `PlayerScreen` / `MediaButtonRow` / `MediaInfo` / `VolumeScreen` | media-player / media-controls / media-info / volume-screen | `md*` / `vol*` |
+| `NativeSwitch` / `NativeSlider` | （系统控件对照） | `nWifi` / `nLvl` |
+| `Text` `ListHeader` `Note` `Icon` `ClockPanel` `ArcTimeText` | 内联 markup | 无独立 registry 项 |
+
+`ScreenScaffold` 的兄弟节点（`Stepper`、分页器、`AlertDialog`、`SuccessConfirmationDialog`、`EdgeButton`）展开为 list 外覆盖层。
+
 ## 基础页面与依赖的插入位置
 
-所有用例共同依赖以下结构；页面位于 `pages/<name>/<name>.ux.tpl`，项目同时保留最小示例的 app、manifest 和 `common/m3.js`：
+推荐在 `pages/<name>/<name>.m3.tpl` 编写页面；生成器会注入下表中的 CSS / head / data / methods。项目同时保留最小示例的 app、manifest 和 `common/m3.js`：
+
+```html
+<template>
+fun IndexScreen() {
+  ScreenScaffold(showBack = false) {
+    TransformingLazyColumn {
+      item {
+        Button(onClick = { toggle() }, icon = { Icon(icon) }, label = { Text(label) })
+      }
+      item { Text(count) }
+    }
+  }
+}
+</template>
+<script>
+export default {
+  private: {
+    isHome: true,
+    label: '点击计数',
+    icon: '/common/img/star_primary_24.png',
+    count: 0
+  },
+  toggle() { this.count++ }
+}
+</script>
+```
+
+手写 `.ux.tpl` 时仍使用下面的基础骨架：
 
 ```html
 <template>
@@ -119,13 +177,23 @@ export default {
 
 ### 多控制器同页
 
-例如形变按钮和选择控件都定义 `onMotionFrame`、`pageHide`。不能连续 include 两份 methods 然后期待自动合并。应在消费模板的本地片段中组合两者的分支和清理逻辑；不要修改安装包内文件。类似地，基础 `onHide`、`onDestroy` 应保持，业务使用 `pageHide`、`pageDestroy` 扩展。
+`.m3.tpl` 会把各组合里的 `pageShow` / `pageHide` / `pageDestroy` / `onMotionFrame` / `pressSpring` / `pressStyle` / `demoClose` / `overlayBack` 重命名后合并进页面 ViewModel。业务方法用同样的钩子名即可，不要覆盖 `cleanup`、`onHide`、`onDestroy`。模块级变量（如 `cfTimer`）仍按组合共享，同一页面不要放两套互相冲突的模块状态。
 
-本版本没有自动 mixin 或多实例命名空间。首次接入建议每页先使用一个控制器组合；需要组合时逐项检查同名方法、模块变量和 private 字段。
+手写 `.ux.tpl` 时仍须自行合并同名钩子。首次接入建议每页先使用一个控制器组合。
 
 ## 全部模板与最小用例
 
 ### button
+
+Compose：`Button`（Filled）、`FilledTonalButton`、`OutlinedButton`、`ChildButton`。`onClick` 接到页面方法或简单赋值。`enabled = false` 编成禁用外观且无事件。`variant` / `ink` 覆盖预设类。
+
+```
+Button(onClick = { save() }, icon = { Icon(icon) }, label = { Text(label) })
+FilledTonalButton(onClick = { tap(item.label) }, label = { Text(item.label) })
+Button(onClick = { }, enabled = false, label = { Text("暂不可用") })
+```
+
+底层标记：
 
 ```html
 <!-- #component button {"id":"'save'","label":"label","variant":"'bf'","ink":"'c-onPri'","icon":"icon","onClick":"save"} -->
@@ -135,6 +203,15 @@ export default {
 
 ### icon-button
 
+Compose：`IconButton`、`FilledIconButton`、`FilledTonalIconButton`、`OutlinedIconButton`。`onClick` 接线；`variant` 覆盖容器类。当前不显示 label。
+
+```
+FilledIconButton(onClick = { save() }) { Icon(icon) }
+IconButton(onClick = { tap(item.name) }, variant = item.cls) { Icon(item.icon) }
+```
+
+底层标记：
+
 ```html
 <!-- #component icon-button {"id":"'star'","variant":"'bf'","icon":"icon","label":"'收藏'","onClick":"save"} -->
 ```
@@ -142,6 +219,15 @@ export default {
 默认 id / variant / icon / label / onClick 为 `$item.id` / `$item.cls` / `$item.icon` / `$item.name` / `onButtonClick`。依赖 buttons.css、基础控制器和匹配的图标图片；当前模板未使用 label 参数，不显示标签，也不创建额外的无障碍 API。颜色类可用 `bf`、`bt`、`bo`、`bd`；禁用业务由回调拦截。这里是静态容器，不包含形变播放器。
 
 ### compact-button
+
+Compose：`CompactButton()` 无参数时展开固定「添加」演示（形变组合）。带 `onClick` 与 `label` 时编成内联按钮。
+
+```
+CompactButton()
+CompactButton(onClick = { tap("更多") }, label = { Text("更多") })
+```
+
+底层标记：
 
 ```html
 <!-- #component compact-button {} -->
@@ -151,6 +237,14 @@ export default {
 
 ### button-morph
 
+Compose：`ButtonMorph()`。无业务 `onClick` 参数，固定读 `buttonMorphStatic`。
+
+```
+ButtonMorph()
+```
+
+底层标记：
+
 ```html
 <!-- #component button-morph {} -->
 ```
@@ -158,6 +252,14 @@ export default {
 无占位参数。使用形变按钮族组合，读 `buttonMorphStatic`，调用 `buttonMorphPress`／`buttonMorphRelease`；模板只演示按压形变，没有业务 onclick。文字固定“按住体验”。basic 为端点变化，enhanced 使用中间资源帧。
 
 ### icon-button-morph
+
+Compose：`IconButtonMorph()`。固定演示，调用 `togglePlaying`。
+
+```
+IconButtonMorph()
+```
+
+底层标记：
 
 ```html
 <!-- #component icon-button-morph {} -->
@@ -167,6 +269,19 @@ export default {
 
 ### card
 
+Compose：`Card` / `OutlinedCard` / `TitleCard` / `AppCard`。子树用 `Text`、`Icon`、`Row`。点击固定 `vib()`，没有通用 `onClick`。
+
+```
+Card {
+  Text("提示", typography = "title")
+}
+OutlinedCard {
+  Row { Icon(icon); Text(item.label, typography = "body") }
+}
+```
+
+底层标记：
+
 ```html
 <!-- #component card {"id":"info","variant":"card cs","content":"<text class=\"t-titleM c-on\">提示</text>"} -->
 ```
@@ -174,6 +289,20 @@ export default {
 id / variant / content 均必须提供字符串；没有默认值。`id` 是静态标记文字，`variant` 是静态类串，`content` 是可信 Vela 标记。使用 cards.css、基础按压控制器，点击固定调用基础 `vib()`，不是通用 onClick 参数。`card cs` 为填充，`card co` 为描边。标题、AppCard 元信息等由内容子树组合，两种 API 均可用。
 
 ### switch-button
+
+Compose：`SwitchButton`。写在 `items(switches)` 里。`checked` / `onCheckedChange` / `enabled` / `label` **0.1 不接线**，运行时仍读 `$item` 并调用 `toggleSwitch($idx)`。
+
+```
+items(switches) { item ->
+  SwitchButton(
+    checked = item.checked,
+    onCheckedChange = { item.checked = it },
+    label = { Text(item.label) }
+  )
+}
+```
+
+底层标记：
 
 ```html
 <div class="switch-list" for="{{switches}}">
@@ -189,6 +318,14 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 
 ### checkbox-button
 
+Compose：`CheckboxButton()`。无参数；`tBt()` 切换固定 `bt` 字段。
+
+```
+CheckboxButton()
+```
+
+底层标记：
+
 ```html
 <!-- #component checkbox-button {} -->
 ```
@@ -196,6 +333,16 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 无占位参数。选择组合提供 bt（boolean）、checkSrc 和 `tBt()`；固定文案、图标与点击结构来自模板。默认勾选，8 帧位置映射，隐藏时停止 checkTimer。不提供独立 disabled 绑定；需要禁用时消费方同时控制外观与事件。
 
 ### radio-button
+
+Compose：`RadioButton`。写在 `items(radios)` 里。`selected` / `onClick` **不接线**，仍调用 `pick($idx)`。
+
+```
+items(radios) { item ->
+  RadioButton(selected = item.id, onClick = { pick() }, label = { Text(item.label) })
+}
+```
+
+底层标记：
 
 ```html
 <div class="radio-list" for="{{radios}}">
@@ -207,6 +354,14 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 
 ### inline-slider
 
+Compose：`Slider`。`value` / `onValueChange` / `steps` **不接线**，仍读 `lvl` 并走 `dec` / `inc` / `updateSlider`。
+
+```
+Slider(value = lvl, onValueChange = { lvl = it }, steps = 6)
+```
+
+底层标记：
+
 ```html
 <!-- #component inline-slider {} -->
 ```
@@ -214,6 +369,19 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 无占位参数。选择组合提供 lvl（0–5）、sliderMode（0 连续／1 分段／2 变色）、sliderStyle、separators，以及 `dec()`、`inc()`、`nextSlider()`。初始化 `updateSlider()`；到边界不增减。窄屏轨道独占一行属于项目适配。它不是任意 min/max/step 的通用 Slider；两种 API 的几何一致。
 
 ### stepper
+
+Compose：`Stepper()`，作为 `ScreenScaffold` 的兄弟节点（覆盖层）。`visible` / `onValueChange` **不接线**。业务用 `openStepper()` 进入；数值仍是 `stepValue` 0–10。
+
+```
+ScreenScaffold {
+  TransformingLazyColumn {
+    item { Button(onClick = { openStepper() }, label = { Text("全屏调节音量") }) }
+  }
+  Stepper()
+}
+```
+
+底层标记：
 
 ```html
 <!-- 放在 list 外，业务通过 openStepper() 进入 -->
@@ -224,6 +392,14 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 
 ### level-indicator
 
+Compose：`StepperLevelIndicator()`。跟随 `stepValue`；调用 `updateRange()`。
+
+```
+StepperLevelIndicator()
+```
+
+底层标记：
+
 ```html
 <!-- #component level-indicator {} -->
 ```
@@ -231,6 +407,19 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 无占位参数。对应 androidx `StepperLevelIndicator`（ScrollIndicator.kt `drawCurvedIndicator`）：所有设备都画在屏幕宽度圆上的左侧弧（半径 W/2−2−3 dp，6 dp 圆头描边，3 dp 间隙随数值移动；当某段扫角 ≤ 间隙时画成半径 0→3 dp、透明度 0→1 的圆点）。实现为两张整弧图片绕屏幕中心旋转 + 两张静态黑色遮罩 + 两个圆点 div；数据来自 range 组合（`lvIndSrc`/`lvTrkSrc`/`lvInd`/`lvTrk`/`lvDotInd`/`lvDotTrk`），几何在 `animations.json` 的 `level`。调用 `updateRange()` 让它跟随 stepValue 与禁用态，`updateRange(true)` 直接到位。片段使用绝对定位，必须放在页面内容之前，且假设黑色背景（遮罩是黑色）；离开页面时 `cleanup()` 调用 `stopLevel()`。不是滚动条，两种 API 均可用。
 
 ### page-indicator
+
+Compose：`HorizontalPager()` / `VerticalPager()`，作为 Scaffold 兄弟节点。当前展开完整分页演示，不是仅一排圆点。业务用 `openHorizontalPager()` / `openVerticalPager()`。
+
+```
+ScreenScaffold {
+  TransformingLazyColumn {
+    item { Button(onClick = { openHorizontalPager() }, label = { Text("横向分页") }) }
+  }
+  HorizontalPager()
+}
+```
+
+底层标记：
 
 ```html
 <!-- 放在 list 外，业务通过 openHorizontalPager() 进入 -->
@@ -241,6 +430,14 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 
 ### time-text
 
+Compose：`ScreenScaffold` 默认注入 `TimeText`。`timeText = false` 可关闭。独立调用 `TimeText()` 或 `ClockPanel()` / `ArcTimeText(status = true)`。
+
+```
+ScreenScaffold(timeText = true) { TransformingLazyColumn { item { Text("内容") } } }
+```
+
+底层标记：
+
 ```html
 <!-- 放在 list 外，作为页面顶部时间 -->
 <!-- #component time-text {} -->
@@ -249,6 +446,14 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 无占位参数。基础状态与时钟提供 tt0–tt4 和顶部字形数据；Pro 直排、round / band Arc。分钟更新，不应另建每秒循环。组件示例 Arc 可在 list-item 内放 `<div class="arc-panel">$[arcTemplate(false)]</div>`；true 版本带状态，使用 clockGlyphs / statusGlyphs。两个 API 均可用；普通字体仍依设备系统。
 
 ### scroll-indicator
+
+Compose：`ScreenScaffold` 默认注入。`scrollIndicator = false` 可关闭。`siFrac` 传给 Scaffold 控制拇指比例相关几何。
+
+```
+ScreenScaffold(scrollIndicator = true, siFrac = 3) { TransformingLazyColumn { items(items) { item -> Button(onClick = { vib() }, label = { Text(item.label) }) } } }
+```
+
+底层标记：
 
 ```html
 <!-- 放在 list 外 -->
@@ -259,6 +464,19 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 
 ### transforming-list-item
 
+Compose：`TransformingLazyColumn` 的 `item { }` / `items(list) { item -> }`。生成器把子树包进本模板。
+
+```
+TransformingLazyColumn {
+  items(rows) { item ->
+    Button(onClick = { tap(item.label) }, label = { Text(item.label) })
+  }
+  item { Text(count) }
+}
+```
+
+底层标记：
+
 ```html
 <list-item type="tlc" class="li-56" for="{{items}}">
 <!-- #component transforming-list-item {"style":"$item.st","content":"<text class=\"t-labelM c-on\">{{$item.label}}</text>"} -->
@@ -268,6 +486,14 @@ id / variant / content 均必须提供字符串；没有默认值。`id` 是静�
 style 默认 `$item.st`；content 必须提供可信标记字符串。基础状态另声明 `items:[{id:'one',label:'一',st:{}}]`、`tlcOn:true`、`tlcBase:-1`。生成布局识别 items 重复项；基础 onScroll 更新可见项的样式。相同 type 的 list-item 需相同结构，两种 API 均可用。
 
 ### progress-indicator
+
+Compose：`ProgressIndicator()`、`CircularProgressIndicator()`、`LinearProgressIndicator()`、`SegmentedCircularProgressIndicator()`、`ArcProgressIndicator()`。当前都展开同一进度演示模板；`kind` 由控制器 `nextKind` 切换。
+
+```
+item { ProgressIndicator() }
+```
+
+底层标记：
 
 ```html
 <!-- 直接放在 list 内：模板本身已包含 list-item -->
@@ -280,6 +506,19 @@ style 默认 `$item.st`；content 必须提供可信标记字符串。基础状�
 
 ### alert-dialog
 
+Compose：`AlertDialog()`，Scaffold 兄弟节点。`visible` / `onDismissRequest` / `onConfirm` **不接线**。业务设 `dlgOn`，调用 `dlgCancel` / `dlgOk`。
+
+```
+ScreenScaffold {
+  TransformingLazyColumn {
+    item { Button(onClick = { openDlg() }, label = { Text("确认操作") }) }
+  }
+  AlertDialog()
+}
+```
+
+底层标记：
+
 ```html
 <!-- 放在 list 外 -->
 <!-- #component alert-dialog {} -->
@@ -288,6 +527,14 @@ style 默认 `$item.st`；content 必须提供可信标记字符串。基础状�
 无占位参数。overlay.css 加 `$[dlgCss()]`；private 声明 `dlgOn:false,dlgOut:false`。业务打开时设 dlgOn，`dlgCancel()`／`dlgOk()` 中完成业务并关闭；退出设 dlgOut，200ms 后撤去 dlgOn 并恢复 dlgOut。overlayBack 优先处理弹层。文案来自固定模板，需要改变时由消费方组合标记，不存在 title/message props。两种 API 均可用。
 
 ### confirmation
+
+Compose：`SuccessConfirmationDialog()`。`visible` / `onDismissRequest` **不接线**。调用 `showConfirm` / `hideConfirm`。
+
+```
+SuccessConfirmationDialog()
+```
+
+底层标记：
 
 ```html
 <!-- 放在 list 外 -->
@@ -300,6 +547,17 @@ style 默认 `$item.st`；content 必须提供可信标记字符串。基础状�
 
 ### edge-button
 
+Compose：`EdgeButton()`，Scaffold 兄弟节点。`onClick` **不接线**；业务提供 `showConfirm()`（或自己的适配器）。
+
+```
+ScreenScaffold(siFrac = 3) {
+  TransformingLazyColumn { items(items) { item -> FilledTonalButton(onClick = { vib() }, label = { Text(item.label) }) } }
+  EdgeButton()
+}
+```
+
+底层标记：
+
 ```html
 <!-- 放在 list 外；列表底部留出 EBH 对应空间 -->
 <!-- #component edge-button {} -->
@@ -308,6 +566,10 @@ style 默认 `$item.st`；content 必须提供可信标记字符串。基础状�
 无占位参数。edge.css（已含 ebCss）、业务 ebSt（初始可为 `{}`）／基础按压方法；业务须提供 showConfirm（可作为自己的回调适配器，不必实际启用确认层）。模板固定对勾图标。列表留白与 scrim 可参照库的 ebCss / EBH / EBPAD，避免末项被覆盖；两种 API 均可用。
 
 ### media-play-pause
+
+Compose 没有独立的 `PlayPauseButton` 函数（调用会报 unknown component）。经 `PlayerScreen` 或底层 `media-play-pause` 标记使用。手写 `.ux.tpl` 仍可用下面绑定。
+
+底层标记：
 
 ```html
 <!-- 放在 list 外；单独使用时由页面定位 -->
@@ -318,6 +580,14 @@ style 默认 `$item.st`；content 必须提供可信标记字符串。基础状�
 
 ### media-controls
 
+Compose：`MediaButtonRow(left = "back5", right = "fwd30")`。`left` / `right` 会编进绑定。
+
+```
+MediaButtonRow(left = "prev", right = "next")
+```
+
+底层标记：
+
 ```html
 <div class="md-at-ctl">
 <!-- #component media-controls {"left":"'back5'","right":"'fwd30'"} -->
@@ -327,6 +597,14 @@ style 默认 `$item.st`；content 必须提供可信标记字符串。基础状�
 left / right 取 `prev`、`next`、`back5|back10|back30`、`fwd5|fwd10|fwd30`（播客变体回调 `mdOnSeek(±秒)`），其余参数透传给内部的 media-play-pause。round / pro 横排，band 纵排（播放键一行、两侧键一行）。被按的键宽度 +12 dp、相邻键 −12 dp，按下 100 ms、抬起 450 ms 过渡。上一首在第一首且进度 < 3 s 时应由页面 `mdSetEnabled({prev:false})`。
 
 ### media-info
+
+Compose：`MediaInfo(marquee = true)`。`marquee` 会编进绑定。
+
+```
+MediaInfo(marquee = true)
+```
+
+底层标记：
 
 ```html
 <div class="md-at-info">
@@ -339,6 +617,10 @@ marquee 默认 `'false'`：溢出时省略号 + 右侧 8 dp 渐隐（官方 Text
 
 ### media-settings
 
+Compose 没有独立的 `SettingsRow` 函数。经 `PlayerScreen` 的设置行或底层标记使用。
+
+底层标记：
+
 ```html
 <!-- #component media-settings {"left":"'output'","right":"'more'"} -->
 ```
@@ -346,6 +628,10 @@ marquee 默认 `'false'`：溢出时省略号 + 右侧 8 dp 渐隐（官方 Text
 left：`output`（耳机 / 手表 / 未连接 + 音量徽章）/ `volume`（无徽章的音量键）/ `none`；right：`more` / `none`。点击分别触发 `mdOnOutput` / `mdOnMore`。`mdSetOutput` 切换图标；`mdSetVolume` 更新徽章（静音 / 减 / 加）。详见 [MEDIA.md §7.2](MEDIA.md)。
 
 ### media-volume-level
+
+Compose 没有独立的 `VolumeLevelIndicator` 函数。经 `PlayerScreen` 的 `level` 开关或底层标记使用。
+
+底层标记：
 
 ```html
 <!-- #component media-volume-level {} -->
@@ -355,6 +641,16 @@ left：`output`（耳机 / 手表 / 未连接 + 音量徽章）/ `volume`（无�
 
 ### media-player
 
+Compose：`PlayerScreen`。当前会编 `marquee` / `left` / `right`；`settings` / `level` 走模板默认。全屏页，不要再包 `ScreenScaffold` 列表。
+
+```
+fun Player() {
+  PlayerScreen(marquee = true, left = "prev", right = "next")
+}
+```
+
+底层标记：
+
 ```html
 <!-- #component media-player {"marquee":"true","settings":"true","level":"true"} -->
 ```
@@ -362,6 +658,16 @@ left：`output`（耳机 / 手表 / 未连接 + 音量徽章）/ `volume`（无�
 组合电平 + media-info + media-controls + media-settings + TimeText。常用绑定：`settings` / `level`（默认 true）、`settingsLeft` / `settingsRight`、以及透传给控制行的 `left` / `right` / `ring` / `steps` / `rotate` / `marquee`。推荐用 `mdSetState` 切换官方各状态。
 
 ### volume-screen
+
+Compose：`VolumeScreen(content = "device")`。`content` 编进绑定。onInit 调 `volSetup`，pageShow / pageHide 调 `volShow` / `volHide`。
+
+```
+fun Volume() {
+  VolumeScreen(content = "device")
+}
+```
+
+底层标记：
 
 ```html
 <!-- #component volume-screen {"content":"'device'"} -->
@@ -371,8 +677,9 @@ Horologist VolumeScreen：androidx Stepper（上 VolumeUp、下 VolumeDown，pri
 
 ## 常见接入问题
 
-- **只显示静态图，没有状态变化**：确认 head／data／methods 都已引入，且业务状态已声明；确认没有覆盖 onMotionFrame。
-- **返回或退出后仍播放**：保留基础清理，并合并组件 pageHide／pageDestroy；播放器显式 stop，不能仅隐藏图片。
+- **只显示静态图，没有状态变化**：`.m3.tpl` 确认用到了对应函数（才会注入控制器）；手写 `.ux.tpl` 确认 head／data／methods 都已引入。业务状态已声明；不要覆盖合并后的 `onMotionFrame` 而不调用库段。
+- **返回或退出后仍播放**：保留基础清理；`.m3.tpl` 已合并 `pageHide`／`pageDestroy`。播放器显式 stop，不能仅隐藏图片。
 - **生成成功但运行时报字段不存在**：生成器不检查运行时字段；按本页契约检查 private、回调和 list type。
+- **Compose 回调没有效果**：0.1 只有 Button 族的 `onClick` 接到 lambda。Switch / Slider / Stepper / Dialog / EdgeButton 仍走控制器方法，见上文函数表。
 - **想修改数值范围或固定文案**：0.1 部分模板是既定控制器结构，需要在消费端组合自己的标记与状态逻辑；不是只改一个属性就获得通用组件。
 - **看见原始 `$[...]` 或 `#include`**：你可能只调用了 componentSource，或没有对消费模板执行 generate。

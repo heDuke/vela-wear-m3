@@ -2,7 +2,7 @@
 
 [快速上手](GETTING-STARTED.md) · [组件与控制器](COMPONENTS.md)
 
-本库使用 CommonJS，导出 `generate`、`componentSource`、`components`、`devices`。CLI 调用同一个生成器。这里记录当前接口，不代表 1.0 稳定性承诺。
+本库使用 CommonJS，导出 `generate`、`componentSource`、`components`、`devices`。CLI 调用同一个生成器。`.m3.tpl` 的编译（内部 `compileM3`）发生在 `generate()` 之内，不是公开导出。这里记录当前接口，不代表 1.0 稳定性承诺。
 
 ## generate(options)
 
@@ -41,7 +41,7 @@ const result = generate({
 | `output` | string | 输出绝对路径 |
 | `images` | number | 从生成文本的 `/common/img/*.png` 引用中去重后复制的图片数；不含 logo 与许可文件 |
 
-输入中的普通文件会复制到输出；`.ux.tpl` 转为 `.ux`，`manifest.tpl.json` 转为 `manifest.json`。顶层 `partials` 作为片段目录不直接输出。生成器按实际引用复制库图片，并在 `common/legal/vela-wear-m3/` 放置许可材料。
+输入中的普通文件会复制到输出；`.m3.tpl` 先编译为中间 UX，再与 `.ux.tpl` 一样预处理并写成 `.ux`；`manifest.tpl.json` 转为 `manifest.json`。顶层 `partials` 作为片段目录不直接输出。生成器按实际引用复制库图片，并在 `common/legal/vela-wear-m3/` 放置许可材料。若同目录同时存在 `.m3.tpl` 与 `.ux.tpl`，只处理前者。
 
 常见异常包括 `Unknown device`、非法动画配置、`Unsafe output directory`、`Output is not owned by this generator`、越界 include、未知组件、绑定缺失、资源缺失、条件指令不平衡，以及 JSON／表达式语法和文件读取错误。错误文本不是稳定的机器错误码。
 
@@ -103,6 +103,44 @@ npx vela-wear-m3 gen --input template --out src --device band10 --animation enha
 
 成功向 stdout 打印生成结果 JSON，退出码 0；生成异常向 stderr 打印消息，退出码 1。单独 `--help` 打印用法并退出 0；无命令或不受支持的子命令打印用法并退出 1。帮助用上述独立形式，不使用 `gen --help`。不支持 `--key=value`、CLI `--replace` 或额外子命令；当前解析器不严格拒绝所有未知参数，请按列出的形式使用。
 
+## Compose 风格页面（`.m3.tpl`）
+
+消费页把 Wear Compose Material 3 形状的 DSL 写在 `<template>` 中，把业务 ViewModel 写在 `<script>`。`generate()` 先调用 `compileM3`，再走与 `.ux.tpl` 相同的 include、条件、`$[ ]` / `$( )`、CSS tree-shake 与布局提取。
+
+```html
+<template>
+fun IndexScreen() {
+  ScreenScaffold(showBack = false) {
+    TransformingLazyColumn {
+      item {
+        Button(onClick = { toggle() }, icon = { Icon(icon) }, label = { Text(label) })
+      }
+      item { Text(count) }
+    }
+  }
+}
+</template>
+<script>
+export default {
+  private: {
+    isHome: true,
+    label: '点击计数',
+    icon: '/common/img/star_primary_24.png',
+    count: 0
+  },
+  toggle() { this.count++ }
+}
+</script>
+```
+
+`ScreenScaffold` 默认注入 TimeText、ScrollIndicator，以及非圆屏返回行。可用 `showBack` / `timeText` / `scrollIndicator` 关闭（布尔，默认 true）。`title` 写入 `pageTitle`（非胶囊屏顶栏；胶囊屏单独一行标题）。`siFrac` 传给滚动指示几何。`Stepper`、`AlertDialog`、`SuccessConfirmationDialog`、`EdgeButton`、分页器作为 Scaffold 的兄弟节点，展开为 list 外覆盖层。
+
+`onClick` 接到 Button / IconButton / CompactButton：方法调用 `{ toggle() }` 编成事件名；简单赋值 `{ flag = true }` 生成页面 setter。lambda 不能写 `if` / `await`。`SwitchButton` 的 `onCheckedChange`、`Slider` 的 `onValueChange`、`Stepper` / 对话框 / `EdgeButton` 上的 Compose 回调在 0.1 **不接线**，仍走控制器方法（`toggleSwitch`、`updateSlider`、`openStepper`、`dlgOn`、`showConfirm`）。函数总表见[组件指南](COMPONENTS.md#compose-函数名)。
+
+库控制器的 `pageShow` / `pageHide` / `onMotionFrame` 等钩子与页面同名方法自动合并。不支持的 Compose 参数（`modifier`、`colors`、`shape` 等）在编译期报错。
+
+底层仍可使用下一节的注释指令；`.m3.tpl` 编译结果就是带这些指令的中间 UX。手写 `.ux.tpl` 直接写这些指令。
+
 ## 模板语法
 
 指令占据单独一行，使用 HTML、CSS 或 JS 注释包装。模板文件为 UTF-8；脚本片段插入位置必须符合 Vela 页面的语法。
@@ -142,7 +180,7 @@ npx vela-wear-m3 gen --input template --out src --device band10 --animation enha
 
 基础控制器提供 `press(id)`、`release(id)`、`cancelPress()`、`animateControl(id,target,initial,stiffness)`、`hold(id,callback,every=120)`、`later(fn,ms)`、返回处理及时钟／滚动调度。可选扩展点 `pressSpring(id)`（返回 `[kIn,kOut]` 时该 id 用临界阻尼精确解）与 `pressStyle(id,p)`（返回按压进度 p∈[0,1] 对应的样式，代替默认透明度反馈）。它们依赖 `base_head.js`、`base_data.js`、`base.js`，不是可脱离页面任意实例化的服务。
 
-`pageShow`、`pageHide`、`pageDestroy`、`onMotionFrame`、`stopLevel` 等名称是组合扩展点（`stopLevel` 由 range 组合提供，基础 `cleanup()` 会调用它）。多个控制器同时使用时须人工合并调用，不要让后一个同名方法覆盖前一个。基础 `onHide`／`onDestroy` 必须保留清理路径；具体组合、状态字段和组件用例见[组件指南](COMPONENTS.md)。
+`pageShow`、`pageHide`、`pageDestroy`、`onMotionFrame`、`stopLevel` 等名称是组合扩展点（`stopLevel` 由 range 组合提供，基础 `cleanup()` 会调用它）。`.m3.tpl` 会自动合并同名钩子；手写 `.ux.tpl` 时不要让后一个同名方法覆盖前一个。基础 `onHide`／`onDestroy` 必须保留清理路径；具体组合、状态字段和组件用例见[组件指南](COMPONENTS.md)。赋值 lambda 的接线范围见上文 Compose 小节，不要假定 Switch / Slider 的 Compose 回调会生成 setter。
 
 ## Stepper / LevelIndicator（range 组合）
 
