@@ -33,6 +33,6 @@
     "docs"
   ],
   "scripts": {
-    "test": "node -e \"require('./index')\""
+    "test": "node tools/compose-test.js"
   }
 }

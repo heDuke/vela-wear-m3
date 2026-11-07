@@ -1,5 +1,7 @@
 // Independent tarball consumption is the release gate, not a workspace-only require.
 const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{spawnSync}=require('child_process');
+const composeTest=spawnSync(process.execPath,[path.join(__dirname,'../packages/vela-wear-m3/tools/compose-test.js')],{encoding:'utf8'});
+if(composeTest.status)throw Error(composeTest.stderr||composeTest.stdout);
 const root=path.resolve(__dirname,'..'),lib=path.join(root,'packages/vela-wear-m3'),dest=path.join(root,'out/library-consumer');
 fs.mkdirSync(dest,{recursive:true});
 const npmCli=process.env.npm_execpath||path.join(path.dirname(process.execPath),'node_modules/npm/bin/npm-cli.js');

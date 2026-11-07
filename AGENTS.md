@@ -25,7 +25,7 @@ template/            ← ★ 真正的源码（带预处理指令）。只改这
   manifest.tpl.json  ← → src/manifest.json（designWidth = 设备物理宽度 W）
   app.ux.tpl
   common/m3.js       ← 运行时纯函数：TLC 缩放/透明度、ScrollIndicator 位置、pad2、DEV 常量
-  pages/<page>/<page>.ux.tpl   ← index buttons cards list edge time toggles dialogs motion
+  pages/<page>/<page>.m3.tpl   ← Compose 形状 DSL（fun Screen + ScreenScaffold）；由库 compileM3 再 pp
   partials/          ← m3.css（token→class）、timetext/scrollind/backbtn/dialog/confirm 片段、base*.js（页面公共逻辑）、overlay.css、confirm.css/js
 tools/
   devices.json       ← 4 个 device group：W/H/shape(circle|rect|pill)/k(px per dp：round/pro 2.0，band 1.625)
@@ -118,7 +118,7 @@ box 上的环境（Linux x86_64；不随包提供，SDK ≈ 3.4 GB + AVD ≈ 1 G
 
 ## 9. Coding conventions
 
-- 只改 `template/`、`tools/`（及将来的库目录），不改 `src/`。尺寸一律写 dp：`$(N)`；复杂计算用 `$[expr]` 或 gen.js 里的 `ctx.xxxCss()` 生成器；设备差异用 `#if round / pill / rect`，不在运行时判断设备。
+- 只改 `template/`、`tools/`、`packages/vela-wear-m3/`，不改 `src/`。Demo 与示例页面写 `.m3.tpl`（`<template>` 里 `fun Screen()`，`<script>` 里业务 ViewModel）；不要把库实现复制回 Demo。尺寸一律写 dp：`$(N)`；复杂计算用 `$[expr]` 或 gen.js 里的 `ctx.xxxCss()` 生成器；设备差异用 `#if round / pill / rect` 或 DSL 的 `if (pill) { }`，不在运行时判断设备。
 - 颜色 / 字号只从 `tools/tokens.js`（或 m3.css 中对应 class）来；新增令牌注明 androidx 源文件。pill 屏字号缩小规则见 m3.css（labelM 13dp、labelS 11dp、titleM 15dp）。
 - class 名短（会进包体）；运行时 JS 只放纯函数（`common/m3.js`），页面状态放模块级变量。
 - 动效：进入 350ms emphasized decelerate `cubic-bezier(0.05,0.7,0.1,1)`；退出 220ms `cubic-bezier(0.3,0,1,1)`；按压 100ms / 300ms `cubic-bezier(0.2,0,0,1)`；transform 动画只用 @keyframes。
@@ -171,3 +171,9 @@ box 上的环境（Linux x86_64；不随包提供，SDK ≈ 3.4 GB + AVD ≈ 1 G
 - 确认的小帆船 SVG 与 PNG 位于 `docs/design/brand/`，背景品牌色为 `#67508F`，不是官方组件令牌。
 - `npm run assets:brand` 重新导出；Demo 的 `tools/gen.js` 接入 192px 圆形 PNG，不依赖资源重绘。
 - 品牌素材按既有非商业展示素材政策授权，禁止复制进独立 GPL 库包；库资源管线保留通用图标。
+
+## 16. 2026-11-08 组件用法（Compose DSL）
+
+- 消费页默认 `.m3.tpl`：UI 用 `ScreenScaffold` / `TransformingLazyColumn` / `Button` 等函数，逻辑仍在页面 `export default`。生成器 `compileM3` 注入控制器并合并钩子，输出仍是普通 UX，不是 Vela 自定义组件，也不是 Android Compose。
+- 编译器在 `packages/vela-wear-m3/tools/compose.js`。不支持 `modifier` / `colors` / `shape` 等 Compose 参数。`#component` 仍是内部展开格式，文档用例保留供校验。
+- 验证：`node packages/vela-wear-m3/tools/compose-test.js`，`node tools/verify.js`，`npm run test:library`。

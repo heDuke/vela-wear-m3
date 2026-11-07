@@ -174,7 +174,16 @@ const used = new Set();
     if (r.startsWith('partials')) continue;
     if (fs.statSync(abs).isDirectory()) { walk(r); continue; }
     fs.mkdirSync(path.dirname(path.join(SRC, r)), { recursive: true });
-    if (/\.(ux|js|json|css|tpl)$/.test(f)) { let t = pp(fs.readFileSync(abs, 'utf8'), context()); if (/\.ux\.tpl$/.test(f)) {t=shakeUx(t); const rows=require('./tools/layout').describe(t);t=t.replace('const PAGE_LAYOUT = []','const PAGE_LAYOUT = '+JSON.stringify(rows));} fs.writeFileSync(path.join(SRC, r.replace('manifest.tpl.json', 'manifest.json').replace(/\.ux\.tpl$/, '.ux')), t);
+    if (/\.ux\.tpl$/.test(f) && fs.existsSync(path.join(TPL, rel, f.replace(/\.ux\.tpl$/, '.m3.tpl')))) continue;
+    if (/\.(ux|js|json|css|tpl)$/.test(f)) {
+      let raw = fs.readFileSync(abs, 'utf8');
+      if (/\.m3\.tpl$/.test(f)) {
+        try { raw = require('./tools/compose').compileM3(raw); }
+        catch (e) { throw new Error(r.replace(/\\/g, '/') + ': ' + e.message); }
+      }
+      let t = pp(raw, context());
+      if (/\.ux\.tpl$|\.m3\.tpl$/.test(f)) { t=shakeUx(t); const rows=require('./tools/layout').describe(t); t=t.replace('const PAGE_LAYOUT = []','const PAGE_LAYOUT = '+JSON.stringify(rows)); }
+      fs.writeFileSync(path.join(SRC, r.replace('manifest.tpl.json', 'manifest.json').replace(/\.ux\.tpl$/, '.ux').replace(/\.m3\.tpl$/, '.ux')), t);
       for (const m of t.matchAll(/\/common\/img\/([\w]+)\.png/g)) used.add(m[1]); }
     else fs.copyFileSync(abs, path.join(SRC, r));
   }
