@@ -6,7 +6,7 @@
   // animated fraction (a tween ignores the carried velocity); the first value after showing snaps; equal targets
   // are ignored (DisplayState.equals). snap=true for (re)entry.
   updateRange(snap){
-    const to=this.stepValue/10,now=Date.now()
+    const to=this.stepValue/(this.stepMax||10),now=Date.now()
     this.lvIndSrc=this.stepEnabled?LV.ind.src:LV.indDis.src;this.lvTrkSrc=this.stepEnabled?LV.trk.src:LV.trkDis.src
     if(snap||lvTo<0){this.stopLevel();lvFrom=lvTo=to;lvT0=now-LV_MS;this.paintLevel(to);return}
     if(to===lvTo){this.paintLevel(this.levelAt(now));return}
@@ -31,13 +31,15 @@
     this.lvDotInd=dot(fill,LV.start);this.lvDotTrk=dot(rest,end)
   },
   rangePress(id){
-    if(!this.stepEnabled||(id==='plus'?this.stepValue>=10:this.stepValue<=0))return
+    if(!this.stepEnabled||(id==='plus'?this.stepValue>=(this.stepMax||10):this.stepValue<=0))return
     this.stepRepeat=false;this.stepReleased='';this.press(id);this.hold(id,()=>{this.stepRepeat=true;id==='plus'?this.stepUp():this.stepDown()},60)
   },
   rangeRelease(id){if(this.release(id))this.stepReleased=id},
   stepClick(id){if(this.stepReleased!==id)return;this.stepReleased='';if(this.stepRepeat){this.stepRepeat=false;return}id==='plus'?this.stepUp():this.stepDown()},
-  stepUp(){if(this.stepEnabled&&this.stepValue<10){this.stepValue++;this.updateRange();this.vib()}},
-  stepDown(){if(this.stepEnabled&&this.stepValue>0){this.stepValue--;this.updateRange();this.vib()}},
+  // rangeChanged(v) hook (optional, e.g. volume-screen): when the page defines it, it owns the level display.
+  stepUp(){if(this.stepEnabled&&this.stepValue<(this.stepMax||10)){this.stepValue++;this.stepChanged();this.vib()}},
+  stepDown(){if(this.stepEnabled&&this.stepValue>0){this.stepValue--;this.stepChanged();this.vib()}},
+  stepChanged(){if(this.rangeChanged)this.rangeChanged(this.stepValue);else this.updateRange()},
   toggleStepEnabled(){this.cancelPress();this.stepReleased='';this.stepRepeat=false;this.stepEnabled=!this.stepEnabled;this.updateRange()},
   // StepperButton: shape CornerFull -> shapes.small on fastSpatialSpec().faster(200f) (stiffness 1400*3^2=12600), back
   // on slowSpatialSpec (260), both critically damped; the ripple is a flat Primary 10% layer (no spread from the finger).

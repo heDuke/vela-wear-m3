@@ -22,7 +22,7 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
  configurations++;
  const media=path.join(dest,'generated',device+'-'+animation+'-media');
  independent.generate({input:path.join(dest,'package/examples/media/template'),output:media,device,animation});
- for(const pg of ['index','player','podcast','audio']){const ux=fs.readFileSync(path.join(media,'pages',pg,pg+'.ux'),'utf8');assert(!/#component|#include|#set|@\{|\$\[|\$\(/.test(ux),'media '+pg+' unexpanded');}
+ for(const pg of ['index','player','podcast','audio','volume','volumelabel']){const ux=fs.readFileSync(path.join(media,'pages',pg,pg+'.ux'),'utf8');assert(!/#component|#include|#set|@\{|\$\[|\$\(/.test(ux),'media '+pg+' unexpanded');}
  const player=fs.readFileSync(path.join(media,'pages/player/player.ux'),'utf8');
  assert(player.includes('onclick="mdPlayTap"')&&player.includes('onclick="mdNextTap"')&&player.includes('<marquee id="mdMarquee"'));
  assert(fs.readFileSync(path.join(media,'pages/podcast/podcast.ux'),'utf8').includes('md_fwd30_24.png'));
@@ -34,6 +34,15 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
  assert(!player.includes('md_vol_up_24'),'media-settings must copy only the icons of the chosen variant');
  assert(/\.md-pdis \{background-color:rgba\(246,237,255,0\.16\)/.test(player),'disabled container = onSurface 16 %');
  for(const img of fs.readFileSync(path.join(media,'pages/player/player.ux'),'utf8').match(/\/common\/img\/md_[A-Za-z0-9_]+\.png/g))assert(fs.existsSync(path.join(media,img)),img);
+ // P3 VolumeScreen: Stepper keys with VolumeUp/Down (primary), rangeChanged hook, level arc on round / bar elsewhere,
+ // DeviceButton (no icon on bands) or the "音量" label, @system.volume binding
+ const vol=fs.readFileSync(path.join(media,'pages/volume/volume.ux'),'utf8'),voll=fs.readFileSync(path.join(media,'pages/volumelabel/volumelabel.ux'),'utf8');
+ assert(vol.includes("import vsVolume from '@system.volume'")&&vol.includes('rangeChanged(v){')&&vol.includes('this.rangeChanged(this.stepValue)'),'volume-screen binding + hook');
+ for(const n of ['md_vs_up_24','md_vs_up_24d','md_vs_down_24','md_vs_down_24d'])assert(vol.includes('/common/img/'+n+'.png')&&fs.existsSync(path.join(media,'common/img',n+'.png')),n);
+ assert(device==='round'?vol.includes('class="md-lvi"'):vol.includes('class="md-bar"')&&!vol.includes('class="md-lvi"'),'volume-screen level: arc on round, bar elsewhere');
+ assert(vol.includes('onclick="volDeviceTap"')&&vol.includes('class="vs-dic"')===!device.startsWith('band'),'DeviceButton icon only on watches');
+ assert(voll.includes('class="vs-lab"')&&!voll.includes('vs-dev'),'label variant');
+ assert(/\.vs-dn \{[^}]*font-weight:bold;[^}]*lines:2;text-overflow:ellipsis;/.test(vol),'DeviceButton name: bold, 2 lines + ellipsis');
  assert(!fs.readdirSync(path.join(output,'common/img')).some(f=>f.startsWith('md_')),'media assets must not leak into pages that do not use them');
  if(configurations===1){const G=require(path.join(dest,'package/tools/media-geom.js')),r=G.ring(),b=G.button();
   assert.deepEqual(G.circleNames(20),['md_c0_I','md_c0_P2','md_c0_Z','md_c1_I','md_c1_P2','md_c9_I']);assert.equal(G.lobeState(0,0,40),'md_r0_Z');

@@ -218,5 +218,15 @@
     "styles": [
       "media.css"
     ]
+  },
+  "volume-screen": {
+    "template": "volume-screen.tpl",
+    "defaults": {
+      "content": "'device'"
+    },
+    "styles": [
+      "media.css",
+      "range.css"
+    ]
   }
 }

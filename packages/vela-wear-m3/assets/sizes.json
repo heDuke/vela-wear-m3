@@ -146,7 +146,13 @@
   "md_vol_mute_24d.png": 285,
   "md_vol_up_24.png": 451,
   "md_vol_up_24d.png": 443,
-  "_total_bytes": 67839
+  "md_dev_hp_24.png": 462,
+  "md_dev_watch_24.png": 551,
+  "md_vs_down_24.png": 336,
+  "md_vs_down_24d.png": 321,
+  "md_vs_up_24.png": 456,
+  "md_vs_up_24d.png": 443,
+  "_total_bytes": 70408
  },
  "pro": {
   "add_onPrimary_20.png": 242,
@@ -290,7 +296,13 @@
   "md_vol_mute_24d.png": 285,
   "md_vol_up_24.png": 451,
   "md_vol_up_24d.png": 443,
-  "_total_bytes": 64132
+  "md_dev_hp_24.png": 462,
+  "md_dev_watch_24.png": 551,
+  "md_vs_down_24.png": 336,
+  "md_vs_down_24d.png": 321,
+  "md_vs_up_24.png": 456,
+  "md_vs_up_24d.png": 443,
+  "_total_bytes": 66701
  },
  "band10": {
   "add_onPrimary_20.png": 229,
@@ -434,7 +446,13 @@
   "md_vol_mute_24d.png": 274,
   "md_vol_up_24.png": 410,
   "md_vol_up_24d.png": 401,
-  "_total_bytes": 56345
+  "md_dev_hp_24.png": 438,
+  "md_dev_watch_24.png": 467,
+  "md_vs_down_24.png": 316,
+  "md_vs_down_24d.png": 312,
+  "md_vs_up_24.png": 418,
+  "md_vs_up_24d.png": 401,
+  "_total_bytes": 58697
  },
  "band9": {
   "add_onPrimary_20.png": 229,
@@ -578,6 +596,12 @@
   "md_vol_mute_24d.png": 274,
   "md_vol_up_24.png": 410,
   "md_vol_up_24d.png": 401,
-  "_total_bytes": 56322
+  "md_dev_hp_24.png": 438,
+  "md_dev_watch_24.png": 467,
+  "md_vs_down_24.png": 316,
+  "md_vs_down_24d.png": 312,
+  "md_vs_up_24.png": 418,
+  "md_vs_up_24d.png": 401,
+  "_total_bytes": 58674
  }
 }

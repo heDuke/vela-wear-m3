@@ -81,6 +81,11 @@ function outline(q,w){const n=q.length,L=[],Rt=[];for(let i=0;i<n;i++){const a=q
    for(const [n,stem] of [['volume_up','up'],['volume_down','down'],['volume_mute','mute']]){
     await shot(bq,bq,`<path d="${sd}" fill="${C[S.badgeColor]}"/><g transform="translate(${bo} ${bo})">${svgIcon(n,S.badgeIcon,C[S.badgeIconColor],bi/S.badgeIcon)}</g>`,path.join(dir,'md_badge_'+stem+'.png'));
     await shot(bq,bq,`<path d="${sd}" fill="${SDC}"/><g transform="translate(${bo} ${bo})">${svgIcon(n,S.badgeIcon,SD,bi/S.badgeIcon)}</g>`,path.join(dir,'md_badge_'+stem+'d.png'))}}
+  // 2d) VolumeScreen (P3): Stepper keys VolumeUp/VolumeDown 24dp in primary (+ disabled onSurface 38 %); DeviceButton
+  //     headphones / watch 24dp in onPrimary on the primary container
+  {const q=px(24);for(const [n,stem] of [['volume_up','md_vs_up'],['volume_down','md_vs_down']]){
+    await shot(q,q,svgIcon(n,24,C.primary,q/24),path.join(dir,stem+'_24.png'));await shot(q,q,svgIcon(n,24,DIS_F,q/24),path.join(dir,stem+'_24d.png'))}
+   for(const [n,stem] of [['headphones','md_dev_hp'],['watch','md_dev_watch']])await shot(q,q,svgIcon(n,24,C.onPrimary,q/24),path.join(dir,stem+'_24.png'))}
   // 3) icons: 32dp play/pause/next/prev, 24dp seek; onPrimary + disabled (onSurface 38%)
   for(const [n,sz] of [['play',32],['pause',32],['next',32],['prev',32],['replay_5',24],['replay_10',24],['replay_30',24],['forward_5',24],['forward_10',24],['forward_30',24]]){
    const stem=n.startsWith('replay_')?'md_back'+n.slice(7):n.startsWith('forward_')?'md_fwd'+n.slice(8):'md_'+n,q=px(sz);

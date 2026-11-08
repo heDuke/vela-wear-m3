@@ -10,6 +10,12 @@
 <list-item class="li-56" type="audio">
 <!-- #component button {"id":"'audio'","label":"'测试音'","variant":"'bf'","ink":"'c-onPri'","icon":"icon2","onClick":"openAudio"} -->
 </list-item>
+<list-item class="li-56" type="volume">
+<!-- #component button {"id":"'volume'","label":"'音量'","variant":"'bf'","ink":"'c-onPri'","icon":"icon2","onClick":"openVolume"} -->
+</list-item>
+<list-item class="li-56" type="volumelabel">
+<!-- #component button {"id":"'volumelabel'","label":"'音量（标签）'","variant":"'bf'","ink":"'c-onPri'","icon":"icon2","onClick":"openVolumeLabel"} -->
+</list-item>
 </list>
 <!-- #component time-text {} -->
 </div>
@@ -30,6 +36,8 @@ onInit(){this.setLayout([])},
 openPlayer(){router.push({uri:'pages/player'})},
 openPodcast(){router.push({uri:'pages/podcast'})},
 openAudio(){router.push({uri:'pages/audio'})},
+openVolume(){router.push({uri:'pages/volume'})},
+openVolumeLabel(){router.push({uri:'pages/volumelabel'})},
 // #include @wear/base.js
 }
 </script>
