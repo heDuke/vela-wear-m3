@@ -9,13 +9,18 @@
 mdSetPlaying(b){mdS.playing=!!b;this.mdPaint()},
 mdSetLoading(b){mdS.loading=!!b;this.mdLoading=mdS.loading;this.mdPaint()},
 mdSetEnabled(o){if(!o)return;['play','prev','next'].forEach(k=>{if(k in o)mdS[k+'On']=!!o[k]});if(mdS.press&&!mdS[mdS.press+'On'])this.mdRelease(true);this.mdPaint()},
-mdSetProgress(f){f=+f;if(!(f>=0))f=0;if(f>1)f=1;mdS.f=f;const pct=Math.round(f*100);if(this.mdPct!==pct)this.mdPct=pct
+mdSetProgress(f){f=+f;if(!(f>=0))f=0;if(f>1)f=1;mdS.f=f
+ // [perf] mdPct only feeds the circle ring's <progress>; the wavy ring repaints only when its quantised step changes
+ if(MDC.ring==='circle'){const pct=Math.round(f*100);if(this.mdPct!==pct)this.mdPct=pct}
  if(MDC.ring!=='wavy')return;const q=Math.floor(f*MDC.steps+1e-6);if(q===mdS.q)return;mdS.q=q;this.mdRingPaint()},
 // playing: wavy ring around the scallop; paused: circle ring around the circle (RotatingWavyProgressIndicator morph
 // target circlePolygon), switched instantly like the official cached Morph.
 mdRingPaint(){if(!MDC.cl)return;const q=mdS.q,c=mdS.circ,ring=[],cr=[];let c9=''
  for(let k=0;k<10;k++){if(c){ring.push('');const n=mdCLobe(k,q,MDC.steps);if(n==='9I'){cr.push('');c9=MDC.cl['9_I']}else cr.push(n)}else{ring.push(mdLobe(k,q,MDC.steps));cr.push('')}}
- const rt=c?MDC.ct:MDC.rt;if(this.mdRtSrc!==rt)this.mdRtSrc=rt;this.mdRing=ring;this.mdCRing=cr;if(this.mdC9I!==c9)this.mdC9I=c9},
+ const rt=c?MDC.ct:MDC.rt;if(this.mdRtSrc!==rt)this.mdRtSrc=rt
+ // [perf] replace an overlay array only when one of its 10 images changed (a new array re-renders every lobe)
+ const same=(a,b)=>{if(!a||a.length!==b.length)return false;for(let i=0;i<b.length;i++)if(a[i]!==b[i])return false;return true}
+ if(!same(this.mdRing,ring))this.mdRing=ring;if(!same(this.mdCRing,cr))this.mdCRing=cr;if(this.mdC9I!==c9)this.mdC9I=c9},
 // visual state: shape (scallop while playing, circle while paused, pill while pressed), ring, icon and side colours
 mdPaint(){
  this.mdPaintSet()
@@ -39,15 +44,15 @@ mdPaintSides(){if(!MDC.l)return;const lc=mdS.prevOn?'md-son':'md-sdis',rc=mdS.ne
 // .md-tin = fastSpatial (k 5600) / .md-tout = slowSpatial (k 260) fitted cubic-beziers. Radius follows min(w,h)/2.
 mdWidths(id,grow){if(!MDC.w)return;const w=MDC.w[id||''],r=v=>Math.floor(Math.min(v,MDC.ph)/2)
  const side=(slot,cur)=>{const old=parseInt(cur.width),nr=w[slot]<old&&!grow?r(w[slot]):Math.min(r(w[slot]),r(old));return {width:w[slot]+'px',borderRadius:nr+'px'}}
- this.mdLSt=side(0,this.mdLSt);this.mdRSt=side(2,this.mdRSt);if(!MDC.vertical)this.mdMSt={width:w[1]+'px'}},
+ this.mdPut('mdLSt',side(0,this.mdLSt));this.mdPut('mdRSt',side(2,this.mdRSt));if(!MDC.vertical)this.mdPut('mdMSt',{width:w[1]+'px'})},
 mdPress(id){
  if(mdRelTimer){clearTimeout(mdRelTimer);mdRelTimer=null}
  mdS.press=id;mdS.rel=false;this.mdTr='md-tin';this.mdWidths(id,true)
- if(MDC.pw)this.mdPillSt={width:(id==='play'?MDC.pw.play:MDC.vertical?MDC.pw['']:MDC.pw.side)+'px'}
+ if(MDC.pw)this.mdPut('mdPillSt',{width:(id==='play'?MDC.pw.play:MDC.vertical?MDC.pw['']:MDC.pw.side)+'px'})
  this.mdPaint()},
 mdRelease(now){
  if(!mdS.press)return;const was=mdS.press;mdS.press='';mdS.rel=!MDC.vertical||was==='play';this.mdTr='md-tout';this.mdWidths('',false)
- if(MDC.pw)this.mdPillSt={width:MDC.pw['']+'px'}
+ if(MDC.pw)this.mdPut('mdPillSt',{width:MDC.pw['']+'px'})
  const done=()=>{mdRelTimer=null;mdS.rel=false;if(MDC.w)this.mdWidths('',false);this.mdPaint()}
  if(mdRelTimer)clearTimeout(mdRelTimer);if(now){done();return}mdRelTimer=setTimeout(done,450);this.mdPaint()},
 mdPlayDown(){if(mdS.playOn&&!mdS.loading)this.mdPress('play')},
@@ -103,19 +108,21 @@ mdLvAt(t,shown){return mdLv.from+(mdLv.to-mdLv.from)*mdLvEase(Math.max(t-mdLv.t0
 mdLvStop(){if(mdLvTween)clearInterval(mdLvTween);mdLvTween=null},
 // arc: ScrollIndicator.kt drawCurvedIndicator (same as the Stepper level); bar [adapt]: fill from the bottom, track
 // above, gap 3dp at the join, round caps; a piece no longer than the gap is a dot (size and alpha ~ length / gap).
+// [perf] mdPut: write a style object only when its content changed (no-op writes still trigger a re-render).
+mdPut(k,v){if(JSON.stringify(this[k])===JSON.stringify(v))return;this[k]=v},
 mdLvPaint(f){const L=MDC.lv
  if(L.arc){const fill=L.sweep*f,rest=L.sweep-fill,end=L.start+fill,rot=a=>JSON.stringify({rotate:(a-180).toFixed(2)+'deg'})
-  this.mdLvI=fill>L.gap?{opacity:1,transform:rot(end-L.gap/2)}:{opacity:0,transform:rot(L.start)}
-  this.mdLvT=rest>L.gap?{opacity:1,transform:rot(end+L.gap/2)}:{opacity:0,transform:rot(L.start+L.sweep)}
+  this.mdPut('mdLvI',fill>L.gap?{opacity:1,transform:rot(end-L.gap/2)}:{opacity:0,transform:rot(L.start)})
+  this.mdPut('mdLvT',rest>L.gap?{opacity:1,transform:rot(end+L.gap/2)}:{opacity:0,transform:rot(L.start+L.sweep)})
   const dot=(sweep,from)=>{const q=sweep/L.gap,r=L.o*q;if(sweep>L.gap||r<.25)return {opacity:0}
    const a=(from+sweep/2)*Math.PI/180,x=L.cx+L.r*Math.cos(a),y=L.cy+L.r*Math.sin(a),d=Math.max(1,Math.round(2*r))
    return {opacity:Math.round(q*100)/100,left:Math.round(x-d/2)+'px',top:Math.round(y-d/2)+'px',width:d+'px',height:d+'px',borderRadius:d/2+'px'}}
-  this.mdLvDI=dot(fill,L.start);this.mdLvDT=dot(rest,end);return}
+  this.mdPut('mdLvDI',dot(fill,L.start));this.mdPut('mdLvDT',dot(rest,end));return}
  const w=L.w,yb=L.ht-w/2,s=L.lc*f,r=L.lc-s
  const piece=(u0,u1)=>({opacity:1,left:'0px',top:Math.round(yb-u1-w/2)+'px',width:w+'px',height:Math.round(u1-u0+w)+'px',borderRadius:w/2+'px'})
  const dot=(len,u)=>{const q=len/L.gap,d=Math.round(w*q);if(d<1)return {opacity:0}
   return {opacity:Math.round(q*100)/100,left:Math.round((w-d)/2)+'px',top:Math.round(yb-u-d/2)+'px',width:d+'px',height:d+'px',borderRadius:d/2+'px'}}
- this.mdBarI=s>L.gap?piece(0,s-L.gap/2):dot(s,s/2);this.mdBarT=r>L.gap?piece(s+L.gap/2,L.lc):dot(r,s+r/2)},
+ this.mdPut('mdBarI',s>L.gap?piece(0,s-L.gap/2):dot(s,s/2));this.mdPut('mdBarT',r>L.gap?piece(s+L.gap/2,L.lc):dot(r,s+r/2))},
 // ---- whole screen (PlayerScreen states) -----------------------------------------------------------------------------
 // playing / paused: media ready, keys and settings enabled; loading: placeholders + loading ring; none: "未在播放"
 // (connected, no media); disconnected: golden notconnected = "未在播放", every key disabled, output off, no badge.

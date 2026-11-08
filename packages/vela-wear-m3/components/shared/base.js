@@ -104,11 +104,13 @@
     // solution on the wall clock instead (stiff springs such as 12600 are not stable in the 120Hz Euler loop).
     const m=motions[id]||(motions[id]={x:initial,v:0,target:initial});const pair=!stiffness&&this.pressSpring&&this.pressSpring(id)
     if(pair){const now=Date.now();if(m.ex){const c=springAt(m,now);m.x=c.x;m.v=c.v}m.x0=m.x;m.v0=m.v;m.t0=now;m.ex=pair[target?0:1]}else m.ex=0
-    m.target=target;m.k=stiffness
+    m.target=target;m.k=stiffness;m.rest=false
     const step=only=>{
       let moving=false
       ;(only?[only]:Object.keys(motions)).forEach(key=>{
         const q=motions[key]
+        // [perf] a settled motion already painted its final frame: skip it instead of re-styling it every tick
+        if(q.rest&&!only)return
         if(q.ex){const c=springAt(q,Date.now(),1);q.x=c.x;q.v=c.v;if(c.done){q.x=q.target;q.v=0}else moving=true}
         else{
         const dt=1/120,stiff=q.k||(q.target?1400:260)
@@ -119,6 +121,7 @@
         const previous=this.feedback[key]||{},next=st||{opacity:Math.round((1-.08*value)*100)/100}
         if(Object.keys(next).some(name=>previous[name]!==next[name]))this.feedback[key]=next
         if(this.onMotionFrame)this.onMotionFrame(key,value)
+        if(q.x===q.target&&q.v===0)q.rest=true
       })
       if(!only&&!moving&&motionTimer){clearInterval(motionTimer);motionTimer=null}
       return moving

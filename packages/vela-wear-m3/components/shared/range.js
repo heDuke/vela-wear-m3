@@ -21,14 +21,16 @@
   paintLevel(f){
     this.levelFill=f
     const fill=LV.sweep*f,rest=LV.sweep-fill,end=LV.start+fill,rot=a=>JSON.stringify({rotate:(a-180).toFixed(2)+'deg'})
-    this.lvInd=fill>LV.gap?{opacity:1,transform:rot(end-LV.gap/2)}:{opacity:0,transform:rot(LV.start)}
-    this.lvTrk=rest>LV.gap?{opacity:1,transform:rot(end+LV.gap/2)}:{opacity:0,transform:rot(LV.start+LV.sweep)}
+    // [perf] write each style only when it changed (no-op object writes still re-render)
+    const put=(k,v)=>{if(JSON.stringify(this[k])!==JSON.stringify(v))this[k]=v}
+    put('lvInd',fill>LV.gap?{opacity:1,transform:rot(end-LV.gap/2)}:{opacity:0,transform:rot(LV.start)})
+    put('lvTrk',rest>LV.gap?{opacity:1,transform:rot(end+LV.gap/2)}:{opacity:0,transform:rot(LV.start+LV.sweep)})
     const dot=(sweep,from)=>{
       const q=sweep/LV.gap,r=LV.o*q;if(sweep>LV.gap||r<.25)return {opacity:0}
       const a=(from+sweep/2)*Math.PI/180,x=LV.cx+LV.r*Math.cos(a),y=LV.cy+LV.r*Math.sin(a),d=Math.max(1,Math.round(2*r))
       return {opacity:Math.round(q*100)/100,left:Math.round(x-d/2)+'px',top:Math.round(y-d/2)+'px',width:d+'px',height:d+'px',borderRadius:d/2+'px'}
     }
-    this.lvDotInd=dot(fill,LV.start);this.lvDotTrk=dot(rest,end)
+    put('lvDotInd',dot(fill,LV.start));put('lvDotTrk',dot(rest,end))
   },
   rangePress(id){
     if(!this.stepEnabled||(id==='plus'?this.stepValue>=(this.stepMax||10):this.stepValue<=0))return
