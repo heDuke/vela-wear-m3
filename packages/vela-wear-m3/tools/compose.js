@@ -516,34 +516,38 @@ function emitCallEvent(lambda, itemParam, setters, listName) {
   }
   if (lambda.kind === 'assign') {
     const left = textOf(lambda.left, itemParam);
-    const right = lambda.right.type === 'it' ? '__it' : textOf(lambda.right, itemParam);
+    const r = lambda.right;
+    if (!r) err(lambda, 'bad assignment');
+    if (r.type === 'it') err(r, 'it is not provided by onClick');
     const name = '_set' + setters.length;
-    setters.push({ name, left, right, listName });
-    return right === '__it' ? name : name;
+    const rec = { name, left, listName };
+    if (r.type === 'str') { rec.rightKind = 'str'; rec.rightValue = r.value; }
+    else if (r.type === 'num') { rec.rightKind = 'num'; rec.rightValue = r.value; }
+    else if (r.type === 'bool') { rec.rightKind = 'bool'; rec.rightValue = r.value; }
+    else if (r.type === 'ref' || r.type === 'member') { rec.rightKind = 'expr'; rec.rightValue = textOf(r, itemParam); }
+    else err(r, 'assignment right-hand side must be a literal or field');
+    if (rec.rightKind === 'expr' && rec.rightValue.startsWith('$item')) err(r, 'assignment cannot read $item in generated JS');
+    setters.push(rec);
+    return left.startsWith('$item.') ? name + '($idx)' : name;
   }
   err(lambda, 'bad lambda');
 }
 
-function setterRhs(lit) {
-  if (lit === 'true' || lit === 'false' || /^-?\d+(\.\d+)?$/.test(lit)) return lit;
-  if (lit.startsWith('$item')) return lit;
-  if (/^[A-Za-z_]/.test(lit)) return 'this.' + lit;
-  return lit;
+function setterRhs(s) {
+  if (s.rightKind === 'str') return JSON.stringify(s.rightValue);
+  if (s.rightKind === 'num') return String(s.rightValue);
+  if (s.rightKind === 'bool') return s.rightValue ? 'true' : 'false';
+  const v = s.rightValue;
+  if (/^[A-Za-z_][\w.]*$/.test(v)) return 'this.' + v;
+  return v;
 }
 
 function setterJs(s) {
   const list = s.listName || 'items';
-  if (s.right === '__it') {
-    if (s.left.startsWith('$item.')) {
-      const field = s.left.slice(6);
-      return s.name + '(v){const i=arguments.length>1?arguments[1]:0;const a=this.' + list + ';a[i].' + field + '=v;this.' + list + '=a.slice();},';
-    }
-    return s.name + '(v){this.' + s.left + '=v;},';
-  }
-  const rhs = setterRhs(s.right);
+  const rhs = setterRhs(s);
   if (s.left.startsWith('$item.')) {
     const field = s.left.slice(6);
-    return s.name + '(){const a=this.' + list + ';a[$idx].' + field + '=' + rhs + ';this.' + list + '=a.slice();},';
+    return s.name + '(i){const a=this.' + list + ';a[i].' + field + '=' + rhs + ';this.' + list + '=a.slice();},';
   }
   return s.name + '(){this.' + s.left + '=' + rhs + ';},';
 }
@@ -611,7 +615,9 @@ function emitItem(node, ctx, itemsNode) {
   ctx.listName = list || ctx.listName;
   const cls = (node.args && node.args.class) ? textOf(node.args.class) : inferClass(node.body);
   const type = (node.args && node.args.type) ? textOf(node.args.type) : ('r' + (ctx.seq++));
-  const swipe = ctx.listSwipe ? ' onswipe="onPageSwipe"' : '';
+  const names = node.body.filter(x => x.type === 'call').map(x => x.name);
+  const nativeSlider = names.includes('NativeSlider');
+  const swipe = nativeSlider ? ' ontouchstart="controlStart" ontouchend="controlEnd"' : (ctx.listSwipe ? ' onswipe="onPageSwipe"' : '');
   const forAttr = list ? ' for="{{' + list + '}}" tid="id"' : '';
   let inner = node.body.map(ch => {
     if (ch.type === 'if') return emitWidget(ch, ctx);
@@ -619,7 +625,7 @@ function emitItem(node, ctx, itemsNode) {
   }).join('');
   ctx.itemParam = prevItem;
   ctx.listName = prevList;
-  if (list) {
+  if (list === 'items') {
     inner = '\n<!-- #component transforming-list-item {"style": "$item.st", "content": ' + JSON.stringify('\n' + inner + '\n') + '} -->\n';
   }
   return '<list-item type="' + type + '" class="' + cls + '"' + swipe + forAttr + '>\n' + inner + '\n</list-item>\n';
@@ -773,7 +779,7 @@ function emitCardChild(ch, ctx) {
   }
   if (ch.type === 'call' && ch.name === 'Text') {
     const ty = ch.args.typography ? textOf(ch.args.typography) : 'body';
-    const map = { title: 't-titleS c-onS one', titleSmall: 't-titleS c-onS one', body: 't-bodyM c-onSV body', bodyMedium: 't-bodyM c-onSV body', bodySmall: 't-bodyS c-onSV', label: 't-labelS c-onSV one grow ml', time: 't-bodyS c-onSV', headline: 't-titleS c-onS one mt' };
+    const map = { title: 't-titleS c-onS one grow', titleSmall: 't-titleS c-onS one grow', body: 't-bodyM c-onSV body', bodyMedium: 't-bodyM c-onSV body', bodySmall: 't-bodyS c-onSV', label: 't-labelS c-onSV one grow ml', time: 't-bodyS c-onSV', headline: 't-titleS c-onS one mt' };
     const cls = map[ty] || ty;
     const extra = ch.args.class ? ' ' + textOf(ch.args.class) : '';
     return '<text class="' + cls + extra + '">' + interpText(ch.pos[0] || ch.args.text, ctx.itemParam) + '</text>';
@@ -827,7 +833,7 @@ function emitPage(ast) {
   let html = '';
   if (sc.chrome && sc.list.length) {
     const padb = sc.hasEdge ? 'li-ebpad' : 'li-padb';
-    const listId = fns.has('ProgressIndicator') || fns.has('CircularProgressIndicator') ? ' id="motionList"' : '';
+    const listId = [...fns].some(n => n === 'ProgressIndicator' || n === 'CircularProgressIndicator' || n === 'LinearProgressIndicator' || n === 'SegmentedCircularProgressIndicator' || n === 'ArcProgressIndicator') ? ' id="motionList"' : '';
     html += '<div class="page {{exiting ? \'pg-exit\' : \'pg-enter\'}}" onswipe="onPageSwipe">\n';
     html += '<list' + listId + ' class="lst" onscroll="onScroll" onscrolltop="onTop" onscrollbottom="onBottom" onswipe="onPageSwipe">\n';
     html += '<list-item type="padt" class="li-padt"></list-item>\n';

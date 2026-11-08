@@ -116,4 +116,100 @@ fun N() {
 </template>
 <script>export default { private: {} }</script>`);
 assert(nl.includes('a\nb'), nl);
+assert(!ux.includes('transforming-list-item'), 'non-items lists must not wrap TLC');
+
+const tlc = compileM3(`<template>
+fun L() {
+  ScreenScaffold {
+    TransformingLazyColumn {
+      items(items) { item ->
+        Button(onClick = { tap(item.label) }, label = { Text(item.label) })
+      }
+    }
+  }
+}
+</template>
+<script>export default { private: { items: [] } }</script>`);
+assert(tlc.includes('transforming-list-item'), tlc);
+assert(tlc.includes('for="{{items}}"'), tlc);
+
+const radios = compileM3(`<template>
+fun T() {
+  ScreenScaffold {
+    TransformingLazyColumn {
+      items(radios) { item ->
+        RadioButton(label = { Text(item.label) })
+      }
+      item { NativeSlider() }
+    }
+  }
+}
+</template>
+<script>export default { private: {} }</script>`);
+assert(!radios.includes('transforming-list-item'), radios);
+assert(radios.includes('controlStart'), radios);
+assert(!/type="[^"]*" class="li-48" onswipe/.test(radios), radios);
+
+const progress = compileM3(`<template>
+fun M() {
+  ScreenScaffold {
+    TransformingLazyColumn {
+      LinearProgressIndicator()
+    }
+  }
+}
+</template>
+<script>export default { private: {} }</script>`);
+assert(progress.includes('id="motionList"'), progress);
+
+const card = compileM3(`<template>
+fun C() {
+  ScreenScaffold {
+    TransformingLazyColumn {
+      item {
+        TitleCard {
+          Row {
+            Text("会议", typography = "titleSmall")
+            Text("14:00", typography = "time")
+          }
+        }
+      }
+    }
+  }
+}
+</template>
+<script>export default { private: {} }</script>`);
+assert(card.includes('t-titleS c-onS one grow'), card);
+
+const assign = compileM3(`<template>
+fun A() {
+  ScreenScaffold {
+    TransformingLazyColumn {
+      item { Button(onClick = { flag = true }, label = { Text("x") }) }
+      item { Button(onClick = { msg = "hello" }, label = { Text("y") }) }
+      items(rows) { item ->
+        Button(onClick = { item.done = true }, label = { Text(item.label) })
+      }
+    }
+  }
+}
+</template>
+<script>export default { private: { flag: false, msg: '', rows: [] } }</script>`);
+assert(assign.includes('this.flag=true'), assign);
+assert(assign.includes('this.msg="hello"'), assign);
+assert(!assign.includes('this.hello'), assign);
+assert(assign.includes('_set2($idx)'), assign);
+assert(assign.includes('(i){const a=this.rows;a[i].done=true'), assign);
+assert(!assign.includes('a[$idx]'), assign);
+assert.throws(() => compileM3(`<template>
+fun X() {
+  ScreenScaffold {
+    TransformingLazyColumn {
+      item { Button(onClick = { item.checked = it }, label = { Text("a") }) }
+    }
+  }
+}
+</template>
+<script>export default { private: {} }</script>`), /it is not provided by onClick/);
+
 console.log('compose-test ok', ux.length, media.length, media2.length, home.length);

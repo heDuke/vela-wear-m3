@@ -490,8 +490,10 @@ style 默认 `$item.st`；content 必须提供可信标记字符串。基础状�
 Compose：`ProgressIndicator()`、`CircularProgressIndicator()`、`LinearProgressIndicator()`、`SegmentedCircularProgressIndicator()`、`ArcProgressIndicator()`。当前都展开同一进度演示模板；`kind` 由控制器 `nextKind` 切换。
 
 ```
-item { ProgressIndicator() }
+CircularProgressIndicator()
 ```
+
+这些函数已自带 `list-item`，作为 `TransformingLazyColumn` 的直接子节点，不要再包 `item { }`。
 
 底层标记：
 

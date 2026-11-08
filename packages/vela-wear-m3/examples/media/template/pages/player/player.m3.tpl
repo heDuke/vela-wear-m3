@@ -24,6 +24,12 @@ export default {
   mdOnPrev(){if(pos>3){pos=0;this.mdSetProgress(0);this.keys()}else this.load(track-1,true)},
   mdOnNext(){this.load(track+1,true)},
   mdOnOutput(){router.push({uri:'pages/volume'})},
-  demoNext(){demo=(demo+1)%4;if(demo===1)this.mdSetInfo('none');else if(demo===2)this.mdSetState('disconnected');else if(demo===3)this.mdSetLoading(true);else{this.mdSetLoading(false);this.load(track,false)}}
+  mdOnMore(){watch=!watch;this.mdSetOutput(watch?'watch':'headphones')},
+  demoNext(){demo=(demo+1)%5
+    if(demo===1)this.load(2,true)
+    else if(demo===2){this.stopSim();this.mdSetState('none')}
+    else if(demo===3){this.mdSetState('disconnected')}
+    else if(demo===4){this.mdSetState('loading')}
+    else{playing=false;this.mdSetState('paused');this.load(0,false)}}
 }
 </script>
