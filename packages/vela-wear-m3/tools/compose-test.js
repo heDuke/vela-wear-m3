@@ -181,6 +181,37 @@ fun C() {
 <script>export default { private: {} }</script>`);
 assert(card.includes('t-titleS c-onS one grow'), card);
 
+const plainCard = compileM3(`<template>
+fun C() {
+  ScreenScaffold {
+    TransformingLazyColumn {
+      item {
+        Card { Text("日常", typography = "title") }
+      }
+    }
+  }
+}
+</template>
+<script>export default { private: {} }</script>`);
+assert(plainCard.includes('t-titleS c-onS one'), plainCard);
+assert(!plainCard.includes('one grow'), plainCard);
+
+const iconNote = compileM3(`<template>
+fun B() {
+  ScreenScaffold {
+    TransformingLazyColumn {
+      items(iconVariants) { item ->
+        IconButton(onClick = { tap(item.name) }) { Icon(item.icon) }
+        Note(item.name)
+      }
+    }
+  }
+}
+</template>
+<script>export default { private: { iconVariants: [] } }</script>`);
+assert(iconNote.includes('class="icon-note"'), iconNote);
+assert(iconNote.includes('class="icon-group"'), iconNote);
+
 const assign = compileM3(`<template>
 fun A() {
   ScreenScaffold {

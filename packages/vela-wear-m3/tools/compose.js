@@ -6,8 +6,6 @@ const fs = require('fs');
 const path = require('path');
 
 const HOOKS = ['onMotionFrame', 'pageShow', 'pageHide', 'pageDestroy', 'pressSpring', 'pressStyle', 'demoClose', 'overlayBack'];
-const RETURN_HOOKS = new Set(['pressSpring', 'pressStyle', 'overlayBack']);
-const BLOCK_CALLS = new Set(['ScreenScaffold', 'TransformingLazyColumn', 'item', 'items', 'if', 'Row', 'Card', 'OutlinedCard', 'TitleCard', 'AppCard', 'Button', 'FilledTonalButton', 'OutlinedButton', 'ChildButton', 'SwitchButton', 'CheckboxButton', 'RadioButton', 'CompactButton', 'FilledIconButton', 'IconButton', 'FilledTonalIconButton', 'OutlinedIconButton', 'AlertDialog', 'PlayerScreen']);
 const FORBIDDEN_ARGS = new Set(['modifier', 'colors', 'shape', 'border', 'contentPadding', 'interactionSource', 'transformation', 'remember']);
 const GEN_IF = new Set(['pill', 'round', 'rect', 'enhanced']);
 
@@ -110,146 +108,6 @@ function tokenize(src) {
   return t;
 }
 
-function parse(src) {
-  const tokens = tokenize(src);
-  let p = 0;
-  const peek = () => tokens[p];
-  const eat = (kind) => { const t = tokens[p]; if (t.kind !== kind) err(t, 'expected ' + kind + ' got ' + t.kind); p++; return t; };
-  const maybe = (kind) => { if (peek().kind === kind) { p++; return true; } return false; };
-
-  function expr() {
-    const t = peek();
-    if (t.kind === 'string') { p++; return { type: 'str', value: t.value, line: t.line }; }
-    if (t.kind === 'number') {
-      p++;
-      if (peek().kind === 'dotdot') { p++; const b = eat('number'); return { type: 'range', a: t.value, b: b.value, line: t.line }; }
-      return { type: 'num', value: t.value, line: t.line };
-    }
-    if (t.kind === 'bool') { p++; return { type: 'bool', value: t.value, line: t.line }; }
-    if (t.kind === 'null') { p++; return { type: 'null', line: t.line }; }
-    if (t.kind === 'it') { p++; return { type: 'it', line: t.line }; }
-    if (t.kind === 'id') {
-      p++;
-      let node = { type: 'ref', name: t.value, line: t.line };
-      while (peek().kind === 'dot') { p++; node = { type: 'member', obj: node, name: eat('id').value, line: t.line }; }
-      if (peek().kind === 'lp') {
-        const args = parseArgs();
-        let children = [];
-        if (peek().kind === 'lb') children = parseCallBlock(t.value);
-        return { type: 'call', name: t.value, args, children, line: t.line };
-      }
-      return node;
-    }
-    err(t, 'expected expression');
-  }
-
-  function parseArgs() {
-    eat('lp');
-    const args = {};
-    if (peek().kind !== 'rp') {
-      while (true) {
-        const n = eat('id');
-        if (FORBIDDEN_ARGS.has(n.value)) err(n, 'unsupported parameter ' + n.value);
-        eat('eq');
-        args[n.value] = peek().kind === 'lb' ? lambda() : expr();
-        if (!maybe('comma')) break;
-      }
-    }
-    eat('rp');
-    return args;
-  }
-
-  function lambda() {
-    const start = eat('lb');
-    if (peek().kind === 'rb') { p++; return { type: 'lambda', kind: 'empty', line: start.line }; }
-    // assignment: ref/member = expr
-    const save = p;
-    try {
-      const left = expr();
-      if (peek().kind === 'eq') {
-        p++;
-        const right = expr();
-        eat('rb');
-        return { type: 'lambda', kind: 'assign', left, right, line: start.line };
-      }
-      p = save;
-    } catch (e) { p = save; }
-    const call = expr();
-    eat('rb');
-    return { type: 'lambda', kind: 'call', body: call, line: start.line };
-  }
-
-  function parseCallBlock(name) {
-    eat('lb');
-    if (name === 'items') {
-      let param = 'item';
-      if (peek().kind === 'id' && tokens[p + 1] && tokens[p + 1].kind === 'arrow') { param = eat('id').value; eat('arrow'); }
-      const children = stmts();
-      eat('rb');
-      return { param, stmts: children };
-    }
-    if (name === 'if' || name === 'ScreenScaffold' || name === 'TransformingLazyColumn' || name === 'item') {
-      const children = stmts();
-      eat('rb');
-      return children;
-    }
-    const children = [];
-    while (peek().kind !== 'rb' && peek().kind !== 'eof') children.push(expr());
-    eat('rb');
-    return children;
-  }
-
-  function callLike() {
-    const n = eat('id');
-    if (n.value === 'if') {
-      eat('lp'); const cond = eat('id'); eat('rp');
-      eat('lb'); const body = stmts(); eat('rb');
-      return { type: 'if', cond: cond.value, body, line: n.line };
-    }
-    if (n.value === 'items') {
-      eat('lp'); const list = eat('id'); eat('rp');
-      const block = parseCallBlock('items');
-      return { type: 'items', list: list.value, param: block.param, body: block.stmts, line: n.line };
-    }
-    if (n.value === 'item') {
-      let args = {};
-      if (peek().kind === 'lp') args = parseArgs();
-      eat('lb'); const body = stmts(); eat('rb');
-      return { type: 'item', args, body, line: n.line };
-    }
-    if (peek().kind !== 'lp') err(n, 'expected call ' + n.value);
-    const args = parseArgs();
-    let children = [];
-    if (peek().kind === 'lb') children = parseCallBlock(n.value);
-    return { type: 'call', name: n.value, args, children, line: n.line };
-  }
-
-  function stmts() {
-    const out = [];
-    while (peek().kind === 'id') out.push(callLike());
-    return out;
-  }
-
-  function extract(tag) {
-    const re = new RegExp('<' + tag + '>([\\s\\S]*?)</' + tag + '>', 'i');
-    const m = src.match(re);
-    return m ? m[1] : '';
-  }
-  const tpl = extract('template').trim();
-  const script = extract('script');
-  if (!tpl) throw new Error('compose: missing <template>');
-  const tplTok = tokenize(tpl);
-  tokens.length = 0; tokens.push(...tplTok); p = 0;
-  eat('id'); // fun
-  eat('id'); // name
-  eat('lp'); eat('rp');
-  eat('lb');
-  const body = stmts();
-  eat('rb');
-  if (peek().kind !== 'eof') err(peek(), 'trailing input in template');
-  return { body, script };
-}
-
 function unwrap(node) {
   if (node && node.type === 'lambda' && node.kind === 'call') return node.body;
   return node;
@@ -289,50 +147,6 @@ function interpText(node, itemParam) {
   const t = textOf(node, itemParam);
   if (t.startsWith('$item') || /^[A-Za-z_]/.test(t)) return '{{' + t + '}}';
   return t;
-}
-
-function eventOf(lambda, itemParam, setters, listName) {
-  if (!lambda || lambda.kind === 'empty') return '';
-  if (lambda.kind === 'call') {
-    const c = lambda.body;
-    if (c.type !== 'call') err(c, 'callback must be a call');
-    const args = Object.keys(c.args).length ? null : (c.children || []);
-    // positional: tap(item.label) parsed as call with args from parseArgs - wait, tap(item.label) is positional not named.
-    return emitPositionalCall(c, itemParam);
-  }
-  if (lambda.kind === 'assign') {
-    const left = textOf(lambda.left, itemParam);
-    const right = lambda.right.type === 'it' ? '__it' : textOf(lambda.right, itemParam);
-    const name = '_set_' + setters.length;
-    setters.push({ name, left, right, listName, itemParam });
-    if (right === '__it') return name;
-    return name + '()';
-  }
-  err(lambda, 'bad lambda');
-}
-
-function emitPositionalCall(c, itemParam) {
-  // parser only has named args. tap(item.label) is parsed as expr inside lambda via expr() which for tap(item.label):
-  // id tap, lp, then parseArgs expects named id eq...
-  // PROBLEM: tap(item.label) is positional.
-  // I need to support positional args in parseArgs.
-  const parts = [];
-  if (c.pos && c.pos.length) {
-    c.pos.forEach(a => parts.push(textOf(a, itemParam)));
-  }
-  return c.name + (parts.length ? '(' + parts.join(',') + ')' : '');
-}
-
-// Re-parse args to allow positional. Patch parseArgs usage by enhancing tokenize parse:
-// I'll fix parse() parseArgs to collect positional in .pos array.
-
-function rewriteParseArgs() { /* patched below in parse rebuild */ }
-
-module.exports = { parse, tokenize, compileM3, PACKS, PACK_BY_FN };
-
-function parseFile(src) {
-  // monkey: replace parseArgs in the inner parse by rewriting the source of parse - instead duplicate parse with positional support.
-  return parseWithPos(src);
 }
 
 function parseWithPos(src) {
@@ -610,10 +424,11 @@ function inferClass(body) {
 function emitItem(node, ctx, itemsNode) {
   const list = itemsNode ? itemsNode.list : node.list;
   const param = itemsNode ? itemsNode.param : (node.param || 'item');
-  const prevItem = ctx.itemParam, prevList = ctx.listName;
+  const prevItem = ctx.itemParam, prevList = ctx.listName, prevClass = ctx.itemClass;
   ctx.itemParam = list ? param : ctx.itemParam;
   ctx.listName = list || ctx.listName;
   const cls = (node.args && node.args.class) ? textOf(node.args.class) : inferClass(node.body);
+  ctx.itemClass = cls;
   const type = (node.args && node.args.type) ? textOf(node.args.type) : ('r' + (ctx.seq++));
   const names = node.body.filter(x => x.type === 'call').map(x => x.name);
   const nativeSlider = names.includes('NativeSlider');
@@ -625,6 +440,7 @@ function emitItem(node, ctx, itemsNode) {
   }).join('');
   ctx.itemParam = prevItem;
   ctx.listName = prevList;
+  ctx.itemClass = prevClass;
   if (list === 'items') {
     inner = '\n<!-- #component transforming-list-item {"style": "$item.st", "content": ' + JSON.stringify('\n' + inner + '\n') + '} -->\n';
   }
@@ -638,7 +454,8 @@ function emitControl(node, ctx) {
   const itemParam = ctx.itemParam;
   if (n === 'Note') {
     const v = node.pos[0] || node.args.text || node.children[0];
-    return '<text class="note">' + interpText(v, itemParam) + '</text>';
+    const noteCls = ctx.itemClass === 'icon-group' ? 'icon-note' : 'note';
+    return '<text class="' + noteCls + '">' + interpText(v, itemParam) + '</text>';
   }
   if (n === 'ListHeader') {
     const t = slot(node, 'label') || (node.children && node.children[0]);
@@ -779,7 +596,7 @@ function emitCardChild(ch, ctx) {
   }
   if (ch.type === 'call' && ch.name === 'Text') {
     const ty = ch.args.typography ? textOf(ch.args.typography) : 'body';
-    const map = { title: 't-titleS c-onS one grow', titleSmall: 't-titleS c-onS one grow', body: 't-bodyM c-onSV body', bodyMedium: 't-bodyM c-onSV body', bodySmall: 't-bodyS c-onSV', label: 't-labelS c-onSV one grow ml', time: 't-bodyS c-onSV', headline: 't-titleS c-onS one mt' };
+    const map = { title: 't-titleS c-onS one', titleSmall: 't-titleS c-onS one grow', body: 't-bodyM c-onSV body', bodyMedium: 't-bodyM c-onSV body', bodySmall: 't-bodyS c-onSV', label: 't-labelS c-onSV one grow ml', time: 't-bodyS c-onSV', headline: 't-titleS c-onS one mt' };
     const cls = map[ty] || ty;
     const extra = ch.args.class ? ' ' + textOf(ch.args.class) : '';
     return '<text class="' + cls + extra + '">' + interpText(ch.pos[0] || ch.args.text, ctx.itemParam) + '</text>';
