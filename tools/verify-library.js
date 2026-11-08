@@ -42,7 +42,8 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
  assert(device==='round'?vol.includes('class="md-lvi"'):vol.includes('class="md-bar"')&&!vol.includes('class="md-lvi"'),'volume-screen level: arc on round, bar elsewhere');
  assert(vol.includes('onclick="volDeviceTap"')&&vol.includes('class="vs-dic"')===!device.startsWith('band'),'DeviceButton icon only on watches');
  assert(voll.includes('class="vs-lab"')&&!voll.includes('vs-dev'),'label variant');
- assert(/\.vs-dn \{[^}]*font-weight:bold;[^}]*lines:2;text-overflow:ellipsis;/.test(vol),'DeviceButton name: bold, 2 lines + ellipsis');
+ assert(new RegExp('\\.vs-dn \\{[^}]*font-weight:bold;[^}]*lines:'+(device.startsWith('band')?1:2)+';text-overflow:ellipsis;').test(vol),'DeviceButton name: bold, 2 lines (bands 1) + ellipsis');
+ if(device.startsWith('band'))assert(vol.includes('"max":'+(independent.devices[device].W-2*Math.round(18*independent.devices[device].k))),'band DeviceButton margin 18dp');
  assert(!fs.readdirSync(path.join(output,'common/img')).some(f=>f.startsWith('md_')),'media assets must not leak into pages that do not use them');
  if(configurations===1){const G=require(path.join(dest,'package/tools/media-geom.js')),r=G.ring(),b=G.button();
   assert.deepEqual(G.circleNames(20),['md_c0_I','md_c0_P2','md_c0_Z','md_c1_I','md_c1_P2','md_c9_I']);assert.equal(G.lobeState(0,0,40),'md_r0_Z');

@@ -36,7 +36,7 @@ module.exports=function(c){
  c.mdLvOpts=()=>({arc:!!round});
  // VolumeScreen (P3): content 'device' (DeviceButton) | 'label' ("音量"); bands drop the DeviceButton icon [adapt]
  c.mdVsOpts=content=>{content=content||'device';if(!['device','label'].includes(content))throw new Error('volume-screen content must be device|label');
-  return {content,icon:!pill,margin:round?18:14}};
+  return {content,icon:!pill,margin:round?18:pill?18:14,lines:pill?1:2}};
  // ---- markup helpers --------------------------------------------------------------------------------------------------
  // wavy ring (playing) and circle ring (paused) share one track element; lobes 1..9 of the circle are rotated lobe-1 images
  c.mdLobes=()=>'<image class="md-rt" src="{{mdRtSrc}}"></image>'+Array.from({length:10},(_,k)=>'<image class="md-l'+k+'" if="{{mdRing['+k+']}}" src="{{mdRing['+k+']}}"></image>').join('')
@@ -131,7 +131,7 @@ module.exports=function(c){
    const h=dp(52),fsz=dp(15),lh=dp(18);
    o+='.vs-dev{height:'+h+'px;border-width:1px;border-radius:'+h/2+'px;background-color:'+C.primary+';border-color:'+C.primary+';flex-direction:row;align-items:center;padding-left:'+dp(14)+'px;padding-right:'+dp(14)+'px;}\n';
    o+='.vs-dic{width:'+dp(24)+'px;height:'+dp(24)+'px;margin-right:'+dp(6)+'px;}\n';
-   o+='.vs-dn{font-size:'+fsz+'px;line-height:'+lh+'px;color:'+C.onPrimary+';font-weight:bold;lines:2;text-overflow:ellipsis;}\n';
+   o+='.vs-dn{font-size:'+fsz+'px;line-height:'+lh+'px;color:'+C.onPrimary+';font-weight:bold;lines:'+vs.lines+';text-overflow:ellipsis;}\n';
    o+='.vs-lab{font-size:'+fsz+'px;line-height:'+lh+'px;color:'+C.onSurface+';font-weight:bold;text-align:center;}\n';
    o+='.vs-lv{opacity:1;}\n';
   }
@@ -156,7 +156,7 @@ module.exports=function(c){
    if(set.left==='volume')o.set.vol={up:ic('md_vol_up'),down:ic('md_vol_down'),mute:ic('md_vol_mute')};}
   if(lv){o.lvMs=S.level.showMs;if(lv.arc){const g=c.levelGeo;o.lv={arc:true,cx:g.cx,cy:g.cy,r:g.r,o:g.o,sweep:g.sweep,gap:g.gap,start:g.start,ind:g.ind.src,trk:g.trk.src}}
    else{const bw=dp(S.level.stroke),ht=Math.round(dp(SL.bar.h));o.lv={arc:false,w:bw,ht,lc:ht-bw,gap:dp(S.level.gap)}}}
-  if(c.mdVs){const vs=c.mdVs;o.vs={content:vs.content,fs:dp(15),lh:dp(18),max:W-2*dp(vs.margin),pad:2*dp(14),ic:vs.icon?dp(30):0,
+  if(c.mdVs){const vs=c.mdVs;o.vs={content:vs.content,lines:vs.lines,fs:dp(15),lh:dp(18),max:W-2*dp(vs.margin),pad:2*dp(14),ic:vs.icon?dp(30):0,
    icons:vs.icon?{headphones:img('md_dev_hp_24'),watch:img('md_dev_watch_24')}:null}}
   if(inf)o.info={fs:fs_,afs,tw,aw,marquee:inf.marquee,amt:dp(S.marquee.speed),gap:dp(S.marquee.gap),pause:S.marquee.pause};
   return JSON.stringify(o);

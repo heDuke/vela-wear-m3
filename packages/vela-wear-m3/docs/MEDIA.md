@@ -154,7 +154,7 @@ band 上按压侧键时播放键由 scallop 变为圆（没有横向挤压空间
 | Stepper | 上 / 内容 / 下 = 0.35 / 0.3 / 0.35，竖向 padding 5.2 % H；键 60×48 dp，primaryContainer，图标 VolumeUp / VolumeDown 24 dp primary【源码】 | 复用库内 Stepper（range.tpl 几何、按压 12600 / 260 弹簧、长按 500 ms 后每 60 ms 连发）；新增 primary 音量图标 `md_vs_up/down_24(d)` |
 | 端点 | 0 时下键禁用，最大值时上键禁用 | 一致（禁用底 #1E1C1F、图标 onSurface 38 %） |
 | 电平 | StepperLevelIndicator，常显，值变化 tween 500 ms | round 复用 media-volume-level 弧；pro / 手环 6 dp 直条【适配】（同 P2）；音量页不做 2.5 s 隐藏 |
-| DeviceButton | Button 52 dp，primary / onPrimary，图标 24 dp + 6 dp + 名称（labelMedium，maxLines 2），左右外边距 18 dp | round 一致；pro / 手环外边距 14 dp（避开直条）【适配】；手环去掉图标【适配】；名称 bold（Vela 只有 normal / bold，Medium 取 bold 更接近 golden） |
+| DeviceButton | Button 52 dp，primary / onPrimary，图标 24 dp + 6 dp + 名称（labelMedium，maxLines 2），左右外边距 18 dp | round 一致；外边距 pro 14 dp、手环 18 dp（与左侧直条留出 ≥10 dp 间距）【适配】；手环去掉图标、名称单行省略【适配】；名称 bold（Vela 只有 normal / bold，Medium 取 bold 更接近 golden） |
 | 标签 | 「Volume」labelMedium | 「音量」，15 dp bold |
 | 表冠 | rotaryScrollable 调音量 | 做不了（无 rotary 事件） |
 | 输出切换 | DeviceButton 打开输出选择 | 只回调 `volOnDevice()`（无音频路由接口） |
@@ -166,7 +166,7 @@ band 上按压侧键时播放键由 scallop 变为圆（没有横向挤压空间
 | | round | pro | band10 | band9 |
 |---|---|---|---|---|
 | 新增图片（md_vs_* + md_dev_*） | 2,569 | 2,569 | 2,352 | 2,352 |
-| examples/media enhanced release rpk（P2 → P3，多了两个音量页） | 203,169 → 239,180 | 161,368 → 203,459 | 142,496 → 179,605 | 142,616 → 179,282 |
+| examples/media enhanced release rpk（P2 → P3，多了两个音量页） | 203,169 → 239,983 | 161,368 → 204,265 | 142,496 → 180,425 | 142,616 → 180,093 |
 
 rpk 增量主要来自两个新页面各自内联的控制器 JS（media / range / base）；手环页面也会带上 Stepper 弧形资源 `lv_*`（range.head.js 常量引用，约 3 KB），只用直条时未使用。
 
@@ -175,7 +175,7 @@ rpk 增量主要来自两个新页面各自内联的控制器 JS（media / range
 | 项 | 差异 |
 |---|---|
 | 电平 | pro / 手环直条【适配】 |
-| DeviceButton | 手环无图标、pro / 手环外边距 14 dp【适配】；字重 bold |
+| DeviceButton | 手环无图标、名称单行省略；外边距 pro 14 dp / 手环 18 dp【适配】；字重 bold |
 | 表冠 / 输出切换 | 不做（无 API），回调代替 |
 | 文案 | 「音量」、默认设备名「耳机」/「手表扬声器」 |
 

@@ -367,7 +367,7 @@ left：`output`（耳机 / 手表 / 未连接 + 音量徽章）/ `volume`（无�
 <!-- #component volume-screen {"content":"'device'"} -->
 ```
 
-Horologist VolumeScreen：androidx Stepper（上 VolumeUp、下 VolumeDown，primaryContainer 胶囊 60×48 dp，0 / 最大值时对应键禁用）+ 常显电平（round 72° 弧，pro / 手环 6 dp 直条）+ 内容槽。`content`：`'device'`（DeviceButton：primary 填充、onPrimary 粗体名称，最多两行省略；手环不显示图标）或 `'label'`（「音量」）。步数由 `volSetup({max})` 配置，默认 0–10。按压 / 长按连发（500 ms 后每 60 ms）沿用 Stepper，经 range.js 的 `rangeChanged` 钩子回到本组件。放在页面根 `<div class="page">` 内，不与 media-player 同页。
+Horologist VolumeScreen：androidx Stepper（上 VolumeUp、下 VolumeDown，primaryContainer 胶囊 60×48 dp，0 / 最大值时对应键禁用）+ 常显电平（round 72° 弧，pro / 手环 6 dp 直条）+ 内容槽。`content`：`'device'`（DeviceButton：primary 填充、onPrimary 粗体名称，最多两行省略；手环不显示图标、名称单行省略、外边距 18 dp）或 `'label'`（「音量」）。步数由 `volSetup({max})` 配置，默认 0–10。按压 / 长按连发（500 ms 后每 60 ms）沿用 Stepper，经 range.js 的 `rangeChanged` 钩子回到本组件。放在页面根 `<div class="page">` 内，不与 media-player 同页。
 
 ## 常见接入问题
 

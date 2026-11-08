@@ -13,11 +13,11 @@ volDown(){this.stepDown()},
 rangeChanged(v){this.volPaint(false);if(vsBind){try{vsVolume.setMediaValue({value:Math.round(v/this.stepMax*100)/100})}catch(e){}}if(this.volOnChange)this.volOnChange(v)},
 volPaint(snap){if(MDC.lv)this.mdLvTo(this.stepValue/this.stepMax,snap)},
 // DeviceButton width = content (icon + name) clamped to the screen width minus the side margins; the name wraps to
-// two lines with an ellipsis (Button maxLines 2) when it does not fit on one.
+// two lines with an ellipsis (Button maxLines 2) when it does not fit on one; bands keep one line + ellipsis [adapt].
 volSetOutput(kind,name){const V=MDC.vs;kind=kind==='watch'?'watch':'headphones';this.volName=name||(kind==='watch'?'手表扬声器':'耳机')
  if(!V||V.content!=='device')return;if(V.icons)this.volDevIc=V.icons[kind]
  const tw=Math.ceil(mdTextW(this.volName,V.fs,true)),inner=V.max-V.pad-V.ic,w=Math.min(tw,inner)
- this.volNameSt={width:w+'px',height:(tw>inner?2:1)*V.lh+'px'};this.volDevSt={width:(w+V.pad+V.ic)+'px'}},
+ this.volNameSt={width:w+'px',height:(tw>inner&&V.lines>1?2:1)*V.lh+'px'};this.volDevSt={width:(w+V.pad+V.ic)+'px'}},
 volDeviceTap(){if(this.volOnDevice)this.volOnDevice()},
 volShow(){mdVisible=true;mdLv.on=true;this.mdLvCls='vs-lv';this.mdLvSt={opacity:1};this.volPaint(true);vsLive=true;if(!vsBind)return;const vm=this
  const take=(r,snap)=>{if(!vsLive||!r||!(+r.value>=0))return;const v=vm.volClamp(+r.value*vm.stepMax);if(v===vm.stepValue&&!snap)return;vm.stepValue=v;vm.volPaint(snap)}
