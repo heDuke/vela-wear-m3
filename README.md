@@ -32,7 +32,7 @@
 
 ## 组件一览
 
-共 20 个注册模板，用法与最小示例见组件指南：
+共 27 个注册模板，用法与最小示例见组件指南：
 
 | 类别 | 组件 |
 |---|---|
@@ -41,6 +41,7 @@
 | 选择与数值 | [SwitchButton](packages/vela-wear-m3/docs/COMPONENTS.md#switch-button) · [CheckboxButton](packages/vela-wear-m3/docs/COMPONENTS.md#checkbox-button) · [RadioButton](packages/vela-wear-m3/docs/COMPONENTS.md#radio-button) · [InlineSlider](packages/vela-wear-m3/docs/COMPONENTS.md#inline-slider) · [Stepper](packages/vela-wear-m3/docs/COMPONENTS.md#stepper) · [LevelIndicator](packages/vela-wear-m3/docs/COMPONENTS.md#level-indicator) |
 | 指示与时间 | [PageIndicator](packages/vela-wear-m3/docs/COMPONENTS.md#page-indicator) · [ScrollIndicator](packages/vela-wear-m3/docs/COMPONENTS.md#scroll-indicator) · [TimeText](packages/vela-wear-m3/docs/COMPONENTS.md#time-text) · [ProgressIndicator](packages/vela-wear-m3/docs/COMPONENTS.md#progress-indicator) |
 | 对话框 | [AlertDialog](packages/vela-wear-m3/docs/COMPONENTS.md#alert-dialog) · [Confirmation](packages/vela-wear-m3/docs/COMPONENTS.md#confirmation) |
+| 媒体（Horologist） | [播放键](packages/vela-wear-m3/docs/COMPONENTS.md#media-play-pause) · [控制行](packages/vela-wear-m3/docs/COMPONENTS.md#media-controls) · [MediaInfo](packages/vela-wear-m3/docs/COMPONENTS.md#media-info) · [设置行](packages/vela-wear-m3/docs/COMPONENTS.md#media-settings) · [音量电平](packages/vela-wear-m3/docs/COMPONENTS.md#media-volume-level) · [PlayerScreen](packages/vela-wear-m3/docs/COMPONENTS.md#media-player) · [VolumeScreen](packages/vela-wear-m3/docs/COMPONENTS.md#volume-screen) |
 
 ## 屏幕与 API 配置
 

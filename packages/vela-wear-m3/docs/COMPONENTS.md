@@ -2,7 +2,7 @@
 
 [从零接入](GETTING-STARTED.md) · [生成器 API 与模板语法](API.md)
 
-以下先说明共享契约，再列出全部 23 个注册模板的最小插入用例。用例是插入页面的片段，必须同时准备所列状态、样式和脚本；单独粘贴一行标记不等于完整页面。基础页面可从库内 GPL 最小示例复制。
+以下先说明共享契约，再列出全部 27 个注册模板的最小插入用例。用例是插入页面的片段，必须同时准备所列状态、样式和脚本；单独粘贴一行标记不等于完整页面。基础页面可从库内 GPL 最小示例复制。
 
 所有组件是编译期模板，不是 Vela 自定义组件实例。一个页面只展开一份共享状态和调度器。`components/registry.json` 给出模板及必需样式；`componentSource()` 只展开标记绑定，完整条件编译、dp、资源和布局处理由 `generate()` 完成。
 
@@ -50,13 +50,15 @@ edge-button 使用 ebSt、通用按压方法与 showConfirm 回调。应用不�
 
 ## 媒体控件
 
-复刻 Horologist media-ui-material3 / audio-ui-material3 的播放页组件（规格、包体与降级见 [MEDIA.md](MEDIA.md)）：`media-play-pause`、`media-controls`、`media-info`，以及 P2 的 `media-settings`、`media-volume-level`、`media-player`。共用 media.head.js、media.data.js、media.methods.js 和 media.css；全屏非列表结构，放在 list 外。一个页面只放一个控制行 / 一个 media-player。
+复刻 Horologist media-ui-material3 / audio-ui-material3 的播放页组件（规格、包体与降级见 [MEDIA.md](MEDIA.md)）：`media-play-pause`、`media-controls`、`media-info`，以及 P2 的 `media-settings`、`media-volume-level`、`media-player` 和 P3 的 `volume-screen`。共用 media.head.js、media.data.js、media.methods.js 和 media.css；全屏非列表结构，放在 list 外。一个页面只放一个控制行 / 一个 media-player。
 
 控制器只用 `md*` 名称，不定义 pageShow / pageHide / onMotionFrame / press：消费页在 pageShow 调 `mdShow()`、pageHide 调 `mdHide()`。状态入口：`mdSetPlaying(b)`、`mdSetProgress(0..1)`、`mdSetLoading(b)`、`mdSetEnabled({play,prev,next})`、`mdSetMeta(title,artist)`、`mdSetInfo('ready'|'loading'|'none'[,text])`、`mdSetState('playing'|'paused'|'loading'|'none'|'disconnected')`、`mdSetOutput('headphones'|'watch'|'none')`、`mdSetSettingsEnabled(b)`、`mdSetVolume(v[,show])`、`mdShowVolume([v])`、`mdLvHide()`。页面回调：`mdOnPlay`、`mdOnPause`、`mdOnPrev`、`mdOnNext`、`mdOnSeek(秒)`、`mdOnOutput`、`mdOnMore`。禁用键的触摸在控制器内拒绝。
 
 可选音频适配器：再引入 media-audio.head.js（模块区，导入 `@system.audio`）与 media-audio.methods.js（放在 media.methods.js 之前），它提供 mdOnPlay / mdOnPause / mdOnSeek；页面调用 `mdaOpen(src, meta)`，在 pageDestroy 调 `mdaStop()`，可选回调 `mdOnEnded`、`mdOnAudioError`。manifest 需声明 `system.audio`；后台播放另需 `config.background`，并经过上架审核。没有 timeupdate 事件，进度每秒轮询一次，只在页面可见且播放中进行。
 
 可选音量适配器：再引入 `media-volume.head.js`（导入 `@system.volume`）与 `media-volume.methods.js`；`mdShow`/`mdHide` 会联动 `mdvShow`/`mdvHide`。`mdvSet(v)` 写 `setMediaValue` 并显示电平；首次 `getMediaValue` 只更新徽章（对齐官方 drop(1)）。manifest 声明 `system.volume`。
+
+音量页 `volume-screen`（P3，Horologist VolumeScreen）：除媒体控件的 head / data / methods 外，还要引入 Stepper 的 range.head.js / range.data.js / range.js 与 volume-screen.head.js / volume-screen.data.js / volume-screen.methods.js（方法顺序：volume-screen.methods.js → range.js → media.methods.js → base.js），样式 media.css + range.css。onInit 调 `volSetup({max,value,output,name,binding})`，pageShow / pageHide 调 `volShow()` / `volHide()`（不要再调 mdShow / mdHide）。默认绑定 `@system.volume`（manifest 声明 `system.volume`）：进入时 `getMediaValue` 定位，每步 `setMediaValue(v/max)`，系统音量变化回写；`binding:false` 只发事件。其他入口：`volSet(v)`、`volUp()`、`volDown()`、`volSetOutput('headphones'|'watch'[,name])`；回调 `volOnChange(v)`、`volOnDevice()`（点设备键；Vela 无音频路由接口，官方的输出选择需页面自己处理）。
 
 ## 基础页面与依赖的插入位置
 
@@ -110,6 +112,7 @@ export default {
 | Confirmation | `overlay.css`、`confirm.css` | 业务声明 cfTimer / confirmEpoch | 下文列出的 cf 状态与增强帧 | `confirm.js` |
 | AlertDialog | `overlay.css`、`$[dlgCss()]` | 基础 head | dlgOn / dlgOut | 业务开关与取消／确认回调 |
 | EdgeButton | `edge.css`（已含 ebCss） | 基础 head | 业务声明 ebSt:{} | 默认调用业务 `showConfirm()` |
+| 音量页 volume-screen | `media.css`、`range.css` | `media.head.js`、`range.head.js`、`volume-screen.head.js` | `media.data.js`、`range.data.js`、`volume-screen.data.js` | `volume-screen.methods.js`、`range.js`、`media.methods.js`；onInit 调 `volSetup()`，pageShow / pageHide 调 `volShow()` / `volHide()` |
 | 媒体控件 | `media.css` | `media.head.js`（音频另加 `media-audio.head.js`；音量另加 `media-volume.head.js`） | `media.data.js` | `media-audio.methods.js` / `media-volume.methods.js`（可选）、`media.methods.js`；onInit 调 `mdSetMeta()`，pageShow / pageHide 调 `mdShow()` / `mdHide()` |
 
 上表中的片段全部通过 `@wear/` 引入。控制器方法结尾通常带逗号，按 JS 对象成员插入。`head` 和计时器不放入 private；`data` 不放入模块作用域。
@@ -357,6 +360,14 @@ left：`output`（耳机 / 手表 / 未连接 + 音量徽章）/ `volume`（无�
 ```
 
 组合电平 + media-info + media-controls + media-settings + TimeText。常用绑定：`settings` / `level`（默认 true）、`settingsLeft` / `settingsRight`、以及透传给控制行的 `left` / `right` / `ring` / `steps` / `rotate` / `marquee`。推荐用 `mdSetState` 切换官方各状态。
+
+### volume-screen
+
+```html
+<!-- #component volume-screen {"content":"'device'"} -->
+```
+
+Horologist VolumeScreen：androidx Stepper（上 VolumeUp、下 VolumeDown，primaryContainer 胶囊 60×48 dp，0 / 最大值时对应键禁用）+ 常显电平（round 72° 弧，pro / 手环 6 dp 直条）+ 内容槽。`content`：`'device'`（DeviceButton：primary 填充、onPrimary 粗体名称，最多两行省略；手环不显示图标）或 `'label'`（「音量」）。步数由 `volSetup({max})` 配置，默认 0–10。按压 / 长按连发（500 ms 后每 60 ms）沿用 Stepper，经 range.js 的 `rangeChanged` 钩子回到本组件。放在页面根 `<div class="page">` 内，不与 media-player 同页。
 
 ## 常见接入问题
 

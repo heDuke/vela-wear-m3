@@ -1,4 +1,4 @@
-# 媒体控件规格（P0 冻结 · P1 / P2 实现）
+# 媒体控件规格（P0 冻结 · P1 / P2 / P3 实现）
 
 [组件指南](COMPONENTS.md#媒体控件) · [生成器 API](API.md)
 
@@ -144,3 +144,38 @@ band 上按压侧键时播放键由 scallop 变为圆（没有横向挤压空间
 | 音量电平 | round 弧一致；pro / 手环改直条【适配】；淡入淡出与 2.5 s 规则一致 |
 | 滑动 / 表冠调音量 | 不做（无 API）；输出键回调 |
 | Ambient / 封面取色 / 真实输出设备枚举 | 做不了 |
+
+## 8. P3：音量页 volume-screen（VolumeScreen）
+
+来源：Horologist `audio-ui-material3` `VolumeScreen.kt`、`VolumeLevelIndicator.kt`、`components/DeviceButton.kt`；androidx `Stepper.kt`。golden：`volume_min` / `volume_max` / `volume_speaker` / `volume_label`。
+
+| 部件 | 规格 | 本库 |
+|---|---|---|
+| Stepper | 上 / 内容 / 下 = 0.35 / 0.3 / 0.35，竖向 padding 5.2 % H；键 60×48 dp，primaryContainer，图标 VolumeUp / VolumeDown 24 dp primary【源码】 | 复用库内 Stepper（range.tpl 几何、按压 12600 / 260 弹簧、长按 500 ms 后每 60 ms 连发）；新增 primary 音量图标 `md_vs_up/down_24(d)` |
+| 端点 | 0 时下键禁用，最大值时上键禁用 | 一致（禁用底 #1E1C1F、图标 onSurface 38 %） |
+| 电平 | StepperLevelIndicator，常显，值变化 tween 500 ms | round 复用 media-volume-level 弧；pro / 手环 6 dp 直条【适配】（同 P2）；音量页不做 2.5 s 隐藏 |
+| DeviceButton | Button 52 dp，primary / onPrimary，图标 24 dp + 6 dp + 名称（labelMedium，maxLines 2），左右外边距 18 dp | round 一致；pro / 手环外边距 14 dp（避开直条）【适配】；手环去掉图标【适配】；名称 bold（Vela 只有 normal / bold，Medium 取 bold 更接近 golden） |
+| 标签 | 「Volume」labelMedium | 「音量」，15 dp bold |
+| 表冠 | rotaryScrollable 调音量 | 做不了（无 rotary 事件） |
+| 输出切换 | DeviceButton 打开输出选择 | 只回调 `volOnDevice()`（无音频路由接口） |
+
+步数：`volSetup({max})`，默认 0–10；每步 `setMediaValue(round(v/max,2))`。range.js 新增可选钩子：页面定义 `rangeChanged(v)` 时，`stepUp` / `stepDown` 交给它处理（否则照旧 `updateRange()`），并支持 `stepMax`（缺省 10），对既有 Stepper 无行为变化。
+
+### 8.1 包体（PNG8，字节）
+
+| | round | pro | band10 | band9 |
+|---|---|---|---|---|
+| 新增图片（md_vs_* + md_dev_*） | 2,569 | 2,569 | 2,352 | 2,352 |
+| examples/media enhanced release rpk（P2 → P3，多了两个音量页） | 203,169 → 239,180 | 161,368 → 203,459 | 142,496 → 179,605 | 142,616 → 179,282 |
+
+rpk 增量主要来自两个新页面各自内联的控制器 JS（media / range / base）；手环页面也会带上 Stepper 弧形资源 `lv_*`（range.head.js 常量引用，约 3 KB），只用直条时未使用。
+
+### 8.2 与官方的差异
+
+| 项 | 差异 |
+|---|---|
+| 电平 | pro / 手环直条【适配】 |
+| DeviceButton | 手环无图标、pro / 手环外边距 14 dp【适配】；字重 bold |
+| 表冠 / 输出切换 | 不做（无 API），回调代替 |
+| 文案 | 「音量」、默认设备名「耳机」/「手表扬声器」 |
+

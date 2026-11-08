@@ -74,7 +74,7 @@ console.log(Object.keys(components))
 console.log(devices.band10.W, devices.band10.H)
 ```
 
-`components` 是 `components/registry.json` 的对象：键为组件名，值含 `template`（包内模板路径）、`defaults`（默认绑定对象）、`styles`（登记的样式片段数组）。空 `styles` **不表示组件无需样式**，有些几何样式由构建上下文生成；以组件指南为准。共 26 个注册模板（含 P2 的 media-settings / media-volume-level / media-player）。
+`components` 是 `components/registry.json` 的对象：键为组件名，值含 `template`（包内模板路径）、`defaults`（默认绑定对象）、`styles`（登记的样式片段数组）。空 `styles` **不表示组件无需样式**，有些几何样式由构建上下文生成；以组件指南为准。共 27 个注册模板（含 P2 的 media-settings / media-volume-level / media-player）。
 
 `devices` 是布局配置对象，各项字段包含 `name`（描述文字）、`W`、`H`（物理像素）、`shape`（`circle` / `rect` / `pill`）和 `k`（每 dp 的像素数）。这不是运行时设备探测或兼容机型表。
 
@@ -171,3 +171,16 @@ npx vela-wear-m3 gen --input template --out src --device band10 --animation enha
 | `mdvShow` / `mdvHide` / `mdvSet(v)` | 可选 `@system.volume` 适配器 |
 
 页面回调：`mdOnPlay` `mdOnPause` `mdOnPrev` `mdOnNext` `mdOnSeek` `mdOnOutput` `mdOnMore`（及音频的 `mdOnEnded` / `mdOnAudioError`）。
+
+### 音量页（volume-screen.*）
+
+| 方法 / 字段 | 说明 |
+|---|---|
+| `volSetup({max,value,output,name,binding})` | onInit 调；`max` 步数（默认 10）、`value` 初值、`output` `'headphones'\|'watch'`、`name` 设备名、`binding:false` 不碰系统音量 |
+| `volShow()` / `volHide()` | 页可见性：显示常驻电平、挂 / 摘 `onMediaValueChanged`；隐藏时取消按压并停止补间 |
+| `volSet(v)` / `volUp()` / `volDown()` | 设置 / 步进（写系统音量、补间电平、触发 `volOnChange`） |
+| `volSetOutput(kind[,name])` | DeviceButton 图标与名称（默认「耳机」/「手表扬声器」），宽度随名称，超长两行省略 |
+| `rangeChanged(v)` | range.js 钩子（`stepUp` / `stepDown` 在页面定义它时调用它，否则照旧 `updateRange()`） |
+| `stepValue` / `stepMax` | 当前步 / 最大步（range.js 共用；`stepMax` 缺省按 10） |
+
+回调：`volOnChange(v)`、`volOnDevice()`。
