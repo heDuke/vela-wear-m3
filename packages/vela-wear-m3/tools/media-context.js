@@ -146,7 +146,8 @@ module.exports=function(c){
   }
   const vs=c.mdVs;
   if(vs){ // DeviceButton: Button 52dp (2 lines of labelMedium 18dp + 8dp padding still fit), 14dp side padding, 6dp icon gap
-   const h=dp(52),fsz=dp(15),lh=dp(18);
+   // bands: capsule type scale maps labelMedium 15/18 → 13/16 (same as TimeText / queue titles on pill)
+   const h=dp(52),fsz=dp(pill?13:15),lh=dp(pill?16:18);
    o+='.vs-dev{height:'+h+'px;border-width:1px;border-radius:'+h/2+'px;background-color:'+C.primary+';border-color:'+C.primary+';flex-direction:row;align-items:center;padding-left:'+dp(14)+'px;padding-right:'+dp(14)+'px;}\n';
    o+='.vs-dic{width:'+dp(24)+'px;height:'+dp(24)+'px;margin-right:'+dp(6)+'px;}\n';
    o+='.vs-dn{font-size:'+fsz+'px;line-height:'+lh+'px;color:'+C.onPrimary+';font-weight:bold;lines:'+vs.lines+';text-overflow:ellipsis;}\n';
@@ -183,7 +184,7 @@ module.exports=function(c){
    if(set.left==='volume')o.set.vol={up:ic('md_vol_up'),down:ic('md_vol_down'),mute:ic('md_vol_mute')};}
   if(lv){o.lvMs=S.level.showMs;if(lv.arc){const g=c.levelGeo;o.lv={arc:true,cx:g.cx,cy:g.cy,r:g.r,o:g.o,sweep:g.sweep,gap:g.gap,start:g.start,ind:g.ind.src,trk:g.trk.src}}
    else{const bw=dp(S.level.stroke),ht=Math.round(dp(SL.bar.h));o.lv={arc:false,w:bw,ht,lc:ht-bw,gap:dp(S.level.gap)}}}
-  if(c.mdVs){const vs=c.mdVs;o.vs={content:vs.content,lines:vs.lines,fs:dp(15),lh:dp(18),max:W-2*dp(vs.margin),pad:2*dp(14),ic:vs.icon?dp(30):0,
+  if(c.mdVs){const vs=c.mdVs;o.vs={content:vs.content,lines:vs.lines,fs:dp(pill?13:15),lh:dp(pill?16:18),max:W-2*dp(vs.margin),pad:2*dp(14),ic:vs.icon?dp(30):0,
    icons:vs.icon?{headphones:img('md_dev_hp_24'),watch:img('md_dev_watch_24')}:null}}
   if(inf)o.info={fs:fs_,afs,tw,aw,marquee:inf.marquee,amt:dp(S.marquee.speed),gap:dp(S.marquee.gap),pause:S.marquee.pause};
   return JSON.stringify(o);

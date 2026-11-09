@@ -45,7 +45,14 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
  assert(vol.includes('onclick="volDeviceTap"')&&vol.includes('class="vs-dic"')===!device.startsWith('band'),'DeviceButton icon only on watches');
  assert(voll.includes('class="vs-lab"')&&!voll.includes('vs-dev'),'label variant');
  assert(new RegExp('\\.vs-dn \\{[^}]*font-weight:bold;[^}]*lines:'+(device.startsWith('band')?1:2)+';text-overflow:ellipsis;').test(vol),'DeviceButton name: bold, 2 lines (bands 1) + ellipsis');
- if(device.startsWith('band'))assert(vol.includes('"max":'+(independent.devices[device].W-2*Math.round(18*independent.devices[device].k))),'band DeviceButton margin 18dp');
+ if(device.startsWith('band')){
+  const k=independent.devices[device].k,fs=Math.round(13*k),lh=Math.round(16*k);
+  assert(vol.includes('"max":'+(independent.devices[device].W-2*Math.round(18*k))),'band DeviceButton margin 18dp');
+  assert(new RegExp('\\.vs-dn \\{[^}]*font-size:'+fs+'px;line-height:'+lh+'px;').test(vol),'band DeviceButton name labelMedium→13/16 (capsule type scale)');
+  assert(vol.includes('"fs":'+fs)&&vol.includes('"lh":'+lh),'band DeviceButton runtime fs/lh 13/16 dp');
+ } else {
+  assert(new RegExp('\\.vs-dn \\{[^}]*font-size:'+Math.round(15*independent.devices[device].k)+'px;').test(vol),'watch DeviceButton name labelMedium 15dp');
+ }
  // P4: one vertical scroll (player screen, then MediaActions + MediaQueue), IconToggleButton row, output picker,
  // press squish (sqPress) on Buttons / IconButtons, Lottie click frames for prev / next on enhanced only
  assert(player.includes('<scroll class="ml-scroll"')&&player.includes('class="ml-screen"')&&player.includes("onclick=\"maTap('like')\"")&&player.includes('onclick="mqTap($item.id)"'),'P4 player scroll column');
