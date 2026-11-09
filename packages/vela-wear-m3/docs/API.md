@@ -221,4 +221,19 @@ export default {
 | `rangeChanged(v)` | range.js 钩子（`stepUp` / `stepDown` 在页面定义它时调用它，否则照旧 `updateRange()`） |
 | `stepValue` / `stepMax` | 当前步 / 最大步（range.js 共用；`stepMax` 缺省按 10） |
 
-回调：`volOnChange(v)`、`volOnDevice()`。
+回调：`volOnChange(v)`、`volOnDevice()`。DeviceButton 按压挤压经 volume-screen.methods.js 的 `pressStyle` 钩子（手写 `.ux.tpl` 与 range.js 的 `pressStyle` 合并；`.m3.tpl` 自动合并）。
+
+### 媒体列表（media-list.*，P4）
+
+| 方法 | 说明 |
+|---|---|
+| `maSet({title,artist,liked,shuffle,repeat,next})` | 操作区头部、三个切换键（`repeat` `'off'\|'all'\|'one'`）与「接下来播放」 |
+| `mqSetItems(items,currentId,highlight)` / `mqSetCurrent(id)` | 队列 `[{id,title,artist,art?}]`；highlight 为 true 时当前曲 filled primary |
+| `opSetup({title,devices,footnote})` | 输出选择：`devices:[{id,name,type:'phone'\|'watch'\|'headphones'\|'speaker'\|'bluetooth',current}]` |
+| `mlLayout(extraTop,nQueue,parts)` | scroll 内行高（px），传给 `setLayout` |
+
+回调：`maOnLike(b)` `maOnShuffle(b)` `maOnRepeat(mode)` `maOnNext()` `mqOnItem(id,index)` `opOnSelect(id)`。
+
+### 按压挤压（base.js）
+
+`sqPress(id,r0,r1[,kIn=12600,kOut=260])` 代替 `press(id)`：圆角 r0 → r1（px）临界阻尼精确解，抬起回 r0；`sqRest(id,r0)` 改静止圆角（切换键选中态 shapes.medium）。

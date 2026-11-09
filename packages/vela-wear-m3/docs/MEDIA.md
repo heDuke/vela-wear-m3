@@ -84,7 +84,7 @@ band 上按压侧键时播放键由 scallop 变为圆（没有横向挤压空间
 | 进度连续性 | 【降级】按 2.5 % / 5 % 量化 |
 | scallop 播放时旋转 | 【降级】默认关闭；`rotate:true` 用 30 步 CSS 旋转，仅限 circle / none 环 |
 | 按压 scallop→pill 形变 | 【降级】端点切换（scallop 隐藏、pill 宽度过渡），环在按压时淡出 |
-| Lottie 图标动画 | 【降级】直接切换静态帧 |
+| Lottie 图标动画 | 上一首 / 下一首：enhanced 预渲染 9 帧（50 ms/帧，见 §9）；播放/暂停：【降级】直接切换静态帧 |
 | 加载 shimmer | 【降级】透明度脉冲；加载环为旋转的 25 % 圆弧 |
 | 跑马灯 | 原生 `<marquee>`，速度/停顿/间距按官方；API 1 无文字测量，溢出用字宽表估算【推导】 |
 | 表冠调音量、封面取色、输出设备切换、Ambient | 做不了（无对应 API） |
@@ -188,3 +188,54 @@ rpk 增量主要来自两个新页面各自内联的控制器 JS（media / range
 | 表冠 / 输出切换 | 不做（无 API），回调代替 |
 | 文案 | 「音量」、默认设备名「耳机」/「手表扬声器」 |
 
+
+## 9. P4：播放页下滑 · 操作区 · 队列 · 输出选择 · 按压挤压 · Lottie 帧
+
+### 9.1 结构
+
+- 官方：Horologist 没有输出选择页面，设备键调用 `OutputSwitcher.launchSystemMediaOutputSwitcherUi`（系统 Settings `MEDIA_OUTPUT` 面板，闭源）；队列 / 操作区最接近 `screens/entity/EntityScreen`（header + buttonsContent + items，列表项 `FilledTonalButton` 单行省略）。`PlayerLibraryPagerScreen` 是横向 Pager；参考截图（YouTube Music）是播放页下方的纵向续页。
+- 本库：`MediaColumn` = 一条纵向 `<scroll>`，第一屏是完整 PlayerScreen，下面接 media-actions（头部 + 3 个 IconToggleButton + 「接下来播放」Card）与 media-queue。电平、ScrollIndicator、TimeText 放在 scroll 外。Vela 的 `onswipe` / `router.back` 在模拟器不可靠，scroll 是唯一可靠的“下滑”手势【适配】。
+- 输出选择 `media-output-picker`：音量页设备键 `router.push('pages/output')`；Vela 不能枚举或切换输出，选中只回调 `opOnSelect(id)`（示例写入 `$app.$def.mediaOutput`，音量页返回时显示名称）。
+- 尺寸（dp）：头部 56（标题 16/20 粗体、歌手 14/18 粗体，单行省略）；按钮行 52（手环 44）+ 8 间距，3 键等分、间距 4；卡片 74（标题 16 粗体 + 内容 14/16 两行，图标 24，手环无图标）；队列项 52 + 4（曲名 15/18 粗体，次要 13/16；手环 13 / 11）；输出项最小 52（名称手表 2 行、手环 1 行，图标 24 + 6，手环无图标）；脚注 bodySmall 12/14，左缩进 16。图标 Material Symbols Rounded（thumb_up / thumb_up 填充 / shuffle / repeat / repeat_one / queue_music / smartphone / watch / headphones / speaker / bluetooth），`tools/media-p4-assets.js` 导出。
+
+### 9.2 按压挤压
+
+| 控件 | 官方 | 本库 |
+|---|---|---|
+| IconButton（`icon-button`、`.m3.tpl` IconButton 族） | `IconButtonDefaults.animatedShapes()`：CornerFull → `shapes.small`（8 dp），按下 fastSpatial.faster(200)（12600）、抬起 slowSpatial（260） | 同参数，`sqPress` 临界阻尼精确解 |
+| IconToggleButton（点赞 / 随机 / 循环） | 未选中 CornerFull、选中 `shapes.medium`（18 dp）、按下 `shapes.small`；按下 fastEffects（3800）、抬起 defaultSpatial（700，阻尼 0.9） | 同形状；抬起取临界阻尼（无 0.9 的轻微过冲）【降级】 |
+| Button（`button`、FilledTonalButton、队列 / 输出项、DeviceButton） | Wear M3 `Button` 无 pressedShape（静态 stadium + ripple） | 按需求套用 IconButton 的 CornerFull → 8 dp【适配】 |
+| SettingsButton（设置行） | 静态 CircleShape + ripple | 同上挤压【适配】；禁用时不响应 |
+| 「接下来播放」Card | ripple | 8 % 透明度状态层 |
+
+basic / enhanced 都能逐帧改 `border-radius`（band10 模拟器两种 API 实测）。
+
+### 9.3 播放页动效审计（Horologist `AnimatedMediaControlButtons` / `AnimatedPlayPauseProgressButton`）
+
+| 动效 | 官方 | 本库 | 状态 |
+|---|---|---|---|
+| 播放 ↔ 暂停形状（scallop ↔ circle） | Morph 缓存，`morphProgress` 停在 1 → 瞬间切换 | 瞬间切换 | 一致 |
+| ButtonGroup 按压扩展 | `animateWidth`：+12 dp / 邻键 −12 dp，fastSpatial×2（5600）/ slowSpatial（260） | `transition: width` + 拟合贝塞尔（误差 ≤ 2.8 %） | 一致（近似） |
+| 按压 scallop → pill 形变 | `animatedScallopShapeProgress` 连续 morph | 端点切换，环淡出 | 【降级】 |
+| 播放中 scallop / 环旋转 | 每 3000 ms −36° | 默认关；`rotate:true`（circle / none 环）30 步 | 【降级】 |
+| 波浪进度环 | 连续 | 2.5 % / 5 % 量化 | 【降级】 |
+| 播放 / 暂停图标 Lottie（M3PlayPause） | 约 167 ms 帧动画 | 静态帧切换 | 【降级】（同法预渲染约 +8 KB，未做） |
+| 上一首 / 下一首 Lottie（M3Next，30 帧 60 fps = 500 ms；上一首镜像） | 点击后从 0 播放 | **enhanced**：每 3 帧取 1（帧 3…27），9 帧 × 50 ms，按墙钟取帧；松手即开始；basic 保持静态 | 新增（§9.4） |
+| 加载占位 shimmer | shimmer | 透明度脉冲 + 旋转弧 | 【降级】 |
+| 跑马灯 | 64 dp/s、停 4 s | 原生 marquee 同参数 | 一致 |
+| 音量电平淡入 / 淡出 / 补间 | 178 / 412 / 500 ms | 同 | 一致 |
+| 设置行按压 | ripple | 挤压（§9.2） | 【适配】 |
+
+### 9.4 Lottie 帧包体与实测
+
+- `tools/media-lottie.js` 用 lottie-web 渲染 `tools/lottie/M3Next.json`（Apache-2.0，Horologist），onPrimary 32 dp，上一首水平镜像；只在 enhanced 且侧键为 prev / next 时引用（basic 不拷贝）。
+- PNG8：18 张，round / pro 6 765 B，band10 / band9 5 875 B。release rpk 中 enhanced 比 basic 多约 10.5 KB（round）/ 9.6 KB（band），含每个文件的打包开销。
+- P4 整体（release rpk，相对 44fb069 的媒体示例；新增输出页、操作区、队列、18 个 Material Symbols 图标约 7.8 KB）：
+
+| 设备 | basic | enhanced（含 Lottie） |
+|---|---|---|
+| round | 240 354 → 267 409 B（+27.1 KB） | 240 390 → 277 910 B（+37.5 KB） |
+| pro | 204 633 → 230 804 B（+26.2 KB） | 204 667 → 241 318 B（+36.7 KB） |
+| band10 | 180 772 → 205 822 B（+25.1 KB） | 180 812 → 215 450 B（+34.6 KB） |
+| band9 | 180 448 → 205 510 B（+25.1 KB） | 180 492 → 215 157 B（+34.7 KB） |
+- 模拟器（round enhanced）：帧在松手后约 250–300 ms 才开始出现，并只看到 3–4 个有明显差异的帧（帧 15 之后接近静止）；页面同次点击里的重绘（换曲）会继续占用 JS 线程。示例因此只在播放顺序变化时重建队列。
