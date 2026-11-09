@@ -37,6 +37,7 @@ const PACK_BY_FN = {
   AlertDialog: 'dialog', SuccessConfirmationDialog: 'confirm',
   EdgeButton: 'edge',
   ClockPanel: 'time', ArcTimeText: 'time',
+  MediaColumn: 'mediaList', MediaActions: 'mediaList', MediaQueue: 'mediaList', MediaOutputPicker: 'mediaList',
   PlayerScreen: 'media', PlayPauseButton: 'media', MediaButtonRow: 'media', MediaInfo: 'media', SettingsRow: 'media', VolumeLevelIndicator: 'media', VolumeScreen: 'media'
 };
 
@@ -54,6 +55,7 @@ const PACKS = {
   edge: { css: ['edge.css', 'overlay.css', 'confirm.css'], extraHead: 'let cfTimer=null\nlet confirmEpoch=0\n', methods: ['confirm.js'] },
   time: { css: ['time.css'] },
   media: { css: ['media.css'], head: ['media.head.js'], data: ['media.data.js'], methods: ['media.methods.js'] },
+  mediaList: { css: ['media-list.css'], head: ['media-list.head.js'], data: ['media-list.data.js'], methods: ['media-list.methods.js'] },
   volume: { css: ['media.css', 'range.css'], head: ['media.head.js', 'range.head.js', 'volume-screen.head.js'], data: ['media.data.js', 'range.data.js', 'volume-screen.data.js'], methods: ['volume-screen.methods.js', 'range.js', 'media.methods.js'] }
 };
 
@@ -226,7 +228,7 @@ function parseWithPos(src) {
       eat('rb');
       return { param, stmts: children };
     }
-    if (name === 'if' || name === 'ScreenScaffold' || name === 'TransformingLazyColumn' || name === 'item' || name === 'Row') {
+    if (name === 'if' || name === 'ScreenScaffold' || name === 'TransformingLazyColumn' || name === 'item' || name === 'Row' || name === 'MediaColumn') {
       const children = stmts();
       eat('rb');
       return children;
@@ -366,6 +368,11 @@ function setterJs(s) {
   return s.name + '(){this.' + s.left + '=' + rhs + ';},';
 }
 
+// Button / IconButton press squish: CornerFull (26dp) -> shapes.small (8dp), see base.js sqPress.
+function sqAttrs(idExpr) {
+  return pressAttrs(idExpr).replace(/ontouchstart="press\(([^"]*)\)"/, 'ontouchstart="sqPress($1,$[dp(26)],$[dp(8)])"');
+}
+
 function pressAttrs(idExpr) {
   const quoted = idExpr.startsWith('$') || idExpr.includes('.');
   const id = quoted ? idExpr : "'" + idExpr + "'";
@@ -481,7 +488,14 @@ function emitControl(node, ctx) {
   if (n === 'CircularProgressIndicator' || n === 'LinearProgressIndicator' || n === 'SegmentedCircularProgressIndicator' || n === 'ArcProgressIndicator' || n === 'ProgressIndicator') return '\n<!-- #component progress-indicator {} -->\n';
   if (n === 'PresetRow') return '<list-item type="presets" class="preset-row"><div class="preset" for="{{presets}}" onclick="setProgress($item)"><text class="preset-text">{{$item}}%</text></div></list-item>';
   if (n === 'DemoTap') return '<div class="demo-tap" onclick="demoNext"></div>';
-  if (n === 'PlayerScreen') return emitPlayer(node);
+  if (n === 'MediaColumn') return emitMediaColumn(node, ctx);
+  if (n === 'MediaActions') return '\n<!-- #component media-actions {} -->\n';
+  if (n === 'MediaQueue') {
+    const hd = node.args.header && node.args.header.type === 'bool' && node.args.header.value;
+    return '\n<!-- #component media-queue {"header":"' + (hd ? 'true' : 'false') + '"} -->\n';
+  }
+  if (n === 'MediaOutputPicker') return '\n<!-- #component media-output-picker {} -->\n';
+  if (n === 'PlayerScreen') return emitPlayer(node, ctx.inColumn);
   if (n === 'VolumeScreen') {
     const c = node.args.content ? textOf(node.args.content) : 'device';
     return '\n<!-- #component volume-screen {"content":"\'' + c + '\'"} -->\n';
@@ -544,11 +558,11 @@ function emitButton(node, ctx, preset) {
     const cls = useIcc ? 'btn btn-ic ' + (clsName.startsWith('$item') ? '{{' + clsName + '}}' : clsName) : (sec && !iconNode ? 'btn bpc' : clsAttr);
     const subCls = useIcc ? 't-labelS c-onSV lab' : 't-labelS c-onSV';
     const labCls = useIcc ? 't-labelM ' + ink + ' lab' : 't-labelM ' + (sec && preset.cls === 'bf' ? 'c-onPC' : ink);
-    return '<div class="' + cls + '" ' + pressAttrs(id) + ' onclick="' + click + '">' + lead + '<div class="bcol"><text class="' + labCls + '">' + lab + '</text>' + (sub ? '<text class="' + subCls + '">' + sub + '</text>' : '') + '</div></div>';
+    return '<div class="' + cls + '" ' + sqAttrs(id) + ' onclick="' + click + '">' + lead + '<div class="bcol"><text class="' + labCls + '">' + lab + '</text>' + (sub ? '<text class="' + subCls + '">' + sub + '</text>' : '') + '</div></div>';
   }
   const lab = interpText(labelNode, itemParam);
   const icon = iconNode ? '<image class="ic24" src="' + iconSrc(iconNode, preset.iconRole, preset.iconDp, itemParam) + '"></image>' : '';
-  return '<div class="' + clsAttr + '" ' + pressAttrs(id) + ' onclick="' + click + '">' + icon + '<text class="t-labelM ' + inkAttr + ' button-label">' + lab + '</text></div>';
+  return '<div class="' + clsAttr + '" ' + sqAttrs(id) + ' onclick="' + click + '">' + icon + '<text class="t-labelM ' + inkAttr + ' button-label">' + lab + '</text></div>';
 }
 
 function emitIconButton(node, ctx, preset) {
@@ -558,7 +572,7 @@ function emitIconButton(node, ctx, preset) {
   let extra = preset.cls;
   if (node.args.variant) extra = textOf(node.args.variant, ctx.itemParam);
   const cls = extra ? (extra.startsWith('$item') ? 'ib {{' + extra + '}}' : 'ib ' + extra) : 'ib';
-  return '<div class="' + cls + '" ' + pressAttrs(id) + ' onclick="' + click + '"><image class="ic26" src="' + src + '"></image></div>';
+  return '<div class="' + cls + '" ' + sqAttrs(id) + ' onclick="' + click + '"><image class="ic26" src="' + src + '"></image></div>';
 }
 
 function emitCompact(node, ctx) {
@@ -604,12 +618,29 @@ function emitCardChild(ch, ctx) {
   return '';
 }
 
-function emitPlayer(node) {
-  const args = Object.assign({ marquee: 'false', left: "'prev'", right: "'next'" }, {});
+// MediaColumn { PlayerScreen(..) DemoTap() MediaActions() MediaQueue() } : one vertical <scroll> (Wear OS media app: the
+// player is the first full screen, the entity page continues below it). The volume level, ScrollIndicator and TimeText
+// stay outside the scroll; the player inside drops its own level / TimeText. Also hosts MediaOutputPicker alone.
+function emitMediaColumn(node, ctx) {
+  const kids = Array.isArray(node.children) ? node.children : [];
+  const isScreen = k => k.type === 'call' && (k.name === 'PlayerScreen' || k.name === 'DemoTap');
+  const hasPlayer = kids.some(k => k.type === 'call' && k.name === 'PlayerScreen');
+  ctx.inColumn = true;
+  let h = hasPlayer ? '\n<!-- #component media-volume-level {} -->\n' : '';
+  h += '<scroll class="ml-scroll" scroll-y="true" onscroll="onScroll">\n<div class="ml-col">\n';
+  if (hasPlayer) h += '<div class="ml-screen">' + kids.filter(isScreen).map(k => emitControl(k, ctx)).join('') + '</div>\n';
+  h += kids.filter(k => !isScreen(k)).map(k => emitControl(k, ctx)).join('');
+  h += '<div class="ml-padb"></div>\n</div>\n</scroll>\n<!-- #include @wear/scrollind.tpl -->\n<!-- #include @wear/timetext.tpl -->\n';
+  ctx.inColumn = false;
+  return h;
+}
+
+function emitPlayer(node, inColumn) {
   const marquee = node.args.marquee && (node.args.marquee.type === 'bool' ? node.args.marquee.value : textOf(node.args.marquee) === 'true');
   const left = node.args.left ? textOf(node.args.left) : 'prev';
   const right = node.args.right ? textOf(node.args.right) : 'next';
   const bind = { marquee: marquee ? 'true' : 'false', left: "'" + left + "'", right: "'" + right + "'" };
+  if (inColumn) { bind.time = 'false'; bind.level = 'false'; }
   return '\n<!-- #component media-player ' + JSON.stringify(bind) + ' -->\n';
 }
 
@@ -681,7 +712,7 @@ function emitPage(ast) {
         kids.forEach(k => { html += emitControl(k, ctx); });
       } else html += emitControl(n, ctx);
     });
-    if (![...fns].some(x => x === 'PlayerScreen' || x === 'VolumeScreen' || x === 'TimeText' || x === 'MediaInfo')) {
+    if (![...fns].some(x => x === 'PlayerScreen' || x === 'VolumeScreen' || x === 'TimeText' || x === 'MediaInfo' || x === 'MediaColumn')) {
       html += '\n<!-- #include @wear/timetext.tpl -->\n';
     }
     html += '</div>';

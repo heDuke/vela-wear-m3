@@ -150,8 +150,9 @@ module.exports=function(c){
    if(pp.shape==='round')o.sc=o.scD='';
   }
   o.vertical=g.vertical;o.w=g.w||null;o.ph=g.ph||0;
-  if(ctl){const sd=k=>({ic:img(G.SIDE[k][0]),icD:img(G.SIDE[k][0]+'d'),seek:G.SIDE[k][2]});o.l=sd(ctl.left);o.r=sd(ctl.right)}
-  if(set){const ic=n=>({on:img(n+'_24'),off:img(n+'_24d')});o.set={left:set.left,right:set.right,more:ic('md_set_more')};
+  if(ctl){const lot=k=>c.enhanced&&(k==='prev'||k==='next')?Array.from({length:9},(_,i)=>img('md_'+k+'_l'+(i+1))):null
+   const sd=k=>({ic:img(G.SIDE[k][0]),icD:img(G.SIDE[k][0]+'d'),seek:G.SIDE[k][2],lot:lot(k)});o.l=sd(ctl.left);o.r=sd(ctl.right)}
+  if(set){const ic=n=>({on:img(n+'_24'),off:img(n+'_24d')});o.set={left:set.left,right:set.right,more:ic('md_set_more'),r:Math.floor(dp(S.settings.h)/2),rp:dp(8)};
    if(set.left==='output'){o.set.out={headphones:ic('md_set_hp'),watch:ic('md_set_watch'),none:ic('md_set_off')};o.set.badge={up:[img('md_badge_up'),img('md_badge_upd')],down:[img('md_badge_down'),img('md_badge_downd')],mute:[img('md_badge_mute'),img('md_badge_muted')]}}
    if(set.left==='volume')o.set.vol={up:ic('md_vol_up'),down:ic('md_vol_down'),mute:ic('md_vol_mute')};}
   if(lv){o.lvMs=S.level.showMs;if(lv.arc){const g=c.levelGeo;o.lv={arc:true,cx:g.cx,cy:g.cy,r:g.r,o:g.o,sweep:g.sweep,gap:g.gap,start:g.start,ind:g.ind.src,trk:g.trk.src}}

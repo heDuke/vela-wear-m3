@@ -12,4 +12,6 @@
 <!-- #if @{settings} -->
 <!-- #component media-settings {"left":"@{settingsLeft}","right":"@{settingsRight}"} -->
 <!-- #endif -->
+<!-- #if @{time} -->
 <!-- #component time-text {} -->
+<!-- #endif -->

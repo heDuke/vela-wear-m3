@@ -24,7 +24,7 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
  configurations++;
  const media=path.join(dest,'generated',device+'-'+animation+'-media');
  independent.generate({input:path.join(dest,'package/examples/media/template'),output:media,device,animation});
- for(const pg of ['index','player','podcast','audio','volume','volumelabel']){const ux=fs.readFileSync(path.join(media,'pages',pg,pg+'.ux'),'utf8');assert(!/#component|#include|#set|@\{|\$\[|\$\(/.test(ux),'media '+pg+' unexpanded');}
+ for(const pg of ['index','player','podcast','audio','volume','volumelabel','output']){const ux=fs.readFileSync(path.join(media,'pages',pg,pg+'.ux'),'utf8');assert(!/#component|#include|#set|@\{|\$\[|\$\(/.test(ux),'media '+pg+' unexpanded');}
  const player=fs.readFileSync(path.join(media,'pages/player/player.ux'),'utf8');
  assert(player.includes('onclick="mdPlayTap"')&&player.includes('onclick="mdNextTap"')&&player.includes('<marquee id="mdMarquee"'));
  assert(fs.readFileSync(path.join(media,'pages/podcast/podcast.ux'),'utf8').includes('md_fwd30_24.png'));
@@ -46,6 +46,17 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
  assert(voll.includes('class="vs-lab"')&&!voll.includes('vs-dev'),'label variant');
  assert(new RegExp('\\.vs-dn \\{[^}]*font-weight:bold;[^}]*lines:'+(device.startsWith('band')?1:2)+';text-overflow:ellipsis;').test(vol),'DeviceButton name: bold, 2 lines (bands 1) + ellipsis');
  if(device.startsWith('band'))assert(vol.includes('"max":'+(independent.devices[device].W-2*Math.round(18*independent.devices[device].k))),'band DeviceButton margin 18dp');
+ // P4: one vertical scroll (player screen, then MediaActions + MediaQueue), IconToggleButton row, output picker,
+ // press squish (sqPress) on Buttons / IconButtons, Lottie click frames for prev / next on enhanced only
+ assert(player.includes('<scroll class="ml-scroll"')&&player.includes('class="ml-screen"')&&player.includes("onclick=\"maTap('like')\"")&&player.includes('onclick="mqTap($item.id)"'),'P4 player scroll column');
+ assert(!/class="ml-screen">[\s\S]*?class="md-lv /.test(player),'volume level stays outside the scroll');
+ for(const n of ['md_ma_liket_24','md_ma_liked_24','md_ma_shuf_24','md_ma_shuft_24','md_ma_rep_24','md_ma_rept_24','md_ma_rep1_24'])assert(player.includes('/common/img/'+n+'.png')&&fs.existsSync(path.join(media,'common/img',n+'.png')),n);
+ assert(player.includes('/common/img/md_ma_queue_24.png')===!device.startsWith('band'),'Up next card icon only on watches');
+ assert(player.includes('sqPress(id,r0,r1,kIn,kOut)')&&player.includes("ontouchstart=\"mdSbDown('mdOut')\""),'press squish');
+ assert(player.includes('/common/img/md_next_l9.png')===(animation==='enhanced')&&fs.existsSync(path.join(media,'common/img/md_next_l1.png'))===(animation==='enhanced'),'Lottie frames on enhanced only');
+ const out=fs.readFileSync(path.join(media,'pages/output/output.ux'),'utf8');
+ assert(out.includes('onclick="opTap($item.id)"')&&out.includes('class="op-ft"')&&out.includes('class="op-ic"')===!device.startsWith('band'),'output picker (icons only on watches)');
+ assert(vol.includes('ontouchstart="volDevDown"'),'DeviceButton squish');
  assert(!fs.readdirSync(path.join(output,'common/img')).some(f=>f.startsWith('md_')),'media assets must not leak into pages that do not use them');
  if(configurations===1){const G=require(path.join(dest,'package/tools/media-geom.js')),r=G.ring(),b=G.button();
   assert.deepEqual(G.circleNames(20),['md_c0_I','md_c0_P2','md_c0_Z','md_c1_I','md_c1_P2','md_c9_I']);assert.equal(G.lobeState(0,0,40),'md_r0_Z');

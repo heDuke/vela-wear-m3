@@ -213,7 +213,8 @@
       "settings": "true",
       "settingsLeft": "'output'",
       "settingsRight": "'more'",
-      "level": "true"
+      "level": "true",
+      "time": "true"
     },
     "styles": [
       "media.css"
@@ -227,6 +228,29 @@
     "styles": [
       "media.css",
       "range.css"
+    ]
+  },
+  "media-actions": {
+    "template": "media-actions.tpl",
+    "defaults": {},
+    "styles": [
+      "media-list.css"
+    ]
+  },
+  "media-queue": {
+    "template": "media-queue.tpl",
+    "defaults": {
+      "header": "false"
+    },
+    "styles": [
+      "media-list.css"
+    ]
+  },
+  "media-output-picker": {
+    "template": "media-output-picker.tpl",
+    "defaults": {},
+    "styles": [
+      "media-list.css"
     ]
   }
 }

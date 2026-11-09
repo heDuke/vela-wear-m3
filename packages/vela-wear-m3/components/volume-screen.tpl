@@ -6,7 +6,7 @@
   <div class="step-zone step-top"><div class="step-key {{stepEnabled && stepValue < stepMax ? 'step-key-on' : 'step-key-off'}}" style="{{stepEnabled && stepValue < stepMax ? feedback.plus : keyIdle}}" ontouchstart="rangePress('plus')" ontouchend="rangeRelease('plus')" ontouchmove="cancelPress" onclick="stepClick('plus')"><image class="ic24" src="{{stepEnabled && stepValue < stepMax ? '/common/img/md_vs_up_24.png' : '/common/img/md_vs_up_24d.png'}}"></image></div></div>
   <div class="step-content">
 <!-- #if mdVs.content === 'device' -->
-    <div class="vs-dev" style="{{volDevSt}}" onclick="volDeviceTap">
+    <div class="vs-dev" style="{{volDevSt}}" ontouchstart="volDevDown" ontouchend="volDevUp" ontouchmove="cancelPress" onclick="volDeviceTap">
 <!-- #if mdVs.icon -->
       <image class="vs-dic" src="{{volDevIc}}"></image>
 <!-- #endif -->

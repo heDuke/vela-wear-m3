@@ -92,6 +92,38 @@ export default { private: { isHome: false }, onInit(){this.volSetup({max:10,valu
 assert(media2.includes('volume-screen'), media2);
 assert(!/media-audio\.head\.js/.test(media2), 'audio pack must not leak');
 
+const media3 = compileM3(`<template>
+fun Player() {
+  MediaColumn {
+    PlayerScreen(marquee = true)
+    DemoTap()
+    MediaActions()
+    MediaQueue(header = true)
+  }
+}
+</template>
+<script>
+export default { private: { isHome: false }, demoNext(){} }
+</script>`);
+assert(media3.includes('<scroll class="ml-scroll"') && media3.includes('#component media-actions') && media3.includes('"header":"true"'), media3);
+assert(media3.includes('"time":"false"') && media3.includes('"level":"false"') && media3.includes('#component media-volume-level'), 'player inside MediaColumn drops its TimeText / level');
+assert(media3.includes('media-list.methods.js') || media3.includes('maTap('), 'media-list pack injected');
+assert((media3.match(/timetext\.tpl/g) || []).length === 1, 'one TimeText');
+const picker = compileM3(`<template>
+fun Output() { MediaColumn { MediaOutputPicker() } }
+</template>
+<script>
+export default { private: { isHome: false } }
+</script>`);
+assert(picker.includes('#component media-output-picker') && !picker.includes('media-volume-level'), picker);
+const ib = compileM3(`<template>
+fun B() { ScreenScaffold { TransformingLazyColumn { item { IconButton(onClick = { go() }, icon = { Icon("star") }) } item { Button(onClick = { go() }, label = { Text("x") }) } } } }
+</template>
+<script>
+export default { private: { isHome: false }, go(){} }
+</script>`);
+assert((ib.match(/ontouchstart="sqPress\(/g) || []).length === 2, 'Button / IconButton press squish');
+
 const home = compileM3(`<template>
 fun Index() {
   ScreenScaffold(showBack = false) {

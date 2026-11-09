@@ -8,7 +8,7 @@ for(const m of componentDoc.matchAll(/^<!-- #component ([\w-]+) (\{.*\}) -->/gm)
  const bindings=JSON.parse(m[2]),rendered=lib.componentSource(m[1],bindings);assert(!/@\{\w+\}/.test(rendered),'Unexpanded binding '+m[1]);covered.add(m[1]);snippets++;
 }
 assert.deepEqual([...covered].sort(),Object.keys(lib.components).sort(),'Every registered component needs an example');
-const composeNames=['ScreenScaffold','TransformingLazyColumn','Button','FilledTonalButton','OutlinedButton','ChildButton','IconButton','FilledIconButton','CompactButton','ButtonMorph','IconButtonMorph','Card','OutlinedCard','SwitchButton','CheckboxButton','RadioButton','Slider','Stepper','StepperLevelIndicator','HorizontalPager','VerticalPager','TimeText','ScrollIndicator','ProgressIndicator','AlertDialog','SuccessConfirmationDialog','EdgeButton','PlayerScreen','MediaButtonRow','MediaInfo','VolumeScreen','NativeSwitch','NativeSlider'];
+const composeNames=['MediaColumn','MediaActions','MediaQueue','MediaOutputPicker','ScreenScaffold','TransformingLazyColumn','Button','FilledTonalButton','OutlinedButton','ChildButton','IconButton','FilledIconButton','CompactButton','ButtonMorph','IconButtonMorph','Card','OutlinedCard','SwitchButton','CheckboxButton','RadioButton','Slider','Stepper','StepperLevelIndicator','HorizontalPager','VerticalPager','TimeText','ScrollIndicator','ProgressIndicator','AlertDialog','SuccessConfirmationDialog','EdgeButton','PlayerScreen','MediaButtonRow','MediaInfo','VolumeScreen','NativeSwitch','NativeSlider'];
 for(const name of composeNames){
  assert(componentDoc.includes(name),'COMPONENTS.md missing Compose name '+name);
 }

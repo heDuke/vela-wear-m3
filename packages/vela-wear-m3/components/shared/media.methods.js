@@ -39,7 +39,7 @@ mdPaint(){
 },
 mdPaintSides(){if(!MDC.l)return;const lc=mdS.prevOn?'md-son':'md-sdis',rc=mdS.nextOn?'md-son':'md-sdis'
  if(this.mdLCls!==lc)this.mdLCls=lc;if(this.mdRCls!==rc)this.mdRCls=rc
- const li=mdS.prevOn?MDC.l.ic:MDC.l.icD,ri=mdS.nextOn?MDC.r.ic:MDC.r.icD;if(this.mdLIcon!==li)this.mdLIcon=li;if(this.mdRIcon!==ri)this.mdRIcon=ri},
+ const li=mdS.prevOn?(mdLot.l?MDC.l.lot[mdLot.l-1]:MDC.l.ic):MDC.l.icD,ri=mdS.nextOn?(mdLot.r?MDC.r.lot[mdLot.r-1]:MDC.r.ic):MDC.r.icD;if(this.mdLIcon!==li)this.mdLIcon=li;if(this.mdRIcon!==ri)this.mdRIcon=ri},
 // ButtonGroup press expansion: pressed key +12dp, neighbours -12dp (middle pressed: sides -6dp each); width transition
 // .md-tin = fastSpatial (k 5600) / .md-tout = slowSpatial (k 260) fitted cubic-beziers. Radius follows min(w,h)/2.
 mdWidths(id,grow){if(!MDC.w)return;const w=MDC.w[id||''],r=v=>Math.floor(Math.min(v,MDC.ph)/2)
@@ -58,9 +58,14 @@ mdRelease(now){
 mdPlayDown(){if(mdS.playOn&&!mdS.loading)this.mdPress('play')},
 mdPrevDown(){if(mdS.prevOn&&MDC.l)this.mdPress('prev')},
 mdNextDown(){if(mdS.nextOn&&MDC.r)this.mdPress('next')},
-mdUp(){this.mdRelease(false)},
+// the Lottie starts on release (Compose click = pointer up); Vela's onclick arrives ~250 ms after touchend
+mdUp(){const was=mdS.press;this.mdRelease(false);if(was==='prev'||was==='next')this.mdLotRun(was==='prev'?'l':'r')},
 mdCancel(){this.mdRelease(false)},
 mdPlayTap(){if(!mdS.playOn||mdS.loading)return;if(mdS.playing){if(this.mdOnPause)this.mdOnPause()}else if(this.mdOnPlay)this.mdOnPlay()},
+// AnimatedMediaButton: each click restarts lottieAnimatable.animate() from frame 0 (500 ms); here 9 frames x 50 ms,
+// indexed by wall clock so a busy JS thread skips frames instead of stretching the animation
+mdLotRun(k){const s=k==='l'?MDC.l:MDC.r;if(!s||!s.lot)return;if(mdLot.t[k])clearTimeout(mdLot.t[k]);mdLot[k]=0
+ const t0=Date.now(),step=()=>{const f=1+Math.floor((Date.now()-t0)/50);mdLot[k]=f>9?0:f;mdLot.t[k]=f>9?null:setTimeout(step,50);this.mdPaintSides()};step()},
 mdSideTap(s,on,named){if(!s||!on)return;if(s.seek){if(this.mdOnSeek)this.mdOnSeek(s.seek)}else if(this[named])this[named]()},
 mdPrevTap(){this.mdSideTap(MDC.l,mdS.prevOn,'mdOnPrev')},
 mdNextTap(){this.mdSideTap(MDC.r,mdS.nextOn,'mdOnNext')},
@@ -86,6 +91,8 @@ mdPaintSet(){const T=MDC.set;if(!T)return;const on=mdS.setOn,k=on?'on':'off',v=m
  const cls=on?'md-sbon':'md-sbdis';if(this.mdSetCls!==cls)this.mdSetCls=cls;let oi='',b=''
  if(T.out){oi=T.out[mdS.out][k];b=mdS.out==='none'?'':T.badge[lvl][on?0:1]}else if(T.vol)oi=T.vol[lvl][k]
  if(this.mdOutIc!==oi)this.mdOutIc=oi;if(this.mdBadge!==b)this.mdBadge=b;const mi=T.more[k];if(this.mdMoreIc!==mi)this.mdMoreIc=mi},
+// press squish (IconButton animatedShapes: CornerFull -> shapes.small); disabled keys ignore the touch
+mdSbDown(id){if(mdS.setOn&&MDC.set)this.sqPress(id,MDC.set.r,MDC.set.rp)},
 mdOutTap(){if(mdS.setOn&&this.mdOnOutput)this.mdOnOutput()},
 mdMoreTap(){if(mdS.setOn&&this.mdOnMore)this.mdOnMore()},
 // ---- volume level indicator (VolumeLevelIndicator: arc on round, straight bar elsewhere) ---------------------------
@@ -132,4 +139,4 @@ mdSetState(st){const on=st!=='disconnected'
  if(st==='loading')this.mdSetInfo('loading');else if(st==='none'||!on){this.mdSetInfo('none');this.mdSetProgress(0)}else if(this.mdInfo!=='ready')this.mdSetInfo('ready')
  if(MDC.set){mdS.setOn=on;this.mdSetOutput(on?mdS.outPref:'none')}},
 mdShow(){mdVisible=true;this.mdPaint();if(this.mdMq)this.mdMqArm();if(this.mdaShow)this.mdaShow();if(this.mdvShow)this.mdvShow()},
-mdHide(){mdVisible=false;this.mdMqStop();this.mdRelease(true);this.mdLvHide(true);if(this.mdaHide)this.mdaHide();if(this.mdvHide)this.mdvHide()},
+mdHide(){mdVisible=false;['l','r'].forEach(k=>{if(mdLot.t[k])clearTimeout(mdLot.t[k]);mdLot.t[k]=null;mdLot[k]=0});this.mdMqStop();this.mdRelease(true);this.mdLvHide(true);if(this.mdaHide)this.mdaHide();if(this.mdvHide)this.mdvHide()},

@@ -85,6 +85,7 @@ edge-button 使用 ebSt、通用按压方法与 showConfirm 回调。应用不�
 | `AlertDialog` / `SuccessConfirmationDialog` | alert-dialog / confirmation | `dlgOn`、`showConfirm`；`visible` / `onDismissRequest` 不接线 |
 | `EdgeButton` | edge-button | 业务提供 `showConfirm`；`onClick` 不接线 |
 | `PlayerScreen` / `MediaButtonRow` / `MediaInfo` / `VolumeScreen` | media-player / media-controls / media-info / volume-screen | `md*` / `vol*` |
+| `MediaColumn` / `MediaActions` / `MediaQueue(header)` / `MediaOutputPicker` | （纵向 scroll）/ media-actions / media-queue / media-output-picker | `ma*` / `mq*` / `op*` |
 | `NativeSwitch` / `NativeSlider` | （系统控件对照） | `nWifi` / `nLvl` |
 | `Text` `ListHeader` `Note` `Icon` `ClockPanel` `ArcTimeText` | 内联 markup | 无独立 registry 项 |
 
@@ -171,6 +172,7 @@ export default {
 | AlertDialog | `overlay.css`、`$[dlgCss()]` | 基础 head | dlgOn / dlgOut | 业务开关与取消／确认回调 |
 | EdgeButton | `edge.css`（已含 ebCss） | 基础 head | 业务声明 ebSt:{} | 默认调用业务 `showConfirm()` |
 | 音量页 volume-screen | `media.css`、`range.css` | `media.head.js`、`range.head.js`、`volume-screen.head.js` | `media.data.js`、`range.data.js`、`volume-screen.data.js` | `volume-screen.methods.js`、`range.js`、`media.methods.js`；onInit 调 `volSetup()`，pageShow / pageHide 调 `volShow()` / `volHide()` |
+| 媒体列表 media-list（P4） | `media-list.css` | `media-list.head.js` | `media-list.data.js` | `media-list.methods.js`；先 `setLayout(mlLayout(..))`，再 `maSet` / `mqSetItems` / `opSetup` |
 | 媒体控件 | `media.css` | `media.head.js`（音频另加 `media-audio.head.js`；音量另加 `media-volume.head.js`） | `media.data.js` | `media-audio.methods.js` / `media-volume.methods.js`（可选）、`media.methods.js`；onInit 调 `mdSetMeta()`，pageShow / pageHide 调 `mdShow()` / `mdHide()` |
 
 上表中的片段全部通过 `@wear/` 引入。控制器方法结尾通常带逗号，按 JS 对象成员插入。`head` 和计时器不放入 private；`data` 不放入模块作用域。
@@ -676,6 +678,38 @@ fun Volume() {
 ```
 
 Horologist VolumeScreen：androidx Stepper（上 VolumeUp、下 VolumeDown，primaryContainer 胶囊 60×48 dp，0 / 最大值时对应键禁用）+ 常显电平（round 72° 弧，pro / 手环 6 dp 直条）+ 内容槽。`content`：`'device'`（DeviceButton：primary 填充、onPrimary 粗体名称，最多两行省略；手环不显示图标、名称单行省略、外边距 18 dp）或 `'label'`（「音量」）。步数由 `volSetup({max})` 配置，默认 0–10。按压 / 长按连发（500 ms 后每 60 ms）沿用 Stepper，经 range.js 的 `rangeChanged` 钩子回到本组件。放在页面根 `<div class="page">` 内，不与 media-player 同页。
+
+### media-actions / media-queue / media-output-picker（P4）
+
+Compose：`MediaColumn { PlayerScreen(..) DemoTap() MediaActions() MediaQueue() }`，单独的输出选择页写 `MediaColumn { MediaOutputPicker() }`。`MediaColumn` 编成**一条纵向 `<scroll>`**：第一屏是完整播放页（电平、ScrollIndicator、TimeText 留在 scroll 外，播放页自身不再画 TimeText / 电平），下面接 Horologist `EntityScreen` 的头部、按钮行与队列（Wear OS 媒体应用的「播放页下滑」）。注入 media-list 组合（media-list.css / head / data / methods）。
+
+```
+fun Player() {
+  MediaColumn {
+    PlayerScreen(marquee = true, left = "prev", right = "next")
+    MediaActions()
+    MediaQueue()
+  }
+}
+```
+
+底层标记（放在 `<scroll class="ml-scroll" scroll-y="true" onscroll="onScroll"><div class="ml-col">` 内）：
+
+```html
+<!-- #component media-actions {} -->
+<!-- #component media-queue {"header":"false"} -->
+<!-- #component media-output-picker {} -->
+```
+
+- **media-actions**：居中两行头部（titleMedium / labelMedium 粗体，单行省略）+ 3 个 IconToggleButton（点赞 / 随机 / 循环；未选中 surfaceContainer + onSurface 描边图标、选中 primary + onPrimary，循环 off → all → one 三态）+「接下来播放」Card（queue_music 图标，手环不画图标；内容 2 行省略）。`maSet({title,artist,liked,shuffle,repeat,next})`；回调 `maOnLike(b)`、`maOnShuffle(b)`、`maOnRepeat('off'|'all'|'one')`、`maOnNext()`。点按先本地切换再回调。
+- **media-queue**：`PlaylistStreamingScreen` 的 FilledTonalButton 列表（曲名粗体单行省略 + 歌手次要文字，可选 24 dp 封面，手环不画封面）。`header:true` 额外画头部。`mqSetItems([{id,title,artist,art?}],currentId,highlight)`、`mqSetCurrent(id)`（highlight 关时不重建列表）；回调 `mqOnItem(id,index)`。
+- **media-output-picker**：Wear M3 原语重建的系统输出面板（官方是闭源 Settings `MEDIA_OUTPUT` 面板）：ListHeader（最多 2 行）+ 每台设备一个 Button（当前设备 filled primary + 「当前」次要文字，其余 filledTonal；类型 phone / watch / headphones / speaker / bluetooth 对应 Material Symbols 图标，手环不画图标、名称单行，手表名称 2 行）+ bodySmall 脚注。`opSetup({title,devices:[{id,name,type,current}],footnote})`；回调 `opOnSelect(id)`。**Vela 不能枚举或切换音频输出**，列表由应用提供，选中只发回调。
+- 行高：`mlLayout(extraTop[],nQueue,{actions,header})` 给出 scroll 内各行 px 高度，交给 `setLayout()`（ScrollIndicator）。先 `setLayout` 再 `maSet` / `mqSetItems` / `opSetup`（setLayout 会重置按压反馈表）。
+- 按压：按钮行是 IconToggleButton animatedShapes（未选中 CornerFull、选中 shapes.medium 18 dp、按下 shapes.small 8 dp；按下 fastEffects 3800、抬起 defaultSpatial 700 取临界阻尼），队列 / 输出项是 Button 挤压（见下节 sqPress），卡片为 8 % 透明度状态层。
+
+## 按压挤压 sqPress
+
+`sqPress(id, r0, r1[, kIn, kOut])` 代替 `press(id)`：容器圆角从 r0（px，CornerFull）按临界阻尼精确解过渡到 r1（px，`shapes.small` 8 dp），抬起回到 r0；默认刚度 12600 / 260（IconButtonDefaults.animatedShapes 的 fastSpatial.faster(200) / slowSpatial）。`sqRest(id, r0)` 在静止时改目标圆角（切换按钮选中态）。`.m3.tpl` 的 Button / IconButton 族、`button` / `icon-button` 模板、媒体设置行、音量页设备键、P4 按钮都已接入；手写模板把 `ontouchstart="press(id)"` 换成 `ontouchstart="sqPress(id,$[dp(26)],$[dp(8)])"`，并让该元素的 `style` 读 `feedback[id]`。Wear M3 源码里只有 IconButton / TextButton / IconToggleButton 带 pressedShape；Button 与 SettingsButton 的挤压是按需求统一套用的【适配】。
 
 ## 常见接入问题
 

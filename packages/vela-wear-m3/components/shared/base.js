@@ -95,6 +95,11 @@
     this.pressId='';this.relId='';this.stopHold(id);this.animateControl(id,0)
     if(this.onPressCancel)this.onPressCancel(id)
   },
+  // Press squish: CornerFull (rest radius r0) -> MaterialTheme.shapes.small (r1) on press, exact critically damped
+  // springs (IconButton: fastSpatial.faster(200) 12600 in / slowSpatial 260 out; toggles pass fastEffects 3800 /
+  // defaultSpatial 700). r0 may change while released (toggle checked = shapes.medium) through sqRest(id,r0).
+  sqPress(id,r0,r1,kIn,kOut){sq[id]=[+r0,+r1,+kIn||12600,+kOut||260];this.press(id)},
+  sqRest(id,r0){const s=sq[id];if(s)s[0]=+r0;const m=motions[id];if(!m||m.rest)this.feedback[id]={borderRadius:Math.round(+r0)+'px'}},
   stopHold(id){if(holds[id])clearTimeout(holds[id]);delete holds[id]},
   // every=120 for list/demo holds; Stepper passes androidx repeatableClickable's 60ms (initialDelay 500).
   hold(id,fn,every=120){this.stopHold(id);const repeat=()=>{if(this.pressId!==id||!active)return;fn();holds[id]=setTimeout(repeat,every)};holds[id]=setTimeout(repeat,500)},
@@ -102,7 +107,7 @@
     // stiffness>0 = one critically damped spring both ways (e.g. androidx fastEffects 1400); 0 keeps press feedback
     // (fast 1400 in, slow 260 out). Ids listed by pressSpring(id) -> [kIn,kOut] use the exact critically damped
     // solution on the wall clock instead (stiff springs such as 12600 are not stable in the 120Hz Euler loop).
-    const m=motions[id]||(motions[id]={x:initial,v:0,target:initial});const pair=!stiffness&&this.pressSpring&&this.pressSpring(id)
+    const m=motions[id]||(motions[id]={x:initial,v:0,target:initial});const pair=!stiffness&&((this.pressSpring&&this.pressSpring(id))||(sq[id]&&[sq[id][2],sq[id][3]]))
     if(pair){const now=Date.now();if(m.ex){const c=springAt(m,now);m.x=c.x;m.v=c.v}m.x0=m.x;m.v0=m.v;m.t0=now;m.ex=pair[target?0:1]}else m.ex=0
     m.target=target;m.k=stiffness;m.rest=false
     const step=only=>{
@@ -117,7 +122,7 @@
         for(let n=0;n<4;n++){q.v+=(stiff*(q.target-q.x)-2*Math.sqrt(stiff)*q.v)*dt;q.x+=q.v*dt}
         if(Math.abs(q.x-q.target)<.002&&Math.abs(q.v)<.02){q.x=q.target;q.v=0}else moving=true
         }
-        const value=Math.max(0,Math.min(1,q.x)),st=this.pressStyle?this.pressStyle(key,value):null
+        const value=Math.max(0,Math.min(1,q.x)),s2=sq[key],st=(this.pressStyle?this.pressStyle(key,value):null)||(s2?{borderRadius:Math.round(s2[0]+(s2[1]-s2[0])*value)+'px'}:null)
         const previous=this.feedback[key]||{},next=st||{opacity:Math.round((1-.08*value)*100)/100}
         if(Object.keys(next).some(name=>previous[name]!==next[name]))this.feedback[key]=next
         if(this.onMotionFrame)this.onMotionFrame(key,value)
@@ -131,7 +136,7 @@
     if(!motionTimer)motionTimer=setInterval(()=>step(),33)
   },
   setLayout(h) {
-    const feedback={};['back','plus','minus','morph','buttonMorph','compact','compactStatic','secondary','a','b','c','tg','eb','dec','inc'].forEach(id=>{feedback[id]={opacity:1}})
+    const feedback={};['back','plus','minus','morph','buttonMorph','compact','compactStatic','secondary','a','b','c','tg','eb','dec','inc','mdOut','mdMore','vsDev'].forEach(id=>{feedback[id]={opacity:1}})
     ;['items','variants','iconVariants','radios','switches'].forEach(name=>{(this[name]||[]).forEach(it=>{feedback[it.id]={opacity:1}})})
     this.feedback=feedback
     if(PAGE_LAYOUT.length){h=[];PAGE_LAYOUT.forEach(row=>{const n=row.repeat?(this[row.repeat]||[]).length:1;if(row.repeat==='items')this.tlcBase=h.length;for(let i=0;i<n;i++)h.push(row.height)})}

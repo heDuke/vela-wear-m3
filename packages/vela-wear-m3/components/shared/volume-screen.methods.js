@@ -18,6 +18,10 @@ volSetOutput(kind,name){const V=MDC.vs;kind=kind==='watch'?'watch':'headphones';
  if(!V||V.content!=='device')return;if(V.icons)this.volDevIc=V.icons[kind]
  const tw=Math.ceil(mdTextW(this.volName,V.fs,true)),inner=V.max-V.pad-V.ic,w=Math.min(tw,inner)
  this.volNameSt={width:w+'px',height:(tw>inner&&V.lines>1?2:1)*V.lh+'px'};this.volDevSt={width:(w+V.pad+V.ic)+'px'}},
+// DeviceButton press squish (Button: CornerFull 26dp -> shapes.small 8dp, base.js sqPress); the radius rides in volDevSt
+volDevDown(){this.sqPress('vsDev',$[dp(26)],$[dp(8)])},
+volDevUp(){this.release('vsDev')},
+pressStyle(id,p){if(id!=='vsDev'||!sq.vsDev)return null;const s=sq.vsDev;this.volDevSt=Object.assign({},this.volDevSt,{borderRadius:Math.round(s[0]+(s[1]-s[0])*p)+'px'});return {opacity:1}},
 volDeviceTap(){if(this.volOnDevice)this.volOnDevice()},
 volShow(){mdVisible=true;mdLv.on=true;this.mdLvCls='vs-lv';this.mdLvSt={opacity:1};this.volPaint(true);vsLive=true;if(!vsBind)return;const vm=this
  const take=(r,snap)=>{if(!vsLive||!r||!(+r.value>=0))return;const v=vm.volClamp(+r.value*vm.stepMax);if(v===vm.stepValue&&!snap)return;vm.stepValue=v;vm.volPaint(snap)}
