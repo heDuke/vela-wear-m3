@@ -41,7 +41,9 @@ module.exports=function(c){
  // Lottie click frames (enhanced prev / next): all 9 frames are pre-mounted over the static icon and switched by
  // class (opacity), so no image is decoded on the click (a first-use src swap cost ~100 ms on the emulator)
  c.mdLotImgs=(s,kind)=>Array.from({length:9},(_,i)=>'<image class="md-lf {{md'+s.toUpperCase()+'L'+(i+1)+'}}" src="/common/img/md_'+kind+'_l'+(i+1)+'.png"></image>').join('');
- c.mdLotData=()=>{const t=c.mdCtl;if(!t)return '';let o='';for(const [s,on] of [['L',t.lLot],['R',t.rLot]])if(on){o+='md'+s+'S:\'md-fi\',';for(let i=1;i<=9;i++)o+='md'+s+'L'+i+':\'md-fo\','}return o};
+ // play / pause (M3PlayPause): frame 1 = pause icon, 2..6 = Lottie frames 17..83, 7 = play icon
+ c.mdPpImgs=()=>['md_pause_32','md_pp_l1','md_pp_l2','md_pp_l3','md_pp_l4','md_pp_l5','md_play_32'].map((n,i)=>'<image class="md-lf {{mdPL'+(i+1)+'}}" src="/common/img/'+n+'.png"></image>').join('');
+ c.mdLotData=()=>{const t=c.mdCtl;let o='';if(c.mdPP&&c.enhanced){o+='mdPS:\'md-fi\',';for(let i=1;i<=7;i++)o+='mdPL'+i+':\'md-fo\','}if(!t)return o;for(const [s,on] of [['L',t.lLot],['R',t.rLot]])if(on){o+='md'+s+'S:\'md-fi\',';for(let i=1;i<=9;i++)o+='md'+s+'L'+i+':\'md-fo\','}return o};
  // ---- markup helpers --------------------------------------------------------------------------------------------------
  // wavy ring (playing) and circle ring (paused) share one track element; lobes 1..9 of the circle are rotated lobe-1 images
  c.mdLobes=()=>'<image class="md-rt" src="{{mdRtSrc}}"></image>'+Array.from({length:10},(_,k)=>'<image class="md-l'+k+'" if="{{mdRing['+k+']}}" src="{{mdRing['+k+']}}"></image>').join('')
@@ -86,9 +88,9 @@ module.exports=function(c){
    o+='.md-pon{background-color:'+C.primary+';border-color:'+C.primary+';}\n.md-poff{background-color:rgba(0,0,0,0);border-color:rgba(0,0,0,0);}\n.md-pdis{background-color:'+DC+';border-color:'+DC+';}\n';
    o+='.md-ic{width:'+dp(S.icon)+'px;height:'+dp(S.icon)+'px;}\n';
   }
+   if((ctl&&(ctl.lLot||ctl.rLot))||(pp&&c.enhanced)){const q=dp(S.icon);o+='.md-lb{width:'+q+'px;height:'+q+'px;}\n.md-lf{width:'+q+'px;height:'+q+'px;}\n.md-fo{opacity:0;}\n.md-fi{opacity:1;}\n'}
   if(ctl){
    o+='.md-ic24{width:'+dp(S.seekIcon)+'px;height:'+dp(S.seekIcon)+'px;}\n';
-   if(ctl.lLot||ctl.rLot){const q=dp(S.icon);o+='.md-lb{width:'+q+'px;height:'+q+'px;}\n.md-lf{width:'+q+'px;height:'+q+'px;}\n.md-fo{opacity:0;}\n.md-fi{opacity:1;}\n'}
    o+='.md-side{height:'+g.ph+'px;border-width:1px;justify-content:center;align-items:center;transition-property:width;}\n';
    o+='.md-son{background-color:'+C[S.colors.side]+';border-color:'+C[S.colors.side]+';}\n.md-sdis{background-color:'+DC+';border-color:'+DC+';}\n';
    if(!g.vertical)o+='.md-ctl{width:'+W+'px;height:'+g.rowH+'px;flex-direction:row;align-items:center;}\n.md-sl{margin-left:'+g.outer+'px;margin-right:'+g.inner+'px;}\n.md-sr{margin-left:'+g.inner+'px;margin-right:'+g.outer+'px;}\n';
@@ -152,7 +154,7 @@ module.exports=function(c){
     o.cl=Object.fromEntries(G.circleNames(pp.steps).map(n=>[n.slice(4),img(n)]));o.rt=img('md_ring_t');o.ct=img('md_cring_t');}
    o.sc=img('md_scallop');o.scD=img('md_scallop_d');
    o.ic={play:img('md_play_32'),pause:img('md_pause_32'),playD:img('md_play_32d'),pauseD:img('md_pause_32d')};
-   o.pw={'':g.pill64,play:g.vertical?g.pill64:g.pillUp,side:g.vertical?g.pill64:g.pillDown};
+   o.pp=!!c.enhanced;o.pw={'':g.pill64,play:g.vertical?g.pill64:g.pillUp,side:g.vertical?g.pill64:g.pillDown};
    if(pp.shape==='round')o.sc=o.scD='';
   }
   o.vertical=g.vertical;o.w=g.w||null;o.ph=g.ph||0;

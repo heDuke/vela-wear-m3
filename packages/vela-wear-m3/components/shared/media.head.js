@@ -5,6 +5,8 @@ const MDC=$[mdJs()]
 let mdRelTimer=null,mdMqTimer=null,mdVisible=false
 // Lottie click frames (enhanced: M3Next.json every 3rd frame, 50 ms each; prev mirrored): side -> frame index 1..9
 const mdLot={l:0,r:0,t:{},s:{}}
+// play / pause icon (enhanced, M3PlayPause): position 1 (pause) .. 7 (play), 0 = not painted yet
+const mdPp={pos:0,tgt:0,t:null}
 const mdS={press:'',playing:false,playOn:true,prevOn:true,nextOn:true,loading:false,q:0,f:0,rel:false,circ:true,out:'headphones',outPref:'headphones',vol:-1,setOn:true}
 // Ring overlay for lobe k at quantised progress q/steps ('' = none); same rule as tools/media-geom.js lobeState
 // (q = 0: the official minimum indicator segment = a dot at the start, 'Z').

@@ -9,5 +9,11 @@
 <!-- #if mdPP.shape==='scallop' -->
 <image class="md-sc {{mdScCls}}" style="{{mdScSt}}" src="{{mdScSrc}}"></image>
 <!-- #endif -->
-<div class="md-pill {{mdTr}} {{mdPillCls}}" style="{{mdPillSt}}"><image class="md-ic" src="{{mdIcon}}"></image></div>
+<div class="md-pill {{mdTr}} {{mdPillCls}}" style="{{mdPillSt}}">
+<!-- #if enhanced -->
+<stack class="md-lb"><image class="md-ic {{mdPS}}" src="{{mdIcon}}"></image>$[mdPpImgs()]</stack>
+<!-- #else -->
+<image class="md-ic" src="{{mdIcon}}"></image>
+<!-- #endif -->
+</div>
 </div>

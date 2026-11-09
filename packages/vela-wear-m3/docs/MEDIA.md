@@ -84,7 +84,7 @@ band 上按压侧键时播放键由 scallop 变为圆（没有横向挤压空间
 | 进度连续性 | 【降级】按 2.5 % / 5 % 量化 |
 | scallop 播放时旋转 | 【降级】默认关闭；`rotate:true` 用 30 步 CSS 旋转，仅限 circle / none 环 |
 | 按压 scallop→pill 形变 | 【降级】端点切换（scallop 隐藏、pill 宽度过渡），环在按压时淡出 |
-| Lottie 图标动画 | 上一首 / 下一首：enhanced 预渲染 9 帧（50 ms/帧，见 §9）；播放/暂停：【降级】直接切换静态帧 |
+| Lottie 图标动画 | enhanced：上一首 / 下一首 9 帧（50 ms/帧），播放 / 暂停 5 帧（167 ms），见 §9.3 / §9.4；basic：【降级】静态切换 |
 | 加载 shimmer | 【降级】透明度脉冲；加载环为旋转的 25 % 圆弧 |
 | 跑马灯 | 原生 `<marquee>`，速度/停顿/间距按官方；API 1 无文字测量，溢出用字宽表估算【推导】 |
 | 表冠调音量、封面取色、输出设备切换、Ambient | 做不了（无对应 API） |
@@ -219,7 +219,7 @@ basic / enhanced 都能逐帧改 `border-radius`（band10 模拟器两种 API �
 | 按压 scallop → pill 形变 | `animatedScallopShapeProgress` 连续 morph | 端点切换，环淡出 | 【降级】 |
 | 播放中 scallop / 环旋转 | 每 3000 ms −36° | 默认关；`rotate:true`（circle / none 环）30 步 | 【降级】 |
 | 波浪进度环 | 连续 | 2.5 % / 5 % 量化 | 【降级】 |
-| 播放 / 暂停图标 Lottie（M3PlayPause） | 约 167 ms 帧动画 | 静态帧切换 | 【降级】（同法预渲染约 +8 KB，未做） |
+| 播放 / 暂停图标 Lottie（M3PlayPause，100 帧，`animate(speed ±10)`） | 167 ms 帧动画，中途反向时从当前进度折返 | **enhanced**：帧 17 / 33 / 50 / 67 / 83 预挂载（两端是静态图标，与帧 0 / 100 逐像素一致），按墙钟 167 ms 走完、可折返；禁用 / 加载 / 首次绘制直接到端点；basic 静态切换 | 一致（近似，§9.4） |
 | 上一首 / 下一首 Lottie（M3Next，30 帧 60 fps = 500 ms；上一首镜像） | 点击后从 0 播放 | **enhanced**：每 3 帧取 1（帧 3…27），9 帧 × 50 ms，按墙钟取帧；帧预挂载，松手即开始，页面回调推迟 180 ms；basic 保持静态 | 一致（近似，§9.4） |
 | 加载占位 shimmer | shimmer | 透明度脉冲 + 旋转弧 | 【降级】 |
 | 跑马灯 | 64 dp/s、停 4 s | 原生 marquee 同参数 | 一致 |
@@ -228,7 +228,8 @@ basic / enhanced 都能逐帧改 `border-radius`（band10 模拟器两种 API �
 
 ### 9.4 Lottie 帧包体与实测
 
-- `tools/media-lottie.js` 用 lottie-web 渲染 `tools/lottie/M3Next.json`（Apache-2.0，Horologist），onPrimary 32 dp，上一首水平镜像；只在 enhanced 且侧键为 prev / next 时引用（basic 不拷贝）。
+- `tools/media-lottie.js` 用 lottie-web 渲染 `tools/lottie/M3Next.json` 与 `M3PlayPause.json`（Apache-2.0，Horologist cdf245c），onPrimary 32 dp，上一首水平镜像；只在 enhanced 引用（basic 不拷贝）。
+- 播放 / 暂停（P5）：5 帧 `md_pp_l1..5`，round / pro 2 212 B，band10 / band9 1 921 B（PNG8）。round 模拟器实测：点击后按 33 ms 左右的显示节奏看到其中 3 帧，约 85 ms 后到达终点图标（`impl-p4/out/p5_playpause_before_after.png`）。
 - PNG8：18 张，round / pro 6 765 B，band10 / band9 5 875 B。release rpk 中 enhanced 比 basic 多约 10.5 KB（round）/ 9.6 KB（band），含每个文件的打包开销。
 - P4 整体（release rpk，相对 44fb069 的媒体示例；新增输出页、操作区、队列、18 个 Material Symbols 图标约 7.8 KB）：
 

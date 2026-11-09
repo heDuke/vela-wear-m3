@@ -35,15 +35,24 @@ mdPaint(){
  const ro=pillShape||mdS.loading?0:1;if(this.mdRingSt.opacity!==ro)this.mdRingSt={opacity:ro}
  const circ=!mdS.playing;if(mdS.circ!==circ){mdS.circ=circ;this.mdRingPaint()}
  const ic=mdS.playing?(mdS.playOn?MDC.ic.pause:MDC.ic.pauseD):(mdS.playOn?MDC.ic.play:MDC.ic.playD);if(this.mdIcon!==ic)this.mdIcon=ic
+ if(MDC.pp)this.mdPpTo()
  this.mdPaintSides()
 },
 mdPaintSides(){if(!MDC.l)return;const lc=mdS.prevOn?'md-son':'md-sdis',rc=mdS.nextOn?'md-son':'md-sdis'
  if(this.mdLCls!==lc)this.mdLCls=lc;if(this.mdRCls!==rc)this.mdRCls=rc
  const li=mdS.prevOn?MDC.l.ic:MDC.l.icD,ri=mdS.nextOn?MDC.r.ic:MDC.r.icD;if(this.mdLIcon!==li)this.mdLIcon=li;if(this.mdRIcon!==ri)this.mdRIcon=ri
  if(MDC.l.lot)this.mdLotShow('L',mdS.prevOn?mdLot.l:0);if(MDC.r.lot)this.mdLotShow('R',mdS.nextOn?mdLot.r:0)},
+// AnimatedPlayPauseButtonContent (enhanced): Lottie progress 1 (play) <-> 0 (pause) at speed +-10 = 167 ms end to end,
+// from wherever it is (a reversal mid-way turns back). Frames: 1 pause, 2..6 Lottie 17..83, 7 play; wall-clock indexed.
+// Disabled, loading, hidden or the first paint snap to the end (the static icon, which also carries the disabled colour).
+mdPpTo(){const tgt=mdS.playing?1:7
+ if(!mdPp.pos||!mdS.playOn||mdS.loading||!mdVisible){if(mdPp.t)clearTimeout(mdPp.t);mdPp.t=null;mdPp.pos=mdPp.tgt=tgt;this.mdLotShow('P',0);return}
+ if(mdPp.tgt===tgt)return;mdPp.tgt=tgt;if(mdPp.t)clearTimeout(mdPp.t)
+ const p0=mdPp.pos,t0=Date.now(),dir=tgt>p0?1:-1,step=()=>{const p=p0+dir*(Date.now()-t0)*6/167,done=dir>0?p>=tgt:p<=tgt
+  mdPp.pos=done?tgt:p;mdPp.t=done?null:setTimeout(step,28);this.mdLotShow('P',done?0:Math.round(p))};step()},
 // pre-mounted Lottie frames: show frame f (1..9) over a hidden static icon, 0 = static icon; two class writes per step.
 // Always swap md-fo <-> md-fi: Vela keeps the old opacity when a class is only removed.
-mdLotShow(S,f){const k=S==='L'?'l':'r',was=mdLot.s[k]||0;if(was===f)return;if(was)this['md'+S+'L'+was]='md-fo';if(f)this['md'+S+'L'+f]='md-fi'
+mdLotShow(S,f){const k=S,was=mdLot.s[k]||0;if(was===f)return;if(was)this['md'+S+'L'+was]='md-fo';if(f)this['md'+S+'L'+f]='md-fi'
  const st=f?'md-fo':'md-fi';if(this['md'+S+'S']!==st)this['md'+S+'S']=st;mdLot.s[k]=f},
 // ButtonGroup press expansion: pressed key +12dp, neighbours -12dp (middle pressed: sides -6dp each); width transition
 // .md-tin = fastSpatial (k 5600) / .md-tout = slowSpatial (k 260) fitted cubic-beziers. Radius follows min(w,h)/2.

@@ -188,7 +188,12 @@
   "md_prev_l7.png": 370,
   "md_prev_l8.png": 378,
   "md_prev_l9.png": 382,
-  "_total_bytes": 84983
+  "md_pp_l1.png": 460,
+  "md_pp_l2.png": 459,
+  "md_pp_l3.png": 465,
+  "md_pp_l4.png": 408,
+  "md_pp_l5.png": 420,
+  "_total_bytes": 87195
  },
  "pro": {
   "add_onPrimary_20.png": 242,
@@ -374,7 +379,12 @@
   "md_prev_l7.png": 370,
   "md_prev_l8.png": 378,
   "md_prev_l9.png": 382,
-  "_total_bytes": 81284
+  "md_pp_l1.png": 460,
+  "md_pp_l2.png": 459,
+  "md_pp_l3.png": 465,
+  "md_pp_l4.png": 408,
+  "md_pp_l5.png": 420,
+  "_total_bytes": 83496
  },
  "band10": {
   "add_onPrimary_20.png": 229,
@@ -560,7 +570,12 @@
   "md_prev_l7.png": 323,
   "md_prev_l8.png": 319,
   "md_prev_l9.png": 334,
-  "_total_bytes": 71861
+  "md_pp_l1.png": 392,
+  "md_pp_l2.png": 402,
+  "md_pp_l3.png": 408,
+  "md_pp_l4.png": 347,
+  "md_pp_l5.png": 372,
+  "_total_bytes": 73782
  },
  "band9": {
   "add_onPrimary_20.png": 229,
@@ -746,6 +761,11 @@
   "md_prev_l7.png": 323,
   "md_prev_l8.png": 319,
   "md_prev_l9.png": 334,
-  "_total_bytes": 71838
+  "md_pp_l1.png": 392,
+  "md_pp_l2.png": 402,
+  "md_pp_l3.png": 408,
+  "md_pp_l4.png": 347,
+  "md_pp_l5.png": 372,
+  "_total_bytes": 73759
  }
 }
