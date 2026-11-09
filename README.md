@@ -152,7 +152,7 @@ npm run build
 | 九页 Demo 及其原创展示素材（含小帆船项目图标） | PolyForm Noncommercial 1.0.0 |
 | 第三方代码、图标、字体与参考资料 | 各自原许可（AndroidX、Material Symbols：Apache-2.0；Noto Sans SC、Google Sans Flex 字体：OFL-1.1；部分官方文档参考图：CC-BY-4.0） |
 
-- **组件库允许遵守 GPL 的免费或收费商用；Demo 限于其许可允许的非商业用途**。闭源分发可洽谈单独授权，GPL 用户无需向作者付费。详见[授权范围](LICENSE.md)、[商业授权说明](COMMERCIAL.md)与[第三方声明](THIRD_PARTY_NOTICES.md)。
+- **组件库允许遵守 GPL 的免费或收费商用；Demo 公开渠道限于其许可允许的非商业用途**。闭源分发可洽谈单独授权，GPL 用户无需向作者付费。**另行签订书面商业授权后，Demo / template 原创部分亦可在该协议约定范围内商用**（见 [COMMERCIAL.md](COMMERCIAL.md)）。详见[授权范围](LICENSE.md)、[商业授权说明](COMMERCIAL.md)与[第三方声明](THIRD_PARTY_NOTICES.md)。
 - 小帆船为项目原创标识，沿用 Demo 展示素材的非商业许可，**不属于独立 GPL 库包**。SVG、头像与图标见[品牌资源](docs/design/brand/README.md)。
 - Material、Material 3、Wear OS、Android 与 Google 是 Google LLC 的商标，小米与 Vela 为其权利人的商标；本项目与 Google、小米无隶属、赞助或认证关系。
 - 原创部分 © 2026 heDuke。欢迎通过 [Issues](https://github.com/heDuke/vela-wear-m3/issues) 交流，贡献前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。

@@ -6,6 +6,6 @@
 
 商业授权不包括对 Google Wear Material 3 设计、AndroidX、Material Symbols、字体或其他第三方知识产权的独占权，也不撤销其许可条件。若贡献含维护者无权另行授权的内容，该内容不能仅凭本说明纳入闭源商业授权。
 
-Demo 使用 PolyForm Noncommercial 1.0.0，禁止其许可范围之外的商业使用。不要复制 Demo 页面、演示素材或整体演示应用作为商业产品；可按组件库的 GPL 或另行签订的商业许可，从独立库的 GPL 示例开发自己的应用。
+Demo / `template/` 使用 PolyForm Noncommercial 1.0.0，公开渠道禁止其许可范围之外的商业使用。不要未经授权复制 Demo 页面、演示素材或整体演示应用作为商业产品；可按组件库的 GPL 或另行签订的商业许可，从独立库的 GPL 示例开发自己的应用。**若与维护者另行签订书面商业授权，Demo / template 原创部分亦可在该协议约定范围内商用**（仅约束协议双方，不改变公开仓库的 PolyForm 条款，也不覆盖第三方材料）；洽谈入口见下方 `Commercial license inquiry`。
 
 授权咨询：在 https://github.com/heDuke/vela-wear-m3/issues 提交 `Commercial license inquiry`，仅说明用途和联络方式，不公开提交合同、密钥或其他敏感材料；后续通过双方确认的渠道洽谈。
