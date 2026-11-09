@@ -57,6 +57,7 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
   if(animation==='enhanced')assert(player.includes('<stack class="md-lb">')&&player.includes('mdTapFlush')&&player.includes('tapDefer'),'Lottie frames pre-mounted, prev/next callback deferred');
   assert(player.includes('/common/img/md_pp_l3.png')===(animation==='enhanced'),'play/pause Lottie frames on enhanced only');
   assert(player.includes('/common/img/md_mf_'+(device.startsWith('band')?'c':'u')+'2.png')===(animation==='enhanced')&&player.includes('mdMfTo(0,5600)'),'press morph frames on enhanced only');
+  {const se=player.lastIndexOf('</scroll>'),ts=player.indexOf('class="tt-scrim" src="/common/img/top_scrim.png"');assert(se>0&&ts>se,'MediaColumn: TimeText top scrim (the list-page fade) drawn over the scroll')}
   assert(player.includes('class="md-w39 {{mdW39}}"')&&player.includes('class="md-tb"')&&!/md_r\d_|md_c\d_/.test(player),'continuous ring: 40 pre-mounted segments, tail bar, no lobe overlays');
  const out=fs.readFileSync(path.join(media,'pages/output/output.ux'),'utf8');
  assert(out.includes('onclick="opTap($item.id)"')&&out.includes('class="op-ft"')&&out.includes('class="op-ic"')===!device.startsWith('band'),'output picker (icons only on watches)');

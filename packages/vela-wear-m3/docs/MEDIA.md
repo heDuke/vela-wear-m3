@@ -199,6 +199,7 @@ rpk 增量主要来自两个新页面各自内联的控制器 JS（media / range
 
 - 官方：Horologist 没有输出选择页面，设备键调用 `OutputSwitcher.launchSystemMediaOutputSwitcherUi`（系统 Settings `MEDIA_OUTPUT` 面板，闭源）；队列 / 操作区最接近 `screens/entity/EntityScreen`（header + buttonsContent + items，列表项 `FilledTonalButton` 单行省略）。`PlayerLibraryPagerScreen` 是横向 Pager；参考截图（YouTube Music）是播放页下方的纵向续页。
 - 本库：`MediaColumn` = 一条纵向 `<scroll>`，第一屏是完整 PlayerScreen，下面接 media-actions（头部 + 3 个 IconToggleButton + 「接下来播放」Card）与 media-queue。电平、ScrollIndicator、TimeText 放在 scroll 外。Vela 的 `onswipe` / `router.back` 在模拟器不可靠，scroll 是唯一可靠的“下滑”手势【适配】。
+- TimeText 顶部渐隐（P5 复核）：MediaColumn 与列表页用同一个 `tt-scrim`（`top_scrim.png`，round 68 px / pro 60 / 手环 54，timetext.tpl 输出），层级在 `</scroll>` 之后、时间字形之下，`tools/verify-library.js` 断言。模拟器像素采样：round 顶部到 y≈40 全黑、40–68 渐变，band10 54 px 同样。下滑后时间下沿与内容的重叠落在渐变带内，与列表页的设计相同，不是缺失遮罩（`impl-p4/out/p5_timetext_scrim_mediacolumn.png`：pro / band9 Chrome 预览 0 / 150 / 260 px，round / band10 模拟器）。
 - 输出选择 `media-output-picker`：音量页设备键 `router.push('pages/output')`；Vela 不能枚举或切换输出，选中只回调 `opOnSelect(id)`（示例写入 `$app.$def.mediaOutput`，音量页返回时显示名称）。
 - 尺寸（dp）：头部 56（标题 16/20 粗体、歌手 14/18 粗体，单行省略）；按钮行 52（手环 44）+ 8 间距，3 键等分、间距 4；卡片 74（标题 16 粗体 + 内容 14/16 两行，图标 24，手环无图标）；队列项 52 + 4（曲名 15/18 粗体，次要 13/16；手环 13 / 11）；输出项最小 52（名称手表 2 行、手环 1 行，图标 24 + 6，手环无图标）；脚注 bodySmall 12/14，左缩进 16。图标 Material Symbols Rounded（thumb_up / thumb_up 填充 / shuffle / repeat / repeat_one / queue_music / smartphone / watch / headphones / speaker / bluetooth），`tools/media-p4-assets.js` 导出。
 
