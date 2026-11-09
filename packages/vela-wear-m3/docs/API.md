@@ -208,7 +208,7 @@ export default {
 | `mdShow()` / `mdHide()` | 页可见性；联动可选 `mda*` / `mdv*` |
 | `mdvShow` / `mdvHide` / `mdvSet(v)` | 可选 `@system.volume` 适配器 |
 
-页面回调：`mdOnPlay` `mdOnPause` `mdOnPrev` `mdOnNext` `mdOnSeek` `mdOnOutput` `mdOnMore`（及音频的 `mdOnEnded` / `mdOnAudioError`）。
+页面回调：`mdOnPlay` `mdOnPause` `mdOnPrev` `mdOnNext` `mdOnSeek` `mdOnOutput` `mdOnMore`（及音频的 `mdOnEnded` / `mdOnAudioError`）。enhanced 且侧键为 prev / next 时，`mdOnPrev` / `mdOnNext` 在点击后 180 ms 才调用（先让 Lottie 帧上屏；再次点击或 `mdHide()` 时立即补调，不丢点击，见 MEDIA.md §9.4）。
 
 ### 音量页（volume-screen.*）
 

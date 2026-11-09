@@ -54,6 +54,7 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
  assert(player.includes('/common/img/md_ma_queue_24.png')===!device.startsWith('band'),'Up next card icon only on watches');
  assert(player.includes('sqPress(id,r0,r1,kIn,kOut)')&&player.includes("ontouchstart=\"mdSbDown('mdOut')\""),'press squish');
  assert(player.includes('/common/img/md_next_l9.png')===(animation==='enhanced')&&fs.existsSync(path.join(media,'common/img/md_next_l1.png'))===(animation==='enhanced'),'Lottie frames on enhanced only');
+  if(animation==='enhanced')assert(player.includes('<stack class="md-lb">')&&player.includes('mdTapFlush')&&player.includes('tapDefer'),'Lottie frames pre-mounted, prev/next callback deferred');
  const out=fs.readFileSync(path.join(media,'pages/output/output.ux'),'utf8');
  assert(out.includes('onclick="opTap($item.id)"')&&out.includes('class="op-ft"')&&out.includes('class="op-ic"')===!device.startsWith('band'),'output picker (icons only on watches)');
  assert(vol.includes('ontouchstart="volDevDown"'),'DeviceButton squish');

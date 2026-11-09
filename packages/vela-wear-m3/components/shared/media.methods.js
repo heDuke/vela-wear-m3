@@ -39,7 +39,12 @@ mdPaint(){
 },
 mdPaintSides(){if(!MDC.l)return;const lc=mdS.prevOn?'md-son':'md-sdis',rc=mdS.nextOn?'md-son':'md-sdis'
  if(this.mdLCls!==lc)this.mdLCls=lc;if(this.mdRCls!==rc)this.mdRCls=rc
- const li=mdS.prevOn?(mdLot.l?MDC.l.lot[mdLot.l-1]:MDC.l.ic):MDC.l.icD,ri=mdS.nextOn?(mdLot.r?MDC.r.lot[mdLot.r-1]:MDC.r.ic):MDC.r.icD;if(this.mdLIcon!==li)this.mdLIcon=li;if(this.mdRIcon!==ri)this.mdRIcon=ri},
+ const li=mdS.prevOn?MDC.l.ic:MDC.l.icD,ri=mdS.nextOn?MDC.r.ic:MDC.r.icD;if(this.mdLIcon!==li)this.mdLIcon=li;if(this.mdRIcon!==ri)this.mdRIcon=ri
+ if(MDC.l.lot)this.mdLotShow('L',mdS.prevOn?mdLot.l:0);if(MDC.r.lot)this.mdLotShow('R',mdS.nextOn?mdLot.r:0)},
+// pre-mounted Lottie frames: show frame f (1..9) over a hidden static icon, 0 = static icon; two class writes per step.
+// Always swap md-fo <-> md-fi: Vela keeps the old opacity when a class is only removed.
+mdLotShow(S,f){const k=S==='L'?'l':'r',was=mdLot.s[k]||0;if(was===f)return;if(was)this['md'+S+'L'+was]='md-fo';if(f)this['md'+S+'L'+f]='md-fi'
+ const st=f?'md-fo':'md-fi';if(this['md'+S+'S']!==st)this['md'+S+'S']=st;mdLot.s[k]=f},
 // ButtonGroup press expansion: pressed key +12dp, neighbours -12dp (middle pressed: sides -6dp each); width transition
 // .md-tin = fastSpatial (k 5600) / .md-tout = slowSpatial (k 260) fitted cubic-beziers. Radius follows min(w,h)/2.
 mdWidths(id,grow){if(!MDC.w)return;const w=MDC.w[id||''],r=v=>Math.floor(Math.min(v,MDC.ph)/2)
@@ -65,8 +70,16 @@ mdPlayTap(){if(!mdS.playOn||mdS.loading)return;if(mdS.playing){if(this.mdOnPause
 // AnimatedMediaButton: each click restarts lottieAnimatable.animate() from frame 0 (500 ms); here 9 frames x 50 ms,
 // indexed by wall clock so a busy JS thread skips frames instead of stretching the animation
 mdLotRun(k){const s=k==='l'?MDC.l:MDC.r;if(!s||!s.lot)return;if(mdLot.t[k])clearTimeout(mdLot.t[k]);mdLot[k]=0
- const t0=Date.now(),step=()=>{const f=1+Math.floor((Date.now()-t0)/50);mdLot[k]=f>9?0:f;mdLot.t[k]=f>9?null:setTimeout(step,50);this.mdPaintSides()};step()},
-mdSideTap(s,on,named){if(!s||!on)return;if(s.seek){if(this.mdOnSeek)this.mdOnSeek(s.seek)}else if(this[named])this[named]()},
+ const t0=Date.now(),S=k==='l'?'L':'R',step=()=>{const dt=Date.now()-t0,f=1+Math.floor(dt/50);mdLot[k]=f>9?0:f;mdLot.t[k]=f>9?null:setTimeout(step,51-dt%50)
+  this.mdLotShow(S,(k==='l'?mdS.prevOn:mdS.nextOn)?mdLot[k]:0)};step()},
+// Enhanced prev / next: the page callback runs 180 ms after the click. Vela delivers touchend and click back to back and
+// renders once after both, and a track change (title, marquee, keys, list ...) costs ~100 ms of rendering on the
+// emulator: run synchronously it held back the release and the first Lottie frames; deferred, frames 1-4 (the visible
+// part of M3Next) play on time and the track change lands after them. [adapt]
+mdSideTap(s,on,named){if(!s||!on)return;const run=()=>{if(s.seek){if(this.mdOnSeek)this.mdOnSeek(s.seek)}else if(this[named])this[named]()}
+ if(!s.lot){run();return}this.mdTapFlush();mdS.tapFn=run;mdS.tapT=setTimeout(()=>this.mdTapFlush(),MDC.tapDefer)},
+// run a deferred key callback now (a second tap, page hide): every tap still reaches the page, in order
+mdTapFlush(){if(mdS.tapT)clearTimeout(mdS.tapT);mdS.tapT=null;const f=mdS.tapFn;mdS.tapFn=null;if(f)f()},
 mdPrevTap(){this.mdSideTap(MDC.l,mdS.prevOn,'mdOnPrev')},
 mdNextTap(){this.mdSideTap(MDC.r,mdS.nextOn,'mdOnNext')},
 // MediaInfo: title + artist, ellipsis + 8dp right fade when overflowing; optional MarqueeText (64dp/s, 4s pause, 96dp gap)
@@ -139,4 +152,4 @@ mdSetState(st){const on=st!=='disconnected'
  if(st==='loading')this.mdSetInfo('loading');else if(st==='none'||!on){this.mdSetInfo('none');this.mdSetProgress(0)}else if(this.mdInfo!=='ready')this.mdSetInfo('ready')
  if(MDC.set){mdS.setOn=on;this.mdSetOutput(on?mdS.outPref:'none')}},
 mdShow(){mdVisible=true;this.mdPaint();if(this.mdMq)this.mdMqArm();if(this.mdaShow)this.mdaShow();if(this.mdvShow)this.mdvShow()},
-mdHide(){mdVisible=false;['l','r'].forEach(k=>{if(mdLot.t[k])clearTimeout(mdLot.t[k]);mdLot.t[k]=null;mdLot[k]=0});this.mdMqStop();this.mdRelease(true);this.mdLvHide(true);if(this.mdaHide)this.mdaHide();if(this.mdvHide)this.mdvHide()},
+mdHide(){this.mdTapFlush();mdVisible=false;['l','r'].forEach(k=>{if(mdLot.t[k])clearTimeout(mdLot.t[k]);mdLot.t[k]=null;mdLot[k]=0});this.mdMqStop();this.mdRelease(true);this.mdLvHide(true);if(this.mdaHide)this.mdaHide();if(this.mdvHide)this.mdvHide()},

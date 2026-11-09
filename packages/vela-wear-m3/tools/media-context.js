@@ -23,7 +23,8 @@ module.exports=function(c){
  };
  c.mdSides=(left,right)=>{left=left||'prev';right=right||'next';
   if(!KINDS.includes(left)||!KINDS.includes(right))throw new Error('media side keys: '+KINDS.join('|'));
-  return {left,right,lIc:G.SIDE[left][0].endsWith('24')?'md-ic24':'md-ic',rIc:G.SIDE[right][0].endsWith('24')?'md-ic24':'md-ic'};
+  const lot=k=>!!c.enhanced&&(k==='prev'||k==='next');
+  return {left,right,lLot:lot(left),rLot:lot(right),lIc:G.SIDE[left][0].endsWith('24')?'md-ic24':'md-ic',rIc:G.SIDE[right][0].endsWith('24')?'md-ic24':'md-ic'};
  };
  c.mdInfoOpts=marquee=>({marquee:marquee===true||marquee==='true'});
  // settings row: left 'output' (VolumeButtonWithBadge) | 'volume' (VolumeButton) | 'none'; right 'more' | 'none'
@@ -37,6 +38,10 @@ module.exports=function(c){
  // VolumeScreen (P3): content 'device' (DeviceButton) | 'label' ("音量"); bands drop the DeviceButton icon [adapt]
  c.mdVsOpts=content=>{content=content||'device';if(!['device','label'].includes(content))throw new Error('volume-screen content must be device|label');
   return {content,icon:!pill,margin:round?18:pill?18:14,lines:pill?1:2}};
+ // Lottie click frames (enhanced prev / next): all 9 frames are pre-mounted over the static icon and switched by
+ // class (opacity), so no image is decoded on the click (a first-use src swap cost ~100 ms on the emulator)
+ c.mdLotImgs=(s,kind)=>Array.from({length:9},(_,i)=>'<image class="md-lf {{md'+s.toUpperCase()+'L'+(i+1)+'}}" src="/common/img/md_'+kind+'_l'+(i+1)+'.png"></image>').join('');
+ c.mdLotData=()=>{const t=c.mdCtl;if(!t)return '';let o='';for(const [s,on] of [['L',t.lLot],['R',t.rLot]])if(on){o+='md'+s+'S:\'md-fi\',';for(let i=1;i<=9;i++)o+='md'+s+'L'+i+':\'md-fo\','}return o};
  // ---- markup helpers --------------------------------------------------------------------------------------------------
  // wavy ring (playing) and circle ring (paused) share one track element; lobes 1..9 of the circle are rotated lobe-1 images
  c.mdLobes=()=>'<image class="md-rt" src="{{mdRtSrc}}"></image>'+Array.from({length:10},(_,k)=>'<image class="md-l'+k+'" if="{{mdRing['+k+']}}" src="{{mdRing['+k+']}}"></image>').join('')
@@ -83,6 +88,7 @@ module.exports=function(c){
   }
   if(ctl){
    o+='.md-ic24{width:'+dp(S.seekIcon)+'px;height:'+dp(S.seekIcon)+'px;}\n';
+   if(ctl.lLot||ctl.rLot){const q=dp(S.icon);o+='.md-lb{width:'+q+'px;height:'+q+'px;}\n.md-lf{width:'+q+'px;height:'+q+'px;}\n.md-fo{opacity:0;}\n.md-fi{opacity:1;}\n'}
    o+='.md-side{height:'+g.ph+'px;border-width:1px;justify-content:center;align-items:center;transition-property:width;}\n';
    o+='.md-son{background-color:'+C[S.colors.side]+';border-color:'+C[S.colors.side]+';}\n.md-sdis{background-color:'+DC+';border-color:'+DC+';}\n';
    if(!g.vertical)o+='.md-ctl{width:'+W+'px;height:'+g.rowH+'px;flex-direction:row;align-items:center;}\n.md-sl{margin-left:'+g.outer+'px;margin-right:'+g.inner+'px;}\n.md-sr{margin-left:'+g.inner+'px;margin-right:'+g.outer+'px;}\n';
@@ -150,8 +156,8 @@ module.exports=function(c){
    if(pp.shape==='round')o.sc=o.scD='';
   }
   o.vertical=g.vertical;o.w=g.w||null;o.ph=g.ph||0;
-  if(ctl){const lot=k=>c.enhanced&&(k==='prev'||k==='next')?Array.from({length:9},(_,i)=>img('md_'+k+'_l'+(i+1))):null
-   const sd=k=>({ic:img(G.SIDE[k][0]),icD:img(G.SIDE[k][0]+'d'),seek:G.SIDE[k][2],lot:lot(k)});o.l=sd(ctl.left);o.r=sd(ctl.right)}
+  if(ctl){const lot=k=>!!c.enhanced&&(k==='prev'||k==='next')
+   const sd=k=>({ic:img(G.SIDE[k][0]),icD:img(G.SIDE[k][0]+'d'),seek:G.SIDE[k][2],lot:lot(k)});o.l=sd(ctl.left);o.r=sd(ctl.right);o.tapDefer=180}
   if(set){const ic=n=>({on:img(n+'_24'),off:img(n+'_24d')});o.set={left:set.left,right:set.right,more:ic('md_set_more'),r:Math.floor(dp(S.settings.h)/2),rp:dp(8)};
    if(set.left==='output'){o.set.out={headphones:ic('md_set_hp'),watch:ic('md_set_watch'),none:ic('md_set_off')};o.set.badge={up:[img('md_badge_up'),img('md_badge_upd')],down:[img('md_badge_down'),img('md_badge_downd')],mute:[img('md_badge_mute'),img('md_badge_muted')]}}
    if(set.left==='volume')o.set.vol={up:ic('md_vol_up'),down:ic('md_vol_down'),mute:ic('md_vol_mute')};}
