@@ -86,29 +86,13 @@ function ringOffset(){return (SPEC.outerScallop.size-SPEC.innerScallop.size)/2}
 function ring(){const p=closed(offset(button(),ringOffset())),L=cum(p),T=L[L.length-1];return {pts:p,L,T,gap:T*SPEC.gapFraction+SPEC.stroke}}
 // Paused ring (circlePolygon): circle of radius 38dp from 12 o'clock clockwise; same gap rule.
 function circleRing(N=720){const r=SPEC.circleRing,p=[];for(let i=0;i<=N;i++){const a=-Math.PI/2+2*Math.PI*i/N;p.push([r*Math.cos(a),r*Math.sin(a)])}const L=cum(p),T=L[L.length-1];return {pts:p,L,T,gap:T*SPEC.gapFraction+SPEC.stroke}}
-// Wavy progress ring (PLAN §4.1, revised): ONE continuous track image (md_ring_t) drawn under ten indicator overlays.
-// The outline is split into 10 equal trough-to-trough lobes; overlay images are drawn in place (never rotated, so
-// they stay in phase with the scallop and leave no seams). For quantised progress p=q/steps the boundary position in
-// lobe units is b = q*10/steps - k:  b<=0 -> no overlay;  0<b<1 -> Pj (indicator to j/4 of the lobe, j=4b);
-// b>=1 -> I (indicator to the lobe end; lobe 9 ends with a cap at the start gap = 100 %).
-// Indicator and track share the same stroke width. Every overlay except lobe 9's I ends with: indicator round cap at p*T-gap/2, a background-coloured eraser over the
-// track up to p*T+gap/2 and a track-coloured round cap there (the official indicator/track gap). Overlays of lobe
-// k>=1 start gap/2 (+overlap) before the lobe so they repaint the previous lobe's eraser; images are stacked k=0..9.
-// q=0: Z = the official minimum indicator segment (gap/2 .. gap/2+0.1px, round caps = a 4dp dot) with the track
-// starting at 1.5*gap (RotatingWavyProgressIndicator getSegment max(...)).
-function lobeState(k,q,steps){
- if(q===0&&k===0)return 'md_r0_Z';
- const n=q*10-k*steps;if(n<=0)return '';if(n>=steps)return 'md_r'+k+'_I';return 'md_r'+k+'_P'+Math.round(n*4/steps);
-}
-function lobeNames(steps){const set=new Set();for(let q=0;q<=steps;q++)for(let k=0;k<10;k++){const n=lobeState(k,q,steps);if(n)set.add(n)}return [...set].sort()}
-// arc-length layout of one overlay: {ind:[a,b], capStart, capEnd, erase:[a,b]|null, trackCap:s|null}
-function lobeSegments(name,T,gap){
- const [,ks,st]=name.match(/^md_[rc](\d)_(\w+)$/),k=+ks,Lb=T/10,h=gap/2,ov=2;
- if(st==='Z')return {ind:[h,h],capStart:true,capEnd:false,erase:[h,1.5*gap],trackCap:1.5*gap};
- const a=k===0?h:k*Lb-h-ov,p=k*Lb+(st==='I'?4:+st.slice(1))/4*Lb;
- if(k===9&&st==='I')return {ind:[a,T-h],capStart:false,capEnd:true,erase:null,trackCap:null};
- return {ind:[a,p-h],capStart:k===0,capEnd:true,erase:[p-h,p+h],trackCap:p+h};
-}
+// Continuous progress ring (P5; wavy while playing, circle while paused). RotatingWavyProgressIndicator getSegment:
+// indicator gap/2 .. e = max(fT - gap/2, gap/2 + 0.1), track t = max(fT + gap/2, 1.5 gap) .. T - gap/2. The outline is
+// cut into 40 equal arc-length quarters of its 10 lobes; n = whole quarters ending by e are shown (pre-rendered lobe-0
+// quarters rotated 36k deg, the first / last in place), b..e is a rounded indicator bar along the chord, e..t a black
+// bar with a track-coloured cap disc at t (components/shared/media.methods.js mdRingPaint mirrors this).
+function ringState(f,T,gap){const h=gap/2,Q=T/40,e=Math.max(f*T-h,h+.1),t=Math.max(f*T+h,1.5*gap),n=Math.min(39,Math.floor(e/Q+1e-9))+(e>=T-h?1:0)
+ return {e,t,n,b:n===40?T-h:n?n*Q:h,track:t<T-h}}
 // Critically damped spring progress, and a cubic-bezier fitted to it over a duration (Vela has no spring easing). [derived]
 const crit=(k,ms)=>{const w=Math.sqrt(k),s=ms/1000;return 1-(1+w*s)*Math.exp(-w*s)};
 function bezierY(x1,y1,x2,y2,x){let lo=0,hi=1,t=x;for(let i=0;i<30;i++){t=(lo+hi)/2;const a=1-t,px=3*a*a*t*x1+3*a*t*t*x2+t*t*t;if(px<x)lo=t;else hi=t}const a=1-t;return 3*a*a*t*y1+3*a*t*t*y2+t*t*t}
@@ -141,10 +125,16 @@ function settingsLayout(d){
  const cellTop=top-(S.touch-S.h)/2,ind=2*Math.sin(SPEC.level.sweep/2*Math.PI/180)*(W/2-SPEC.level.edge-SPEC.level.stroke/2),bh=ind+SPEC.level.stroke;
  return {top,cellTop,cellH:H-cellTop,cells,one,bar:{x:SPEC.level.edge,w:SPEC.level.stroke,top:H/2-bh/2,h:bh}};
 }
-// Paused circle ring overlays: the circle is rotation invariant, so lobes 1..8 (and lobe 9 before its end) reuse lobe 1
-// rotated by 36*(k-1) deg about the ring centre; lobe 0 (start cap / Z dot) and lobe 9 'I' (end cap at 100 %) are own images.
-function circleNames(steps){const set=new Set();for(const n of lobeNames(steps)){const [,k,st]=n.match(/^md_r(\d)_(\w+)$/);set.add(k==='0'?'md_c0_'+st:k==='9'&&st==='I'?'md_c9_I':'md_c1_'+st)}return [...set].sort()}
-module.exports={SPEC,scallop,star,offset,ringOffset,cum,seg,closed,ring,circleRing,button,lobeState,lobeNames,lobeSegments,circleNames,crit,fitSpring,bezierY,layout,settingsLayout};
+// Press morph (P5): RoundedPolygon.pill(w, h) outline from 12 o'clock clockwise, and Morph(pill, scallop) at progress p
+// (1 = scallop) approximated by matching both outlines by arc length from 12 o'clock and interpolating linearly
+// (androidx Morph matches corner features, then lerps cubics; for a 10-lobe star vs a stadium the in-between shapes
+// differ by well under 1dp). [approximation]
+function pill(w,h,N=720){const r=h/2,a=(w-h)/2,o=[];const per=4*a+2*Math.PI*r;
+ for(let i=0;i<N;i++){let u=i/N*per;const pt=(()=>{if(u<a)return [u,-r];u-=a;if(u<Math.PI*r){const t=-Math.PI/2+u/r;return [a+r*Math.cos(t),r*Math.sin(t)]}u-=Math.PI*r
+  if(u<2*a)return [a-u,r];u-=2*a;if(u<Math.PI*r){const t=Math.PI/2+u/r;return [-a+r*Math.cos(t),r*Math.sin(t)]}u-=Math.PI*r;return [-a+u,-r]})();o.push(pt)}return o}
+function resample(pts,N){const p=closed(pts),L=cum(p),T=L[L.length-1],o=[];let j=1;for(let i=0;i<N;i++){const v=i*T/N;while(L[j]<v)j++;const t=(v-L[j-1])/(L[j]-L[j-1]||1);o.push([p[j-1][0]+(p[j][0]-p[j-1][0])*t,p[j-1][1]+(p[j][1]-p[j-1][1])*t])}return o}
+function morph(scal,pl,p,N=480){const a=resample(pl,N),b=resample(scal,N);return a.map((q,i)=>[q[0]+(b[i][0]-q[0])*p,q[1]+(b[i][1]-q[1])*p])}
+module.exports={SPEC,pill,resample,morph,scallop,star,offset,ringOffset,cum,seg,closed,ring,circleRing,button,ringState,crit,fitSpring,bezierY,layout,settingsLayout};
 // Horologist LottiePlaceholders.kt static frames (24-unit viewport, Apache-2.0): pause / play / next (previous = mirrored).
 const ICON_PATHS={
  pause:'M7.68 4.416h-.008a2.16 2.16 0 0 0-2.16 2.16v10.8a2.16 2.16 0 0 0 2.16 2.16h.008a2.16 2.16 0 0 0 2.16-2.16v-10.8a2.16 2.16 0 0 0-2.16-2.16zM16.328 4.416h-.008a2.16 2.16 0 0 0-2.16 2.16v10.8a2.16 2.16 0 0 0 2.16 2.16h.008a2.16 2.16 0 0 0 2.16-2.16v-10.8a2.16 2.16 0 0 0-2.16-2.16z',

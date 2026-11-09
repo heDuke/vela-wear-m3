@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 heDuke. Upstream material retains its own terms; see NOTICE.
-// Media (Horologist media-ui-material3) PNGs per device: scallop button, continuous ring track + 50 indicator overlays, icons, edge fades.
+// Media (Horologist media-ui-material3) PNGs per device: scallop button + press-morph frames, ring tracks + 2 x 6 indicator
+// segments + discs, icons, edge fades.
 // node tools/media-assets.js  (needs playwright-core + Chrome; then python3 tools/media-quant.py). Writes assets/media.json.
 const {chromium}=require('playwright-core');
 const fs=require('fs'),path=require('path');
@@ -35,6 +36,12 @@ function outline(q,w){const n=q.length,L=[],Rt=[];for(let i=0;i<n;i++){const a=q
   const bs=px(64),bo=64/2;
   await shot(bs,bs,`<path d="${P(btn,bo,bo,bs/64,true)}" fill="${C.primary}"/>`,path.join(dir,'md_scallop.png'));
   await shot(bs,bs,`<path d="${P(btn,bo,bo,bs/64,true)}" fill="${DIS_C}"/>`,path.join(dir,'md_scallop_d.png'));
+  // 1b) press morph (P5, enhanced): Morph(pill, scallop) at progress .25 / .5 / .75 (1 = scallop, media-geom morph()):
+  //     u = play key pressed (pill 64+12dp wide), d = side key pressed (64-12dp), c = vertical layouts (circle 64dp),
+  //     each centred in a 76 x 64dp box.
+  {const Ld=G.layout(d),mw=px(76),mh=px(64);m.mf={w:mw,h:mh,seq:Ld.vertical?['c']:['u','d']};
+   for(const [sq,pw] of (Ld.vertical?[['c',64]]:[['u',76],['d',52]]))for(let i=1;i<=3;i++)
+    await shot(mw,mh,`<path d="${P(G.morph(btn,G.pill(pw,64),i/4),38,32,mw/76,true)}" fill="${C.primary}"/>`,path.join(dir,'md_mf_'+sq+i+'.png'))}
   // 2) wavy ring: one continuous track image (80dp box) + per-lobe indicator overlays drawn in place (no rotation).
   const box=px(80),c0=box/2,sp=sw*s,segPx=(a,b2)=>dedupe(G.seg(R.pts,R.L,a,b2).map(q=>[c0+q[0]*s,c0+q[1]*s]));
   const at=v=>{const L=R.L,i=Math.max(1,L.findIndex(x=>x>=v));const t=(v-L[i-1])/(L[i]-L[i-1]||1);return [c0+(R.pts[i-1][0]+(R.pts[i][0]-R.pts[i-1][0])*t)*s,c0+(R.pts[i-1][1]+(R.pts[i][1]-R.pts[i-1][1])*t)*s]};
@@ -43,34 +50,26 @@ function outline(q,w){const n=q.length,L=[],Rt=[];for(let i=0;i<n;i++){const a=q
   const dot=(v,col)=>circ(at(v),sp/2,col);
   const h=R.gap/2;m.box=box;
   await shot(box,box,line(h,R.T-h,C.surfaceContainerLow,sp,'round'),path.join(dir,'md_ring_t.png'));
-  // per-lobe pixel boxes: union of everything an overlay of lobe k may draw
-  m.lobes={};const names=G.lobeNames(40),seg={};
-  for(const name of names){seg[name]=G.lobeSegments(name,R.T,R.gap)}
-  for(let k=0;k<10;k++){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
-   for(const n of names.filter(n=>n.startsWith('md_r'+k+'_'))){const g=seg[n],hi=g.erase?g.erase[1]:g.ind[1];
-    for(let v=g.ind[0];v<=hi+1e-6;v+=.25){const q=at(Math.min(v,hi));x0=Math.min(x0,q[0]);y0=Math.min(y0,q[1]);x1=Math.max(x1,q[0]);y1=Math.max(y1,q[1])}}
-   const pad=sp/2+1.5,L=Math.max(0,Math.floor(x0-pad)),T=Math.max(0,Math.floor(y0-pad)),Rr=Math.min(box,Math.ceil(x1+pad)),B=Math.min(box,Math.ceil(y1+pad));
-   m.lobes[k]={x:L,y:T,w:Rr-L,h:B-T}}
-  for(const name of names){const g=seg[name],k=+name[4],lb=m.lobes[k];let body='';
-   if(g.erase)body+=line(g.erase[0],g.erase[1],'#000000',sp+2,'butt')+dot(g.trackCap,C.surfaceContainerLow);
-   body+=line(g.ind[0],g.ind[1],C.onSecondaryContainer,sp,'butt');
-   if(g.capStart)body+=dot(g.ind[0],C.onSecondaryContainer);if(g.capEnd)body+=dot(g.ind[1],C.onSecondaryContainer);
-   await shot(lb.w,lb.h,`<g transform="translate(${-lb.x} ${-lb.y})">${body}</g>`,path.join(dir,name+'.png'))}
-  // 2b) paused circle ring (circlePolygon, r 38dp): own track + lobe 0 / lobe 1 / lobe 9 'I' overlays; lobe 1 images are
-  //     rotated by 36*(k-1) deg at runtime for lobes 2..9 (verified seam-free on the vela-watch-5.0 emulator).
-  {const Rc=G.circleRing(),cpx=(a,b2)=>dedupe(G.seg(Rc.pts,Rc.L,a,b2).map(q=>[c0+q[0]*s,c0+q[1]*s]));
-   const cat=v=>{const L=Rc.L,i=Math.max(1,L.findIndex(x=>x>=v));const t=(v-L[i-1])/(L[i]-L[i-1]||1);return [c0+(Rc.pts[i-1][0]+(Rc.pts[i][0]-Rc.pts[i-1][0])*t)*s,c0+(Rc.pts[i-1][1]+(Rc.pts[i][1]-Rc.pts[i-1][1])*t)*s]};
-   const cline=(a,b2,col,w,cap)=>{const q=cpx(a,b2);if(q.length<2)return '';return `<path d="${outline(q,w)}" fill="${col}"/>`+(cap==='round'?circ(q[0],w/2,col)+circ(q[q.length-1],w/2,col):'')};
-   const ch=Rc.gap/2;await shot(box,box,cline(ch,Rc.T-ch,C.surfaceContainerLow,sp,'round'),path.join(dir,'md_cring_t.png'));
-   const cn=G.circleNames(40),cseg={};for(const n of cn)cseg[n]=G.lobeSegments(n,Rc.T,Rc.gap);m.cl={};
-   for(const k of [0,1,9]){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
-    for(const n of cn.filter(n=>n.startsWith('md_c'+k+'_'))){const g=cseg[n],hi=g.erase?g.erase[1]:g.ind[1];
-     for(let v=g.ind[0];v<=hi+1e-6;v+=.25){const q=cat(Math.min(v,hi));x0=Math.min(x0,q[0]);y0=Math.min(y0,q[1]);x1=Math.max(x1,q[0]);y1=Math.max(y1,q[1])}}
-    const pad=sp/2+1.5,L=Math.max(0,Math.floor(x0-pad)),T=Math.max(0,Math.floor(y0-pad)),Rr=Math.min(box,Math.ceil(x1+pad)),B=Math.min(box,Math.ceil(y1+pad));m.cl[k]={x:L,y:T,w:Rr-L,h:B-T}}
-   for(const n of cn){const g=cseg[n],lb=m.cl[+n[4]];let body='';
-    if(g.erase)body+=cline(g.erase[0],g.erase[1],'#000000',sp+2,'butt')+circ(cat(g.trackCap),sp/2,C.surfaceContainerLow);
-    body+=cline(g.ind[0],g.ind[1],C.onSecondaryContainer,sp,'butt');if(g.capStart)body+=circ(cat(g.ind[0]),sp/2,C.onSecondaryContainer);if(g.capEnd)body+=circ(cat(g.ind[1]),sp/2,C.onSecondaryContainer);
-    await shot(lb.w,lb.h,`<g transform="translate(${-lb.x} ${-lb.y})">${body}</g>`,path.join(dir,n+'.png'))}}
+  // 2b) ring segments (P5, continuous progress). Each ring (w = wavy, c = paused circle r 38dp) is cut into 40 equal
+  //     arc-length quarters of its 10 lobes. Lobe-0 quarters q0..q3 (butt ends; q1..q3 start 1px early, every quarter
+  //     ends 1px late, so stacked neighbours leave no seam) are rotated by 36k deg about the ring centre for lobe k
+  //     (6 distinct images: 40 distinct ones overflow the emulator's image cache and draw as grey boxes); segment 0
+  //     starts at the start gap (qs) and segment 39 ends at T - gap/2 (qe), both in place. The indicator tail
+  //     (last whole quarter .. exact end) is a row of indicator discs and the gap a rotated black bar ending in a track
+  //     disc, positioned at runtime (media.methods.js mdRingPaint).
+  {const Rc=G.circleRing(),fns=Rg=>{const sg=(a,b2)=>dedupe(G.seg(Rg.pts,Rg.L,a,b2).map(q=>[c0+q[0]*s,c0+q[1]*s]));
+    return {sg,line:(a,b2,col,w,cap)=>{const q=sg(a,b2);if(q.length<2)return '';return `<path d="${outline(q,w)}" fill="${col}"/>`+(cap==='round'?circ(q[0],w/2,col)+circ(q[q.length-1],w/2,col):'')}}};
+   await shot(box,box,fns(Rc).line(Rc.gap/2,Rc.T-Rc.gap/2,C.surfaceContainerLow,sp,'round'),path.join(dir,'md_cring_t.png'));
+   m.seg={};
+   for(const [X,Rg] of [['w',R],['c',Rc]]){const F=fns(Rg),Q=Rg.T/40,hh=Rg.gap/2,ov=1/s;
+    const bx={},parts={q0:[0,Q+ov],q1:[Q-ov,2*Q+ov],q2:[2*Q-ov,3*Q+ov],q3:[3*Q-ov,4*Q+ov],qs:[hh,Q+ov],qe:[39*Q-ov,Rg.T-hh]};
+    for(const [n,[a,b2]] of Object.entries(parts)){const q=F.sg(a,b2);let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of q){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1])}
+     const pad=sp/2+1.5,L=Math.max(0,Math.floor(x0-pad)),T=Math.max(0,Math.floor(y0-pad)),Rr=Math.min(box,Math.ceil(x1+pad)),B=Math.min(box,Math.ceil(y1+pad));bx[n]={x:L,y:T,w:Rr-L,h:B-T};
+     await shot(Rr-L,B-T,`<g transform="translate(${-L} ${-T})">${F.line(a,b2,C.onSecondaryContainer,sp,'butt')}</g>`,path.join(dir,'md_'+X+n+'.png'))}
+    m.seg[X]=bx}
+   const D_=Math.ceil(sp)+2;m.dot=D_;
+   await shot(D_,D_,circ([D_/2,D_/2],sp/2,C.onSecondaryContainer),path.join(dir,'md_rdot.png'));
+   await shot(D_,D_,circ([D_/2,D_/2],sp/2,C.surfaceContainerLow),path.join(dir,'md_tdot.png'))}
   // 2c) settings row: 24dp onSurface icons (+ disabled 38 %), 18dp 7-point star badges (primaryDim + 14dp onPrimary icon)
   {const S=G.SPEC.settings,q=px(S.icon),SD=rgba(C.onSurface,S.disabledContent[1]),SDC=rgba(C.onSurface,S.disabledContainer[1]);
    for(const [n,stem] of [['headphones','md_set_hp'],['watch','md_set_watch'],['output_off','md_set_off'],['more_vert','md_set_more'],['volume_up','md_vol_up'],['volume_down','md_vol_down'],['volume_mute','md_vol_mute']]){

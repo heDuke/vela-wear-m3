@@ -8,6 +8,7 @@
 <div class="md-load" if="{{mdLoading}}"><progress class="md-larc" type="arc" percent="25"></progress></div>
 <!-- #if mdPP.shape==='scallop' -->
 <image class="md-sc {{mdScCls}}" style="{{mdScSt}}" src="{{mdScSrc}}"></image>
+$[mdMfImgs()]
 <!-- #endif -->
 <div class="md-pill {{mdTr}} {{mdPillCls}}" style="{{mdPillSt}}">
 <!-- #if enhanced -->

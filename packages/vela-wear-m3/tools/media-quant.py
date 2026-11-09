@@ -47,4 +47,4 @@ for id in D:
     for k in [k for k in r if k.startswith('md_') and not os.path.exists(dd+k)]:del r[k]
     r.pop('_total_bytes',None);r['_total_bytes']=sum(v for k,v in r.items())
 json.dump(rep,open(ROOT+'/assets/sizes.json','w'),indent=1)
-for id in D:print(id,sum(v for k,v in rep[id].items() if k.startswith('md_')),'B media;',sum(v for k,v in rep[id].items() if k.startswith('md_r')),'B ring')
+for id in D:print(id,sum(v for k,v in rep[id].items() if k.startswith('md_')),'B media;',sum(v for k,v in rep[id].items() if k.startswith(('md_ring','md_cring','md_wq','md_cq','md_rdot','md_tdot'))),'B ring')

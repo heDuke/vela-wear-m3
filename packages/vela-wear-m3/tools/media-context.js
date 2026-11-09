@@ -9,12 +9,12 @@ const KINDS=Object.keys(G.SIDE);
 module.exports=function(c){
  const {id,W,H,C,dp,pill,round}=c,DV=require('./devices.json')[id],L=G.layout(DV),SL=G.settingsLayout(DV),S=G.SPEC;
  c.mdPP=null;c.mdCtl=null;c.mdInf=null;c.mdSet=null;c.mdLv=null;c.mdVs=null;
- const img=n=>'/common/img/'+n+'.png',B=dp(S.button);
+ const segName=i=>i===0?'qs':i===39?'qe':'q'+i%4,img=n=>'/common/img/'+n+'.png',B=dp(S.button),ringEh=()=>Math.ceil(S.stroke*DV.k)+3;
  // ---- compile-time options -------------------------------------------------------------------------------------------
  c.mdOpts=(shape,ring,steps,rotate)=>{
   shape=shape||'scallop';if(!['scallop','round'].includes(shape))throw new Error('media shape must be scallop|round');
   if(!ring)ring=shape==='round'?'circle':'wavy';if(!['wavy','circle','none'].includes(ring))throw new Error('media ring must be wavy|circle|none');
-  // default precision: 2.5 % (40 steps, 41 ring images) on watches, 5 % (20 steps, 21 images) on bands (50 KB budget)
+  // steps (20 | 40): accepted for compatibility and ignored since P5 (the wavy ring is continuous, mdRingPaint)
   steps=+steps||(pill?20:40);if(![20,40].includes(steps))throw new Error('media steps must be 20 or 40');
   rotate=rotate===true||rotate==='true';
   // the wavy ring is pre-rendered in place; spinning only the scallop would put it out of phase with the ring
@@ -45,9 +45,16 @@ module.exports=function(c){
  c.mdPpImgs=()=>['md_pause_32','md_pp_l1','md_pp_l2','md_pp_l3','md_pp_l4','md_pp_l5','md_play_32'].map((n,i)=>'<image class="md-lf {{mdPL'+(i+1)+'}}" src="/common/img/'+n+'.png"></image>').join('');
  c.mdLotData=()=>{const t=c.mdCtl;let o='';if(c.mdPP&&c.enhanced){o+='mdPS:\'md-fi\',';for(let i=1;i<=7;i++)o+='mdPL'+i+':\'md-fo\','}if(!t)return o;for(const [s,on] of [['L',t.lLot],['R',t.rLot]])if(on){o+='md'+s+'S:\'md-fi\',';for(let i=1;i<=9;i++)o+='md'+s+'L'+i+':\'md-fo\','}return o};
  // ---- markup helpers --------------------------------------------------------------------------------------------------
- // wavy ring (playing) and circle ring (paused) share one track element; lobes 1..9 of the circle are rotated lobe-1 images
- c.mdLobes=()=>'<image class="md-rt" src="{{mdRtSrc}}"></image>'+Array.from({length:10},(_,k)=>'<image class="md-l'+k+'" if="{{mdRing['+k+']}}" src="{{mdRing['+k+']}}"></image>').join('')
-  +Array.from({length:10},(_,k)=>'<image class="md-c'+k+'" if="{{mdCRing['+k+']}}" src="{{mdCRing['+k+']}}"></image>').join('')+'<image class="md-c9i" if="{{mdC9I}}" src="{{mdC9I}}"></image>';
+ // wavy ring (playing) / circle ring (paused), continuous (P5): track image, 40 pre-mounted indicator segments per
+ // ring (class keys mdW* / mdC* = md-fo | md-fi: a newly created image costs ~60 ms on the emulator), the black gap bar, the track cap disc, the start cap disc and the tail bar; mdRingPaint.
+ c.mdLobes=()=>'<image class="md-rt" src="{{mdRtSrc}}"></image>'+['W','C'].map(X=>Array.from({length:40},(_,i)=>'<image class="md-'+X.toLowerCase()+i+' {{md'+X+i+'}}" src="'+img('md_'+X.toLowerCase()+segName(i))+'"></image>').join('')).join('')
+  +'<div class="md-er" style="{{mdEr}}"></div><image class="md-dt" style="{{mdTc}}" src="'+img('md_tdot')+'"></image>'
+  +'<image class="md-dt" style="{{mdSd}}" src="'+img('md_rdot')+'"></image><div class="md-tb" style="{{mdTb}}"></div>';
+ c.mdRingData=()=>{if(!c.mdPP||c.mdPP.ring!=='wavy')return '';let o='';for(const X of 'WC')for(let i=0;i<40;i++)o+='md'+X+i+":'md-fo',";return o+'mdSd:{opacity:0},mdTb:{opacity:0},mdEr:{opacity:0},mdTc:{opacity:0},'};
+ // press morph frames (enhanced scallop): pre-mounted, shown one at a time by mdLotShow('M', f)
+ const mfNames=()=>c.enhanced&&c.mdPP&&c.mdPP.shape==='scallop'?MEDIA[id].mf.seq.flatMap(q=>[1,2,3].map(i=>'md_mf_'+q+i)):[];
+ c.mdMfImgs=()=>mfNames().map((n,i)=>'<image class="md-mf {{mdML'+(i+1)+'}}" src="'+img(n)+'"></image>').join('');
+ c.mdMfData=()=>{const n=mfNames();return n.length?"mdMS:'md-fi',"+n.map((_,i)=>'mdML'+(i+1)+":'md-fo',").join(''):''};
  // ---- geometry (px) ---------------------------------------------------------------------------------------------------
  const g={vertical:L.vertical,B,pill64:dp(64),pillUp:dp(64+S.expansion),pillDown:dp(64-S.expansion),infoTop:dp(L.info.top)};
  if(!L.vertical){
@@ -73,22 +80,25 @@ module.exports=function(c){
    o+='.md-pp{width:'+B+'px;height:'+B+'px;justify-content:center;align-items:center;transition-property:width;}\n';
    o+='.md-ring{position:absolute;left:0px;top:0px;width:'+B+'px;height:'+B+'px;transition-property:opacity;transition-duration:100ms;}\n';
    if(pp.ring==='wavy'){o+='.md-rt{position:absolute;left:0px;top:0px;width:'+B+'px;height:'+B+'px;}\n';
-    for(let k=0;k<10;k++){const b=MEDIA[id].lobes[k];o+='.md-l'+k+'{position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;height:'+b.h+'px;}\n';}
-    // paused circle ring: lobe k>=1 = lobe-1 image rotated 36*(k-1) deg about the ring centre (explicit px origin)
-    const cl=MEDIA[id].cl,c0=MEDIA[id].box/2,bx=b=>'position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;height:'+b.h+'px;';
-    o+='.md-c0{'+bx(cl[0])+'}\n.md-c9i{'+bx(cl[9])+'}\n';
-    for(let k=1;k<10;k++)o+='.md-c'+k+'{'+bx(cl[1])+'transform:rotate('+36*(k-1)+'deg);transform-origin:'+(c0-cl[1].x)+'px '+(c0-cl[1].y)+'px;}\n';}
+    // ring segments: lobe k >= 1 quarters = the lobe-0 quarter images rotated 36k deg about the ring centre
+    const M=MEDIA[id],c0=M.box/2,bx=b=>'position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;height:'+b.h+'px;';
+    for(const X of ['w','c'])for(let i=0;i<40;i++){const n=segName(i),b=M.seg[X][n],k=Math.floor(i/4);
+     o+='.md-'+X+i+'{'+bx(b)+(/^q\d$/.test(n)&&k?'transform:rotate('+36*k+'deg);transform-origin:'+(c0-b.x)+'px '+(c0-b.y)+'px;':'')+'}\n';}
+    const eh=ringEh();o+='.md-er{position:absolute;left:0px;top:0px;width:0px;height:'+eh+'px;background-color:#000000;transform-origin:0px '+eh/2+'px;}\n';
+    const sw=Math.round(S.stroke*DV.k);o+='.md-tb{position:absolute;left:0px;top:0px;width:'+sw+'px;height:'+sw+'px;border-radius:'+sw/2+'px;background-color:'+C[S.colors.ring]+';transform-origin:'+sw/2+'px '+sw/2+'px;}\n';
+    o+='.md-dt{position:absolute;left:0px;top:0px;width:'+M.dot+'px;height:'+M.dot+'px;}\n';}
    const arc='width:'+B+'px;height:'+B+'px;stroke-width:'+dp(S.stroke)+'px;color:'+C[S.colors.ring]+';layer-color:'+C[S.colors.track]+';start-angle:0deg;total-angle:360deg;';
    if(pp.ring==='circle')o+='.md-arc{'+arc+'}\n';
    o+='.md-load{position:absolute;left:0px;top:0px;width:'+B+'px;height:'+B+'px;transform:rotate(0deg);transform-origin:'+B/2+'px '+B/2+'px;animation-name:mdLoad;animation-duration:1500ms;animation-timing-function:linear;animation-iteration-count:infinite;}\n';
    o+='.md-larc{'+arc+'}\n@keyframes mdLoad{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}\n';
+   if(mfNames().length){const m=MEDIA[id].mf;o+='.md-mf{position:absolute;left:'+(B-m.w)/2+'px;top:'+(B-m.h)/2+'px;width:'+m.w+'px;height:'+m.h+'px;}\n'}
    if(pp.shape==='scallop'){const s=dp(8),q=dp(64);o+='.md-sc{position:absolute;left:'+s+'px;top:'+s+'px;width:'+q+'px;height:'+q+'px;transform:rotate(0deg);transform-origin:'+q/2+'px '+q/2+'px;}\n';
     if(pp.rotate)o+='.md-spin{animation-name:mdSpin;animation-duration:3000ms;animation-timing-function:steps(30);animation-iteration-count:infinite;}\n@keyframes mdSpin{0%{transform:rotate(0deg);}100%{transform:rotate(-36deg);}}\n';}
    o+='.md-pill{width:'+g.pill64+'px;height:'+g.pill64+'px;border-width:1px;border-radius:'+g.pill64/2+'px;justify-content:center;align-items:center;transition-property:width;}\n';
    o+='.md-pon{background-color:'+C.primary+';border-color:'+C.primary+';}\n.md-poff{background-color:rgba(0,0,0,0);border-color:rgba(0,0,0,0);}\n.md-pdis{background-color:'+DC+';border-color:'+DC+';}\n';
    o+='.md-ic{width:'+dp(S.icon)+'px;height:'+dp(S.icon)+'px;}\n';
   }
-   if((ctl&&(ctl.lLot||ctl.rLot))||(pp&&c.enhanced)){const q=dp(S.icon);o+='.md-lb{width:'+q+'px;height:'+q+'px;}\n.md-lf{width:'+q+'px;height:'+q+'px;}\n.md-fo{opacity:0;}\n.md-fi{opacity:1;}\n'}
+   if((ctl&&(ctl.lLot||ctl.rLot))||(pp&&(c.enhanced||pp.ring==='wavy'))){const q=dp(S.icon);o+='.md-lb{width:'+q+'px;height:'+q+'px;}\n.md-lf{width:'+q+'px;height:'+q+'px;}\n.md-fo{opacity:0;}\n.md-fi{opacity:1;}\n'}
   if(ctl){
    o+='.md-ic24{width:'+dp(S.seekIcon)+'px;height:'+dp(S.seekIcon)+'px;}\n';
    o+='.md-side{height:'+g.ph+'px;border-width:1px;justify-content:center;align-items:center;transition-property:width;}\n';
@@ -150,8 +160,16 @@ module.exports=function(c){
   const pp=c.mdPP,ctl=c.mdCtl,inf=c.mdInf,set=c.mdSet,lv=c.mdLv,o={};
   if(pp){
    o.steps=pp.steps;o.ring=pp.ring;o.shape=pp.shape;o.rotate=pp.rotate;
-   if(pp.ring==='wavy'){o.lobes=Object.fromEntries(G.lobeNames(pp.steps).map(n=>[n.slice(4),img(n)]));
-    o.cl=Object.fromEntries(G.circleNames(pp.steps).map(n=>[n.slice(4),img(n)]));o.rt=img('md_ring_t');o.ct=img('md_cring_t');}
+   // continuous ring: arc length T, gap (dp), k (px/dp); wavy centre line sampled every ~2dp in px (linear between),
+   // circle analytic
+   if(pp.ring==='wavy'){const M=MEDIA[id],k=DV.k,c0=M.box/2,R=G.ring(),Rc=G.circleRing(),N=Math.ceil(R.T/2),tab=[];
+    for(let j=0;j<=N;j++){const v=j*R.T/N;let i=1;while(i<R.L.length-1&&R.L[i]<v)i++;const t=(v-R.L[i-1])/(R.L[i]-R.L[i-1]||1);
+     tab.push(+(c0+(R.pts[i-1][0]+(R.pts[i][0]-R.pts[i-1][0])*t)*k).toFixed(1),+(c0+(R.pts[i-1][1]+(R.pts[i][1]-R.pts[i-1][1])*t)*k).toFixed(1))}
+    const sr=+(S.stroke/2+.5/k).toFixed(3);
+    o.rw={T:+R.T.toFixed(3),g:+R.gap.toFixed(3),k,sr,d:+(R.T/N).toFixed(5),tab};
+    o.rc={T:+Rc.T.toFixed(3),g:+Rc.gap.toFixed(3),k,sr,c0,r:S.circleRing*k};
+    o.dot=M.dot;o.eh=ringEh();o.sw=Math.round(S.stroke*DV.k);o.rt=img('md_ring_t');o.ct=img('md_cring_t');}
+   o.mf=mfNames().length?MEDIA[id].mf.seq.length:0;
    o.sc=img('md_scallop');o.scD=img('md_scallop_d');
    o.ic={play:img('md_play_32'),pause:img('md_pause_32'),playD:img('md_play_32d'),pauseD:img('md_pause_32d')};
    o.pp=!!c.enhanced;o.pw={'':g.pill64,play:g.vertical?g.pill64:g.pillUp,side:g.vertical?g.pill64:g.pillDown};

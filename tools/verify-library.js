@@ -32,7 +32,7 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
  // P2 PlayerScreen: settings row, volume level (arc on round, bar elsewhere), paused circle ring, 0 % start dot
  assert(player.includes('onclick="mdOutTap"')&&player.includes('onclick="mdMoreTap"')&&player.includes('class="md-lv {{mdLvCls}}"'),'media-player markup');
  assert(device==='round'?player.includes('/common/img/lv_ind.png'):player.includes('class="md-bar"')&&!player.includes('lv_ind'),'volume level: arc on round, bar elsewhere');
- for(const n of ['md_c0_Z','md_c1_I','md_c9_I','md_cring_t','md_r0_Z','md_badge_down','md_set_off_24d'])assert(player.includes('/common/img/'+n+'.png')&&fs.existsSync(path.join(media,'common/img',n+'.png')),n);
+ for(const n of ['md_wqs','md_wq3','md_wqe','md_cq0','md_cqe','md_ring_t','md_cring_t','md_rdot','md_tdot','md_badge_down','md_set_off_24d'])assert(player.includes('/common/img/'+n+'.png')&&fs.existsSync(path.join(media,'common/img',n+'.png')),n);
  assert(!player.includes('md_vol_up_24'),'media-settings must copy only the icons of the chosen variant');
  assert(/\.md-pdis \{background-color:rgba\(246,237,255,0\.16\)/.test(player),'disabled container = onSurface 16 %');
  for(const img of fs.readFileSync(path.join(media,'pages/player/player.ux'),'utf8').match(/\/common\/img\/md_[A-Za-z0-9_]+\.png/g))assert(fs.existsSync(path.join(media,img)),img);
@@ -56,12 +56,15 @@ for(const device of Object.keys(independent.devices))for(const animation of ['ba
  assert(player.includes('/common/img/md_next_l9.png')===(animation==='enhanced')&&fs.existsSync(path.join(media,'common/img/md_next_l1.png'))===(animation==='enhanced'),'Lottie frames on enhanced only');
   if(animation==='enhanced')assert(player.includes('<stack class="md-lb">')&&player.includes('mdTapFlush')&&player.includes('tapDefer'),'Lottie frames pre-mounted, prev/next callback deferred');
   assert(player.includes('/common/img/md_pp_l3.png')===(animation==='enhanced'),'play/pause Lottie frames on enhanced only');
+  assert(player.includes('/common/img/md_mf_'+(device.startsWith('band')?'c':'u')+'2.png')===(animation==='enhanced')&&player.includes('mdMfTo(0,5600)'),'press morph frames on enhanced only');
+  assert(player.includes('class="md-w39 {{mdW39}}"')&&player.includes('class="md-tb"')&&!/md_r\d_|md_c\d_/.test(player),'continuous ring: 40 pre-mounted segments, tail bar, no lobe overlays');
  const out=fs.readFileSync(path.join(media,'pages/output/output.ux'),'utf8');
  assert(out.includes('onclick="opTap($item.id)"')&&out.includes('class="op-ft"')&&out.includes('class="op-ic"')===!device.startsWith('band'),'output picker (icons only on watches)');
  assert(vol.includes('ontouchstart="volDevDown"'),'DeviceButton squish');
  assert(!fs.readdirSync(path.join(output,'common/img')).some(f=>f.startsWith('md_')),'media assets must not leak into pages that do not use them');
  if(configurations===1){const G=require(path.join(dest,'package/tools/media-geom.js')),r=G.ring(),b=G.button();
-  assert.deepEqual(G.circleNames(20),['md_c0_I','md_c0_P2','md_c0_Z','md_c1_I','md_c1_P2','md_c9_I']);assert.equal(G.lobeState(0,0,40),'md_r0_Z');
+  {const z=G.ringState(0,r.T,r.gap),q=G.ringState(.5,r.T,r.gap),w=G.ringState(1,r.T,r.gap);assert(z.n===0&&Math.abs(z.e-r.gap/2-.1)<1e-9&&z.t===1.5*r.gap&&q.n===19&&q.b<=q.e&&q.e-q.b<r.T/40&&w.n===40&&!w.track,'continuous ring getSegment rule')}
+  {const m=G.morph(b,G.pill(76,64),0),xs=m.map(p=>p[0]),ys=m.map(p=>p[1]);assert(Math.abs(Math.max(...xs)-38)<.1&&Math.abs(Math.max(...ys)-32)<.1,'morph progress 0 = the expanded pill')}
   const sl=G.settingsLayout(independent.devices.round);assert(sl.top===167.5&&sl.cells[0][0]===34,'settings row follows PlayerScreen / MediaPlayerTestCase');let lo=1e9,hi=0;for(let i=0;i<r.pts.length;i+=5){const p=r.pts[i];let m=1e9;for(const q of b)m=Math.min(m,Math.hypot(p[0]-q[0],p[1]-q[1]));lo=Math.min(lo,m);hi=Math.max(hi,m)}assert(hi-lo<.05&&Math.abs(lo-G.ringOffset())<.05,'wavy ring must be the scallop offset outward (uniform gap)');}
 }
 const protect=path.join(dest,'not-generated');fs.mkdirSync(protect,{recursive:true});fs.writeFileSync(path.join(protect,'user.txt'),'keep');

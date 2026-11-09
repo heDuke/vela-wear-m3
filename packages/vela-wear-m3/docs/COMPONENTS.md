@@ -580,7 +580,7 @@ Compose 没有独立的 `PlayPauseButton` 函数（调用会报 unknown componen
 <!-- #component media-play-pause {"ring":"'wavy'"} -->
 ```
 
-参数均为编译期字符串：shape `'scallop'`（默认）或 `'round'`（圆形，默认配 circle 环）；ring `'wavy'`（默认，连续轨道 + 分段指示图）、`'circle'`（原生 `<progress type="arc">`，≈0 KB）或 `'none'`；steps `40`（手表默认，2.5 %）或 `20`（手环默认，5 %）；rotate `'true'` 时播放中 scallop 以 12°/s 旋转，只能配 ring `'circle'` / `'none'`（波浪环为原位预渲染，组合会编译报错）。点击调用 mdOnPlay / mdOnPause；按压时 scallop 切为 pill、环淡出。两种 API 均可用。
+参数均为编译期字符串：shape `'scallop'`（默认）或 `'round'`（圆形，默认配 circle 环）；ring `'wavy'`（默认，连续进度：轨道 + 40 个预挂载段图 + 尾段 / 间隙条，MEDIA.md §3）、`'circle'`（原生 `<progress type="arc">`，≈0 KB）或 `'none'`；steps `40` / `20`（P5 起保留兼容、不再起作用：进度连续）；rotate `'true'` 时播放中 scallop 以 12°/s 旋转，只能配 ring `'circle'` / `'none'`（波浪环为原位预渲染，组合会编译报错）。点击调用 mdOnPlay / mdOnPause；按压时 scallop 变为 pill、环淡出（enhanced 经 3 张 Morph 中间帧，basic 直接切换）。两种 API 均可用。
 
 ### media-controls
 

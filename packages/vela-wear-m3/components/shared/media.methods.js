@@ -10,25 +10,47 @@ mdSetPlaying(b){mdS.playing=!!b;this.mdPaint()},
 mdSetLoading(b){mdS.loading=!!b;this.mdLoading=mdS.loading;this.mdPaint()},
 mdSetEnabled(o){if(!o)return;['play','prev','next'].forEach(k=>{if(k in o)mdS[k+'On']=!!o[k]});if(mdS.press&&!mdS[mdS.press+'On'])this.mdRelease(true);this.mdPaint()},
 mdSetProgress(f){f=+f;if(!(f>=0))f=0;if(f>1)f=1;mdS.f=f
- // [perf] mdPct only feeds the circle ring's <progress>; the wavy ring repaints only when its quantised step changes
+ // [perf] mdPct only feeds the circle ring's <progress>; the wavy ring repaints when its end moves by a pixel
  if(MDC.ring==='circle'){const pct=Math.round(f*100);if(this.mdPct!==pct)this.mdPct=pct}
- if(MDC.ring!=='wavy')return;const q=Math.floor(f*MDC.steps+1e-6);if(q===mdS.q)return;mdS.q=q;this.mdRingPaint()},
+ if(!MDC.rw)return;const R=mdS.circ?MDC.rc:MDC.rw;if(Math.round(f*R.T*R.k)===mdS.q)return;this.mdRingPaint()},
 // playing: wavy ring around the scallop; paused: circle ring around the circle (RotatingWavyProgressIndicator morph
-// target circlePolygon), switched instantly like the official cached Morph.
-mdRingPaint(){if(!MDC.cl)return;const q=mdS.q,c=mdS.circ,ring=[],cr=[];let c9=''
- for(let k=0;k<10;k++){if(c){ring.push('');const n=mdCLobe(k,q,MDC.steps);if(n==='9I'){cr.push('');c9=MDC.cl['9_I']}else cr.push(n)}else{ring.push(mdLobe(k,q,MDC.steps));cr.push('')}}
- const rt=c?MDC.ct:MDC.rt;if(this.mdRtSrc!==rt)this.mdRtSrc=rt
- // [perf] replace an overlay array only when one of its 10 images changed (a new array re-renders every lobe)
- const same=(a,b)=>{if(!a||a.length!==b.length)return false;for(let i=0;i<b.length;i++)if(a[i]!==b[i])return false;return true}
- if(!same(this.mdRing,ring))this.mdRing=ring;if(!same(this.mdCRing,cr))this.mdCRing=cr;if(this.mdC9I!==c9)this.mdC9I=c9},
+// target circlePolygon), switched instantly like the official cached Morph. Continuous (P5): indicator from gap/2 to
+// e = max(fT - gap/2, gap/2 + 0.1), track from t = max(fT + gap/2, 1.5 gap) to T - gap/2 (getSegment). Whole quarter
+// segments up to e, discs every <= 2px from the last one to e (+ a start cap), the gap a black bar e..t under a track disc.
+mdRingPaint(){if(!MDC.rw)return;const c=!!mdS.circ,R=c?MDC.rc:MDC.rw,X=c?'mdC':'mdW',T=R.T,h=R.g/2,f=mdS.f,r=MDC.sw/2
+ mdS.q=Math.round(f*T*R.k);const at=(s,d)=>{const p=mdRingPos(R,s);return {left:Math.round(p[0]-d/2)+'px',top:Math.round(p[1]-d/2)+'px',opacity:1}}
+ // ring switch: other ring's segments off, start cap disc at gap/2
+ if(mdS.rc!==c){mdS.rc=c;this.mdRtSrc=c?MDC.ct:MDC.rt;const Y=c?'mdW':'mdC';for(let i=0;i<40;i++){if(this[Y+i]!=='md-fo')this[Y+i]='md-fo';if(this[X+i]!=='md-fo')this[X+i]='md-fo'}
+  mdS.sn=0;this.mdSd=at(h,MDC.dot)}
+ // [perf] JerryScript is slow: touch only the segments whose state changed, compare styles field by field
+ const e=Math.max(f*T-h,h+.1),t=Math.max(f*T+h,1.5*R.g),Q=T/40,n=Math.min(39,Math.floor(e/Q+1e-9))+(e>=T-h?1:0)
+ for(let i=Math.min(n,mdS.sn),m=Math.max(n,mdS.sn);i<m;i++)this[X+i]=i<n?'md-fi':'md-fo';mdS.sn=n
+ const b=n===40?T-h:n?n*Q:h,rot=(p,q)=>{const dx=q[0]-p[0],dy=q[1]-p[1];return [Math.hypot(dx,dy),JSON.stringify({rotate:(Math.atan2(dy,dx)*180/Math.PI).toFixed(1)+'deg'})]}
+ // tail b..e: one rounded indicator bar along the chord (its round end is the indicator's end cap)
+ const pb=mdRingPos(R,b),pe=mdRingPos(R,e),tb=rot(pb,pe)
+ this.mdSt('mdTb',{left:Math.round(pb[0]-r)+'px',top:Math.round(pb[1]-r)+'px',width:Math.round(tb[0]+2*r)+'px',opacity:1,transform:tb[1]})
+ // gap e..t: black bar, then the track's start cap disc at t (no track left: erase to past its end cap)
+ const noTr=t>=T-h,p1=mdRingPos(R,noTr?Math.min(T-h+R.sr,T):t),er=rot(pe,p1)
+ this.mdSt('mdEr',{left:Math.round(pe[0])+'px',top:Math.round(pe[1]-MDC.eh/2)+'px',width:Math.ceil(er[0])+'px',opacity:1,transform:er[1]})
+ this.mdSt('mdTc',noTr?{opacity:0}:at(t,MDC.dot))},
+mdSt(k,o){const v=this[k];if(v&&v.left===o.left&&v.top===o.top&&v.width===o.width&&v.opacity===o.opacity&&v.transform===o.transform)return;this[k]=o},
+// Press morph (enhanced, playing): shapeMorphProgress spring 1 (scallop) -> 0 (pill / circle) at fastSpatial.faster(100)
+// (k 5600) on press and back at slowSpatial (k 260) on release, critically damped like the width transitions;
+// painted as the pill (round(4m) = 0), the pre-rendered Morph frames (1..3) or the scallop (4).
+mdMfAt(now){const w=Math.sqrt(mdMf.k),t=(now-mdMf.t0)/1000,A=mdMf.m0-mdMf.tgt,B=mdMf.v0+w*A,e=Math.exp(-w*t)
+ mdMf.m=mdMf.tgt+(A+B*t)*e;mdMf.v=(B-w*(A+B*t))*e;if(Math.abs(mdMf.m-mdMf.tgt)<.01&&Math.abs(mdMf.v)<1){mdMf.m=mdMf.tgt;mdMf.v=0;return true}return false},
+mdMfTo(tgt,k,snap){const now=Date.now();if(mdMf.t){clearTimeout(mdMf.t);mdMf.t=null;this.mdMfAt(now)}
+ if(snap){mdMf.m=tgt;mdMf.v=0}mdMf.m0=mdMf.m;mdMf.v0=mdMf.v;mdMf.tgt=tgt;mdMf.k=k;mdMf.t0=now
+ const step=()=>{const done=snap||this.mdMfAt(Date.now());mdMf.t=done?null:setTimeout(step,16);const q=Math.round(mdMf.m*4);if(q!==mdMf.q){mdMf.q=q;this.mdPaint()}};step()},
 // visual state: shape (scallop while playing, circle while paused, pill while pressed), ring, icon and side colours
 mdPaint(){
  this.mdPaintSet()
  if(!MDC.ic)return this.mdPaintSides()
- const p=mdS.press,pillShape=p==='play'||(!!p&&!MDC.vertical)||mdS.rel
- const solid=pillShape||(p&&MDC.vertical)||MDC.shape==='round'||!mdS.playing
+ const p=mdS.press,pillShape=p==='play'||(!!p&&!MDC.vertical)||mdS.rel,mq=MDC.mf&&mdS.playing?mdMf.q:-1
+ const solid=mq>=0?mq===0:pillShape||(p&&MDC.vertical)||MDC.shape==='round'||!mdS.playing
  const pc=solid?(mdS.playOn?'md-pon':'md-pdis'):'md-poff';if(this.mdPillCls!==pc)this.mdPillCls=pc
- const so=solid?0:1;if(this.mdScSt.opacity!==so)this.mdScSt={opacity:so}
+ const so=solid||(mq>0&&mq<4)?0:1;if(this.mdScSt.opacity!==so)this.mdScSt={opacity:so}
+ if(MDC.mf)this.mdLotShow('M',mq>0&&mq<4?mdMf.seq+mq:0)
  const ss=mdS.playOn?MDC.sc:MDC.scD;if(this.mdScSrc!==ss)this.mdScSrc=ss
  if(MDC.rotate){const sc=mdS.playing&&!p&&!mdS.loading?'md-spin':'';if(this.mdScCls!==sc)this.mdScCls=sc}
  // the progress ring has no enabled state: full colours even when the button is disabled (golden notconnected)
@@ -63,10 +85,13 @@ mdPress(id){
  if(mdRelTimer){clearTimeout(mdRelTimer);mdRelTimer=null}
  mdS.press=id;mdS.rel=false;this.mdTr='md-tin';this.mdWidths(id,true)
  if(MDC.pw)this.mdPut('mdPillSt',{width:(id==='play'?MDC.pw.play:MDC.vertical?MDC.pw['']:MDC.pw.side)+'px'})
+ // the spring runs while paused too: a release that starts playback morphs pill -> scallop
+ if(MDC.mf){mdMf.seq=MDC.vertical||id==='play'?0:3;this.mdMfTo(0,5600)}
  this.mdPaint()},
 mdRelease(now){
  if(!mdS.press)return;const was=mdS.press;mdS.press='';mdS.rel=!MDC.vertical||was==='play';this.mdTr='md-tout';this.mdWidths('',false)
  if(MDC.pw)this.mdPut('mdPillSt',{width:MDC.pw['']+'px'})
+ if(MDC.mf)this.mdMfTo(1,260,now)
  const done=()=>{mdRelTimer=null;mdS.rel=false;if(MDC.w)this.mdWidths('',false);this.mdPaint()}
  if(mdRelTimer)clearTimeout(mdRelTimer);if(now){done();return}mdRelTimer=setTimeout(done,450);this.mdPaint()},
 mdPlayDown(){if(mdS.playOn&&!mdS.loading)this.mdPress('play')},
